@@ -25,9 +25,24 @@ target_link_libraries(test_color
 	PRIVATE gtest_main
 )
 
+# quaternion
+
 add_executable(test_quaternion "test_quaternion.cpp")
 
 target_link_libraries(test_quaternion
 	PRIVATE base
 	PRIVATE gtest_main
+)
+
+# stopwatch
+
+add_executable(test_stopwatch "test_stopwatch.cpp")
+
+target_link_libraries(test_stopwatch
+	PRIVATE base
+	PRIVATE gtest_main
+)
+
+target_compile_features(test_stopwatch
+	PRIVATE cxx_std_26
 )

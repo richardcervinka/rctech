@@ -1,7 +1,7 @@
 #include "resources.h"
 #include <cstddef>
 
-namespace Res::Vs
+namespace Rc::Res::Vs
 {
     std::span<uint32_t const> Dummy()
     {
@@ -36,9 +36,9 @@ namespace Res::Vs
         return {reinterpret_cast<uint32_t const*>(data), sizeof(data) / sizeof(uint32_t)};
     }
     
-} // namespace Res::Vs
+} // namespace Rc::Res::Vs
 
-namespace Res::Ps
+namespace Rc::Res::Ps
 {
     std::span<uint32_t const> Dummy()
     {
@@ -51,4 +51,4 @@ namespace Res::Ps
         return {reinterpret_cast<uint32_t const*>(data), sizeof(data) / sizeof(uint32_t)};
     }
     
-} // namespace Res::Ps
+} // namespace Rc::Res::Ps
