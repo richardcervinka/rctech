@@ -1,0 +1,25 @@
+﻿#include "gtest/gtest.h"
+#include "base/color.h"
+
+using namespace Rc;
+
+TEST(ColorTest, RgbToHsv)
+{
+    auto a = Color::Rgb8(200, 100, 50, 255);
+    auto b = static_cast<HSV>(a);
+
+    EXPECT_NEAR(b.h, 0.05f, 0.025f);
+    EXPECT_NEAR(b.s, 0.75f, 0.025f);
+    EXPECT_NEAR(b.v, 0.78f, 0.025f);
+    EXPECT_NEAR(b.a, 1.0f, 0.001f);
+}
+
+TEST(ColorTest, HsvToRgb)
+{
+    auto a = Color::Rgb8(200, 100, 50, 255);
+    auto b = Color::Hsv(0.05f, 0.75f, 0.78f, 1.f);
+
+    EXPECT_NEAR(a.r, b.r, 0.025f);
+    EXPECT_NEAR(a.g, b.g, 0.025f);
+    EXPECT_NEAR(a.b, b.b, 0.025f);
+}
