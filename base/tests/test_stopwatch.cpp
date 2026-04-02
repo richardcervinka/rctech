@@ -2,15 +2,18 @@
 #include "base/stopwatch.h"
 
 using namespace Rc;
+using namespace std::chrono;
 
 TEST(StopwatchTest, Stopwatch)
 {
-    Stopwatch s;
+    Stopwatch<steady_clock> s(steady_clock::now());
+    
+    s.Begin();
     s.Elapsed();
-    s.Elapsed<std::chrono::seconds>();
+    s.Elapsed<seconds>();
     s.Reset();
     s.Restart();
-    s.Restart<std::chrono::seconds>();
+    s.Restart<seconds>();
 
     SUCCEED();
 }

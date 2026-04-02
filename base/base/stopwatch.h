@@ -50,6 +50,8 @@ namespace Rc
             return Restart<Duration>();
         }
 
+        Clock::time_point Begin() const { return m_begin; }
+
     private:
         Clock::time_point m_begin {Clock::now()};
     };

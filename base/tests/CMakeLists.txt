@@ -1,9 +1,13 @@
-﻿add_executable(test_vector "test_vector.cpp")
+﻿# vector
+
+add_executable(test_vector "test_vector.cpp")
 
 target_link_libraries(test_vector
 	PRIVATE base
 	PRIVATE gtest_main
 )
+
+# matrix
 
 add_executable(test_matrix "test_matrix.cpp")
 
@@ -16,7 +20,7 @@ target_compile_features(test_matrix
 	PRIVATE cxx_std_26
 )
 
-#set_target_properties(
+# color
 
 add_executable(test_color "test_color.cpp")
 
