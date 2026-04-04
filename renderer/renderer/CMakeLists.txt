@@ -1,8 +1,8 @@
 ﻿find_package(Vulkan REQUIRED)
 
 add_library(renderer STATIC
-    # "buffer.h"
-    # "buffer.cpp"
+    "buffer.h"
+    "buffer.cpp"
     "instance.h"
     "instance.cpp"
     "device.h"

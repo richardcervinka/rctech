@@ -124,6 +124,8 @@ namespace Rc
 
         std::unique_ptr<StagingBuffer> m_staging_buffer;
 
+        std::unique_ptr<VertexBuffer> m_vertex_buffer; //------------------------- TEST
+
         Window::EventSize::Handler m_on_window_size {this, &Renderer::OnWindowSize};
     };
 

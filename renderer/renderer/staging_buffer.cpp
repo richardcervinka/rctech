@@ -25,31 +25,8 @@ namespace Rc
             .pQueueFamilyIndices = nullptr
         };
         
-        auto const vk_result = vmaCreateBuffer(
-            vma_allocator,
-            &buffer_info,
-            &alloc_info,
-            &m_vk_buffer,
-            &m_vma_allocation,
-            &m_vma_allocation_info
-        );
-
-        if (vk_result != VK_SUCCESS)
-        {
-            throw VulkanError(vk_result);
-        }
-
-        m_vma_allocator = vma_allocator;
+        Create(vma_allocator, alloc_info, buffer_info);
     }
-
-    StagingBuffer::~StagingBuffer()
-    {
-        if (m_vma_allocator != VK_NULL_HANDLE)
-        {
-            vmaDestroyBuffer(m_vma_allocator, m_vk_buffer, m_vma_allocation);
-        }
-    }
-
 
     std::span<std::byte> StagingBuffer::Data()
     {

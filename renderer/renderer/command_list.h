@@ -37,11 +37,11 @@ namespace Rc
         // Swap chain present target barrier
         void BarrierPresentFramebuffer(Texture2D const& image);
 
-        void TransferBuffer(StagingBuffer& src, int offset, int size);
+        void TransferBuffer(StagingBuffer& src, Buffer& dst, int offset, int size);
 
         // void BeginRenderPass()
 
-        VkCommandBuffer Buffer() { return m_vk_buffer; } //--------------------- delete?
+        //VkCommandBuffer Buffer() { return m_vk_buffer; } //--------------------- delete?
 
         void SetRenderTargetsCount(int count);
         void AttachRenderTarget(int slot, TextureView2D const& view);

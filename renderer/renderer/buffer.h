@@ -10,32 +10,27 @@ namespace Rc
     class Buffer
     {
     public:
-        Buffer(
+        virtual ~Buffer();
+
+        VkBuffer Handle() const { return m_vk_buffer; }
+
+        uint64_t Size() const { return m_vma_allocation_info.size; }
+
+    protected:
+        void Create(
             VmaAllocator vma_allocator,
             VmaAllocationCreateInfo const& alloc_info,
             VkBufferCreateInfo const& buffer_info
         );
 
-        ~Buffer();
-
-        // Move-Only
-        Buffer(const Buffer&) = delete;
-        Buffer& operator=(const Buffer&) = delete;
-        Buffer(Buffer&& other) = delete;
-        Buffer& operator=(Buffer&& other) = delete;
-
-        uint64_t Size() const { return m_vma_allocation_info.size; }
-
-        std::span<std::byte> Data();
-        // std::span<std::byte> Map();
-
-    private:
         friend class CommandBuffer;
 
-        VmaAllocator m_vma_allocator {VK_NULL_HANDLE};
         VkBuffer m_vk_buffer {VK_NULL_HANDLE};
-        VmaAllocation m_vma_allocation;
+        VmaAllocator m_vma_allocator {VK_NULL_HANDLE};
+        VmaAllocation m_vma_allocation {nullptr};
         VmaAllocationInfo m_vma_allocation_info {};
+        VkAccessFlags m_access_flags {VK_ACCESS_NONE};
+        VkPipelineStageFlags m_stage_flags {VK_PIPELINE_STAGE_NONE};
     };
 
 } // Rc

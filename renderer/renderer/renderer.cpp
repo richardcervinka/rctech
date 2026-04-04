@@ -18,6 +18,7 @@ namespace Rc
         }
 
         m_staging_buffer = nullptr;
+        m_vertex_buffer = nullptr;
         m_test_vertex_pipeline = nullptr;
         m_test_pipeline = nullptr;
         m_pipeline_layout = nullptr;
@@ -88,6 +89,8 @@ namespace Rc
 
         // ---------------------------- TEST
 
+        m_vertex_buffer = m_device->AllocateVertexBuffer(256);
+
         m_pipeline_layout = m_device->CreatePipelineLayout();
         
         auto pipeline_factory = m_device->CreatePipelineFactory();
@@ -154,6 +157,9 @@ namespace Rc
         auto& frame = m_frames[m_frame % m_frames.size()];
         
         auto back_buffer_index = m_swap_chain->AcquireNextImage();
+
+        // Transfer test
+        frame.render_commands->TransferBuffer(*m_staging_buffer, *m_vertex_buffer, 0, 32);
 
         frame.render_commands->BarrierRenderFramebuffer(m_swap_chain->GetImage());
         frame.render_commands->SetRenderTargetsCount(1);

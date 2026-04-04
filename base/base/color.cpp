@@ -28,6 +28,8 @@ namespace Rc
 			case 4: return{t, p, v, a}; break;
 			case 5: return{v, p, q, a}; break;
 		}
+
+		assert(false && "Unreachable");
 	}
 
 	void Color::Set(float r, float g, float b, float a)

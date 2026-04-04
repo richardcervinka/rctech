@@ -211,30 +211,33 @@ namespace Rc
         m_vk_device->CmdEndRendering(m_vk_buffer);
     }
 
-    void CommandBuffer::TransferBuffer(StagingBuffer& src, int offset, int size)
+    void CommandBuffer::TransferBuffer(StagingBuffer& src, Buffer& dst, int offset, int size)
     {
         VkBufferMemoryBarrier const barrier
         {
             .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
             .pNext = nullptr,
-            .srcAccessMask = VK_ACCESS_HOST_WRITE_BIT,
-            .dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT,
+            .srcAccessMask = dst.m_access_flags,
+            .dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
             .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
             .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-            .buffer = src.Handle(),
+            .buffer = dst.Handle(),
             .offset = static_cast<VkDeviceSize>(offset),
             .size = static_cast<VkDeviceSize>(size)
         };
 
         m_vk_device->CmdPipelineBarrier(
             m_vk_buffer,
-            VK_PIPELINE_STAGE_HOST_BIT,
+            dst.m_stage_flags,
             VK_PIPELINE_STAGE_TRANSFER_BIT,
             {},
             {},
             {&barrier, 1},
             {}
         );
+
+        dst.m_access_flags = VK_ACCESS_TRANSFER_WRITE_BIT;
+        dst.m_stage_flags = VK_PIPELINE_STAGE_TRANSFER_BIT;
 
         //m_vk_device->CmdCopyBuffer(
     }
