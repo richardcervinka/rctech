@@ -1,22 +1,30 @@
 #pragma once
 
 #include <chrono>
+#include <optional>
 #include "platform/application.h"
 #include "platform/window.h"
 #include "renderer/renderer.h"
 
 namespace Rc::Generic
 {
+    struct ApplicationInfo
+    {
+        std::optional<std::string> name;
+    };
+
     class Application : private Platform::Application
     {
     public:
         using Clock = std::chrono::high_resolution_clock;
 
+        using Platform::Application::Quit;
+
         Application();
 
         ~Application();
 
-        void Initialize() override;
+        void Create(ApplicationInfo const& info);
 
 		// static void AttachDebugConsole();
 

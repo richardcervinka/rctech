@@ -91,6 +91,26 @@ namespace Rc
 
         m_vertex_buffer = m_device->AllocateVertexBuffer(256);
 
+        {
+            struct Vert
+            {
+                Float3 position;
+                Float3 color;
+            };
+
+            auto buffer = m_staging_buffer->Data();
+
+            Vert* pv = reinterpret_cast<Vert*>(buffer.data());
+
+            pv[0].position = Float3(0.0, -0.7, 0);
+            pv[1].position = Float3(0.7, 0.7, 0);
+            pv[2].position = Float3(-0.7, 0.7, 0);
+
+            pv[0].color = Float3(1, 0, 0);
+            pv[1].color = Float3(0, 1, 0);
+            pv[2].color = Float3(0, 0, 1);
+        }
+
         m_pipeline_layout = m_device->CreatePipelineLayout();
         
         auto pipeline_factory = m_device->CreatePipelineFactory();
@@ -159,17 +179,17 @@ namespace Rc
         auto back_buffer_index = m_swap_chain->AcquireNextImage();
 
         // Transfer test
-        frame.render_commands->TransferBuffer(*m_staging_buffer, *m_vertex_buffer, 0, 32);
+        frame.render_commands->TransferBuffer(*m_staging_buffer, *m_vertex_buffer, 0, 4 * 3 * 2 * 3);
 
         frame.render_commands->BarrierRenderFramebuffer(m_swap_chain->GetImage());
         frame.render_commands->SetRenderTargetsCount(1);
         frame.render_commands->AttachRenderTarget(0, *m_back_buffers.at(back_buffer_index));
         frame.render_commands->ClearRenderTarget(0, Color(0, 0, 0, 1));
-
-        frame.render_commands->Test(
-            {0, 0, m_swap_chain->Width(), m_swap_chain->Height()},
-            m_test_pipeline->Handle()
-        );
+        frame.render_commands->BeginRendering({0, 0, m_swap_chain->Width(), m_swap_chain->Height()});
+        frame.render_commands->BindPipeline(*m_test_pipeline);
+        frame.render_commands->Test({0, 0, m_swap_chain->Width(), m_swap_chain->Height()});
+        frame.render_commands->Draw(3, 1, 0, 0);
+        frame.render_commands->EndRendering();
     }
 
 } // Rc

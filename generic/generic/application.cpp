@@ -16,11 +16,11 @@ namespace Rc::Generic
         m_instance = nullptr;
     }
 
-    void Application::Initialize()
+    void Application::Create(ApplicationInfo const& info)
     {
         Platform::Application::Initialize();
 
-        m_window = std::make_unique<Window>();
+        m_window = std::make_unique<Window>(info.name.value_or("rctech"));
         m_window->Show();
 
         m_renderer = std::make_unique<Renderer>();

@@ -16,8 +16,6 @@ namespace Rc::Platform
 
 		virtual ~Application();
 
-		virtual void Initialize();
-
 		static void AttachDebugConsole();
 
 		// Stop event loop as soon as possible.
@@ -26,6 +24,8 @@ namespace Rc::Platform
 		// Abort()
 
 	protected:
+		virtual void Initialize();
+
 		// Start main message loop.
 		int StartMessageLoop();
 

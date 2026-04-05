@@ -162,6 +162,9 @@ namespace Rc
         // vkCmdCopyBuffer
         void CmdCopyBuffer(VkCommandBuffer command_buffer, VkBuffer src, VkBuffer dst, std::span<VkBufferCopy const> regions) const;
 
+        // vkCmdBindVertexBuffers
+        void CmdBindVertexBuffers(VkCommandBuffer command_buffer, uint32_t first_binding, uint32_t binding_count, std::span<VkBuffer const> buffers, std::span<VkDeviceSize const> offsets) const;
+
     private:
         friend class VulkanContext;
         
@@ -217,6 +220,7 @@ namespace Rc
         PFN_vkCmdSetViewport m_vkCmdSetViewport {nullptr};
         PFN_vkCmdSetScissor m_vkCmdSetScissor {nullptr};
         PFN_vkCmdCopyBuffer m_vkCmdCopyBuffer {nullptr};
+        PFN_vkCmdBindVertexBuffers m_vkCmdBindVertexBuffers {nullptr};
     };
 
 } // Rc

@@ -52,7 +52,7 @@ namespace Rc
         return DefWindowProc(hwnd, msg, wparam, lparam);
     }
 
-    Window::Window()
+    Window::Window(std::string const& label)
     {
         // Define window class
         const char class_name[] = "MainWindowClass";
@@ -68,7 +68,7 @@ namespace Rc
         m_hwnd = CreateWindowEx(
             0,  // Optional window styles
             class_name,  // Window class
-            "lib3d",  // Window text
+            label.c_str(),  // Window text
             WS_OVERLAPPEDWINDOW,  // Window style
             CW_USEDEFAULT,
             CW_USEDEFAULT,

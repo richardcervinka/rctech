@@ -18,8 +18,6 @@ namespace Rc
         VertexBuffer& operator=(VertexBuffer&& other) = delete;
 
         ~VertexBuffer() = default;
-
-        uint64_t Size() const { return m_vma_allocation_info.size; }
     };
 
 } // Rc
