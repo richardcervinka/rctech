@@ -9,7 +9,12 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PSTR cmdline, int cmd
     
 	Rc::Generic::Application app;
 	
-    app.Initialize();
+	Rc::Generic::ApplicationInfo app_info
+	{
+		.name = "RcTech"
+	};
+	
+    app.Create(app_info);
 
 	app.Run();
 

@@ -1,4 +1,6 @@
-# README
+# rctech
+
+This is a long‑term experimental playground for graphics and modern C++ design. The project explores ideas rather than aiming for a finished engine, using Vulkan and forward‑looking C++ features as they become available. It evolves continuously, and while the repository as a whole is experimental, its components are intentionally written to be standalone and freely usable elsewhere.
 
 ## Project Directory Structure
 

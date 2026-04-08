@@ -9,6 +9,7 @@
 	"math.h"
 	"event.h"
 	"error.h"
+	"stopwatch.h"
 )
 
 target_compile_features(base

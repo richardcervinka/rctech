@@ -6,16 +6,16 @@
 
 // Embedded resources storage.
 
-namespace Res::Vs
+namespace Rc::Res::Vs
 {
     std::span<uint32_t const> Dummy();
     std::span<uint32_t const> Overlay();
     std::span<uint32_t const> Test();
 
-} // namespace Res::Vs
+} // namespace Rc::Res::Vs
 
-namespace Res::Ps
+namespace Rc::Res::Ps
 {
     std::span<uint32_t const> Dummy();
 
-} // namespace Res::Ps
+} // namespace Rc::Res::Ps

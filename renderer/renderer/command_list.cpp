@@ -170,7 +170,21 @@ namespace Rc
         dst.clearValue.color.float32[3] = color.a;
     }
 
-    void CommandBuffer::Test(Rectangle<int> const& render_area, VkPipeline const& pipeline)
+    void CommandBuffer::SetViewport(Viewport const& viewport)
+    {
+        VkViewport const vp {
+            .x = viewport.x,
+            .y = viewport.y,
+            .width = viewport.width,
+            .height = viewport.height,
+            .minDepth = viewport.min_depth,
+            .maxDepth = viewport.max_depth
+        };
+
+        m_vk_device->CmdSetViewport(m_vk_buffer, vp);  
+    }
+
+    void CommandBuffer::BeginRendering(Rectangle<int> const& render_area)
     {
         VkRenderingInfo const rendering_info
         {
@@ -187,48 +201,36 @@ namespace Rc
         };
 
         m_vk_device->CmdBeginRendering(m_vk_buffer, rendering_info);
-        
-        // No pipeline, no draws — clear done by loadOp
-        m_vk_device->CmdBindPipeline(m_vk_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+    }
 
-        VkViewport const viewport {
-            .x = 0,
-            .y = 0,
-            .width = static_cast<float>(render_area.w),
-            .height = static_cast<float>(render_area.h),
-            .minDepth = 0.0f,
-            .maxDepth = 1.0f
-        };
-
-        VkRect2D const scissors
-        {
-            {0, 0}, {(uint32_t)render_area.w, (uint32_t)render_area.h}
-        };
-
-        m_vk_device->CmdSetViewport(m_vk_buffer, viewport);
-        m_vk_device->CmdSetScissor(m_vk_buffer, scissors);
-        m_vk_device->CmdDraw(m_vk_buffer, 3, 1, 0, 0);
+    void CommandBuffer::EndRendering()
+    {
         m_vk_device->CmdEndRendering(m_vk_buffer);
     }
 
-    void CommandBuffer::TransferBuffer(StagingBuffer& src, int offset, int size)
+    void CommandBuffer::BindPipeline(Pipeline const& pipeline)
+    {
+        m_vk_device->CmdBindPipeline(m_vk_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.Handle());
+    }
+
+    void CommandBuffer::TransferBuffer(StagingBuffer& src, Buffer& dst, int offset, int size) // ------------------- not int
     {
         VkBufferMemoryBarrier const barrier
         {
             .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
             .pNext = nullptr,
-            .srcAccessMask = VK_ACCESS_HOST_WRITE_BIT,
-            .dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT,
+            .srcAccessMask = dst.m_access_flags,
+            .dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
             .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
             .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-            .buffer = src.Handle(),
+            .buffer = dst.Handle(),
             .offset = static_cast<VkDeviceSize>(offset),
             .size = static_cast<VkDeviceSize>(size)
         };
 
         m_vk_device->CmdPipelineBarrier(
             m_vk_buffer,
-            VK_PIPELINE_STAGE_HOST_BIT,
+            dst.m_stage_flags,
             VK_PIPELINE_STAGE_TRANSFER_BIT,
             {},
             {},
@@ -236,7 +238,34 @@ namespace Rc
             {}
         );
 
-        //m_vk_device->CmdCopyBuffer(
+        dst.m_access_flags = VK_ACCESS_TRANSFER_WRITE_BIT;
+        dst.m_stage_flags = VK_PIPELINE_STAGE_TRANSFER_BIT;
+
+        struct VkBufferCopy region
+        {
+            .srcOffset = 0, //----------------------------------------------------------------------------------
+            .dstOffset = 0, //------------------------------------------------------------------------------------
+            .size = static_cast<VkDeviceSize>(size)
+        };
+        
+        m_vk_device->CmdCopyBuffer(m_vk_buffer, src.Handle(), dst.Handle(), {&region, 1});
+    }
+
+    void CommandBuffer::Draw(uint32_t vertex_count, uint32_t instance_count, uint32_t first_vertex, uint32_t first_instance)
+    {
+        m_vk_device->CmdDraw(m_vk_buffer, vertex_count, instance_count, first_vertex, first_instance);
+    }
+
+    void CommandBuffer::Test(Rectangle<int> const& render_area)
+    {
+        VkRect2D const scissors
+        {
+            {0, 0}, {(uint32_t)render_area.w, (uint32_t)render_area.h}
+        };
+
+        SetViewport({0, 0, static_cast<float>(render_area.w), static_cast<float>(render_area.h), 0, 1});
+
+        m_vk_device->CmdSetScissor(m_vk_buffer, scissors);
     }
 
 } // Rc

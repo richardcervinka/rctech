@@ -9,9 +9,20 @@
 #include "texture.h"
 #include "swap_chain.h" //----------------------- framebuffer
 #include "staging_buffer.h"
+#include "pipeline_state.h"
 
 namespace Rc
 {
+    struct Viewport
+    {
+        float x;
+        float y;
+        float width;
+        float height;
+        float min_depth;
+        float max_depth;
+    };
+
     class CommandBuffer
     {
     public:
@@ -37,11 +48,11 @@ namespace Rc
         // Swap chain present target barrier
         void BarrierPresentFramebuffer(Texture2D const& image);
 
-        void TransferBuffer(StagingBuffer& src, int offset, int size);
+        void TransferBuffer(StagingBuffer& src, Buffer& dst, int offset, int size);
 
         // void BeginRenderPass()
 
-        VkCommandBuffer Buffer() { return m_vk_buffer; } //--------------------- delete?
+        //VkCommandBuffer Buffer() { return m_vk_buffer; } //--------------------- delete?
 
         void SetRenderTargetsCount(int count);
         void AttachRenderTarget(int slot, TextureView2D const& view);
@@ -51,9 +62,18 @@ namespace Rc
 
         //void Transfer(Buffer const& src, Buffer const& dst);
 
+        void BeginRendering(Rectangle<int> const& render_area);
+        void EndRendering();
+
+        // No pipeline, no draws — clear done by loadOp
+        void BindPipeline(Pipeline const& pipeline);
+
+        void SetViewport(Viewport const& viewport);
+
+        void Draw(uint32_t vertex_count, uint32_t instance_count, uint32_t first_vertex, uint32_t first_instance);
+
         void Test(
-            Rectangle<int> const& render_area,
-            VkPipeline const& pipeline
+            Rectangle<int> const& render_area
         );
 
     private:

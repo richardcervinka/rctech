@@ -11,7 +11,7 @@ namespace Rc
         VmaAllocationCreateInfo alloc_info {};
         alloc_info.usage = VMA_MEMORY_USAGE_AUTO;
 
-        VkBufferCreateInfo buffer_info
+        VkBufferCreateInfo const buffer_info
         {
             .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
             .pNext = nullptr,
@@ -26,29 +26,7 @@ namespace Rc
             .pQueueFamilyIndices = nullptr
         };
 
-        auto const vk_result = vmaCreateBuffer(
-            vma_allocator,
-            &buffer_info,
-            &alloc_info,
-            &m_vk_buffer,
-            &m_vma_allocation,
-            &m_vma_allocation_info
-        );
-
-        if (vk_result != VK_SUCCESS)
-        {
-            throw VulkanError(vk_result);
-        }
-
-        m_vma_allocator = vma_allocator;
-    }
-
-    VertexBuffer::~VertexBuffer()
-    {
-        if (m_vma_allocator != VK_NULL_HANDLE)
-        {
-            vmaDestroyBuffer(m_vma_allocator, m_vk_buffer, m_vma_allocation);
-        }
+        Create(vma_allocator, alloc_info, buffer_info);
     }
 
 } // Rc

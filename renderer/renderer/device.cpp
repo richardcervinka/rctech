@@ -18,6 +18,8 @@ namespace Rc
 
         auto const extensions = EnumerateExtensions();
 
+        // Mandatory extensions...
+
         if (!extensions.contains(VK_KHR_SWAPCHAIN_EXTENSION_NAME))
         {
             throw std::runtime_error("Required VK_KHR_swapchain");
@@ -140,17 +142,35 @@ namespace Rc
             }
         }
 
+        // Device features...
+
+        VkPhysicalDeviceBufferDeviceAddressFeatures device_address_features
+        {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES,
+            .pNext = nullptr,
+            .bufferDeviceAddress = VK_TRUE
+        };
+
         VkPhysicalDeviceDynamicRenderingFeatures dynamic_rendering_features
         {
             .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES,
-            .pNext = nullptr,
+            .pNext = &device_address_features,
             .dynamicRendering = VK_TRUE
         };
+
+        VkPhysicalDeviceSynchronization2Features synchronization2_features
+        {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES,
+            .pNext = &dynamic_rendering_features,
+            .synchronization2 = VK_TRUE
+        };
+
+        void* features = &synchronization2_features;
 
         VkDeviceCreateInfo info
         {
             .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
-            .pNext = &dynamic_rendering_features,
+            .pNext = features,
             .flags = {},
             .queueCreateInfoCount = queue_info_count,
             .pQueueCreateInfos = queue_info.data(),
