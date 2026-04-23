@@ -2,17 +2,23 @@
 
 #include <vulkan/vulkan.h>
 #include "base/error.h"
+#include <source_location>
 
 namespace Rc
 {
     class VulkanException : public Exception
     {
     public:
-        VulkanException(VkResult r) : m_result{r} {}
+        explicit VulkanException(VkResult r, std::source_location src = std::source_location::current()) :
+            m_result{r},
+            m_src{src}
+        {}
 
-        char const* what() const override
+        char const* what() const noexcept override
         {
-            m_buffer = "Vulkan error (VulkanError::what() NOT IMPLEMENTED)";
+            m_buffer = m_src.function_name();
+            m_buffer += " error: ";
+            // m_buffer +=
             return m_buffer.c_str();
         }
 
@@ -20,6 +26,7 @@ namespace Rc
 
     private:
         VkResult m_result;
+        std::source_location m_src;
     };
 
     class VulkanLoaderException : public Exception
