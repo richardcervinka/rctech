@@ -5,10 +5,10 @@
 
 namespace Rc
 {
-    class VulkanError : public Error
+    class VulkanException : public Exception
     {
     public:
-        VulkanError(VkResult r) : m_result{r} {}
+        VulkanException(VkResult r) : m_result{r} {}
 
         char const* what() const override
         {
@@ -22,10 +22,10 @@ namespace Rc
         VkResult m_result;
     };
 
-    class VulkanLoaderError : public Error
+    class VulkanLoaderException : public Exception
     {
     public:
-        VulkanLoaderError(char const* fn) : m_fn{fn} {}
+        VulkanLoaderException(char const* fn) : m_fn{fn} {}
 
         char const* what() const override
         {

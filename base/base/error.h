@@ -5,16 +5,16 @@
 
 namespace Rc
 {
-    class Error : public std::exception
+    class Exception : public std::exception
     {
     public:
-        Error() = default;
-        ~Error() override = default;
+        Exception() = default;
+        ~Exception() override = default;
 
-        Error(Error const&) {}
-        Error& operator=(Error const&) { return *this; }
-        Error(Error&&) {}
-        Error& operator=(Error&&) { return *this; }
+        Exception([[maybe_unused]] Exception const& other) {}
+        Exception& operator=([[maybe_unused]] Exception const& other) { return *this; }
+        Exception([[maybe_unused]] Exception&& other) noexcept {}
+        Exception& operator=([[maybe_unused]] Exception&& other) noexcept { return *this; }
 
     protected:
         // Non-copyable buffer for the what() method.

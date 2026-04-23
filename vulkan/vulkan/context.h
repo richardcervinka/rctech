@@ -54,7 +54,7 @@ namespace Rc
 
         // vkEnumerateInstanceExtensionProperties
         std::span<VkExtensionProperties> EnumerateInstanceExtensionProperties(std::span<VkExtensionProperties> buffer, std::string_view layer_name = {}) const;
-        
+
         // vkCreateInstance
         std::unique_ptr<VulkanInstance> CreateInstance(VkInstanceCreateInfo const& create_info) const;
 
@@ -66,7 +66,7 @@ namespace Rc
 
             if (dst == nullptr)
             {
-                throw VulkanLoaderError(name);
+                throw VulkanLoaderException(name);
             }
         }
 

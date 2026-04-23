@@ -42,7 +42,7 @@ namespace Rc
     void Input::Read()
     {
         alignas(RAWINPUT) std::array<std::byte, sizeof(RAWINPUT) * 32> buffer;
-                
+
         UINT size = buffer.size();
 
         // Get raw input data
@@ -56,7 +56,7 @@ namespace Rc
 
         if (count == static_cast<UINT>(-1))
         {
-            throw SystemError(GetLastError());
+            throw SystemException(GetLastError());
         }
 
         auto const* pb = buffer.data();

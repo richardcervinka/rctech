@@ -46,7 +46,7 @@ namespace Rc
         uint32_t result {};
         if (auto vk_result = m_vkEnumerateInstanceVersion(&result); vk_result != VK_SUCCESS)
         {
-            throw VulkanError(vk_result);
+            throw VulkanException(vk_result);
         }
         return {result};
     }
@@ -56,7 +56,7 @@ namespace Rc
         uint32_t result = 0;
         if (auto vk_result = m_vkEnumerateInstanceExtensionProperties(layer_name.data(), &result, nullptr); vk_result != VK_SUCCESS)
         {
-            throw VulkanError(vk_result);
+            throw VulkanException(vk_result);
         }
         return result;
     }
@@ -66,7 +66,7 @@ namespace Rc
         auto count = static_cast<uint32_t>(buffer.size());
         if (auto vk_result = m_vkEnumerateInstanceExtensionProperties(layer_name.data(), &count, buffer.data()); vk_result != VK_SUCCESS)
         {
-            throw VulkanError(vk_result);
+            throw VulkanException(vk_result);
         }
         return buffer.subspan(0, count);
     }
@@ -77,7 +77,7 @@ namespace Rc
 
         if (auto vk_result = m_vkCreateInstance(&create_info, nullptr, &vk_instance); vk_result != VK_SUCCESS)
         {
-            throw VulkanError(vk_result);
+            throw VulkanException(vk_result);
         }
 
         return std::make_unique<VulkanInstance>(*this, vk_instance);

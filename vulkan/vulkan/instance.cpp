@@ -35,7 +35,7 @@ namespace Rc
         uint32_t count {};
         if (auto vk_result = m_vkEnumeratePhysicalDevices(m_vk_instance, &count, nullptr); vk_result != VK_SUCCESS)
         {
-            throw VulkanError(vk_result);
+            throw VulkanException(vk_result);
         }
         return count;
     }
@@ -45,7 +45,7 @@ namespace Rc
         auto count = static_cast<uint32_t>(buffer.size());
         if (auto vk_result = m_vkEnumeratePhysicalDevices(m_vk_instance, &count, buffer.data()); vk_result != VK_SUCCESS)
         {
-            throw VulkanError(vk_result);
+            throw VulkanException(vk_result);
         }
         return buffer.subspan(0, count);
     }
@@ -55,7 +55,7 @@ namespace Rc
         VkSurfaceKHR result = VK_NULL_HANDLE;
         if (auto vk_result = m_vkCreateWin32SurfaceKHR(m_vk_instance, &create_info, nullptr, &result); vk_result != VK_SUCCESS)
         {
-            throw VulkanError(vk_result);
+            throw VulkanException(vk_result);
         }
         return result;
     }
@@ -85,7 +85,7 @@ namespace Rc
         uint32_t result {};
         if (auto vk_result = m_vkEnumerateDeviceExtensionProperties(physical_device, nullptr, &result, nullptr); vk_result != VK_SUCCESS)
         {
-            throw VulkanError(vk_result);
+            throw VulkanException(vk_result);
         }
         return result;
     }
@@ -95,7 +95,7 @@ namespace Rc
         auto count = static_cast<uint32_t>(buffer.size());
         if (auto vk_result = m_vkEnumerateDeviceExtensionProperties(physical_device, layer_name.data(), &count, buffer.data()); vk_result != VK_SUCCESS)
         {
-            throw VulkanError(vk_result);
+            throw VulkanException(vk_result);
         }
         return buffer.subspan(0, count);
     }
@@ -128,7 +128,7 @@ namespace Rc
         VkBool32 result {};
         if (auto vk_result = m_vkGetPhysicalDeviceSurfaceSupportKHR(physical_device, queue_family_index, surface, &result); vk_result != VK_SUCCESS)
         {
-            throw VulkanError(vk_result);
+            throw VulkanException(vk_result);
         }
         return result == VK_TRUE;
     }
@@ -138,7 +138,7 @@ namespace Rc
         VkDevice result = VK_NULL_HANDLE;
         if (auto vk_result = m_vkCreateDevice(physical_device, &create_info, nullptr, &result); vk_result != VK_SUCCESS)
         {
-            throw VulkanError(vk_result);
+            throw VulkanException(vk_result);
         }
         return std::make_unique<VulkanDevice>(m_context, result);
     }
@@ -148,7 +148,7 @@ namespace Rc
         VkDebugUtilsMessengerEXT result = VK_NULL_HANDLE;
         if (auto vk_result = m_vkCreateDebugUtilsMessengerEXT(m_vk_instance, &create_info, nullptr, &result); vk_result != VK_SUCCESS)
         {
-            throw VulkanError(vk_result);
+            throw VulkanException(vk_result);
         }
         return result;
     }
