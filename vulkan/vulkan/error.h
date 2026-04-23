@@ -6,6 +6,8 @@
 
 namespace Rc
 {
+    std::string VkResultToString(VkResult value);
+
     class VulkanException : public Exception
     {
     public:
@@ -14,15 +16,12 @@ namespace Rc
             m_src{src}
         {}
 
-        char const* what() const noexcept override
-        {
-            m_buffer = m_src.function_name();
-            m_buffer += " error: ";
-            // m_buffer +=
-            return m_buffer.c_str();
-        }
+        char const* what() const noexcept override;
 
         VkResult Value() const { return m_result; }
+
+        // Convert the VkResult value to string.
+        std::string ValueStr() const;
 
     private:
         VkResult m_result;
