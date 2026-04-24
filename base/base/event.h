@@ -47,10 +47,6 @@ namespace Rc
             m_callback{std::move(callback)}
         {}
 
-        explicit EventHandler(std::function<void(E)> callback) :
-            m_callback{std::move(callback)}
-        {}
-
         template<typename T>
         EventHandler(T* instance, void(T::*callback)(E const&))
         {

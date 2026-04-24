@@ -1,8 +1,9 @@
 #include "system.h"
+#include <Windows.h>
 
-namespace Rc
+namespace Rc::System
 {
-    int System::GetCpuThreads() const
+    int GetCpuThreads()
     {
         SYSTEM_INFO si;
         ::GetSystemInfo(&si);

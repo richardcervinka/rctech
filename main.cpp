@@ -1,10 +1,21 @@
 ﻿#include "generic/application.h"
 #include "platform/window.h"
 #include "renderer/renderer.h"
-#include <iostream>
+#include <print>
 
 int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PSTR cmdline, int cmdshow)
 {
+	Rc::Input::ButtonEvent::Handler button_push_handler {[](int key) {
+		std::println("PUSH {}", key);
+	}};
+
+	Rc::Input::ButtonEvent::Handler button_release_handler {[](int key) {
+		std::println("RELEASE {}", key);
+	}};
+
+	Rc::Input::OnButtonPush(button_push_handler);
+	Rc::Input::OnButtonRelease(button_release_handler);
+
     Rc::Platform::Application::AttachDebugConsole(); // ------------------------- move to debug
     
 	Rc::Generic::Application app;

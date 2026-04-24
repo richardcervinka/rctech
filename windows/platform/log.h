@@ -11,5 +11,10 @@ namespace Rc::Log
     {
         OutputDebugString(str.data());
     }
+
+    void Error(std::string_view str)
+    {
+        OutputDebugString(str.data());
+    }
     
 } // namespce Rc::Log

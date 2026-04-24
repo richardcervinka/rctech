@@ -2,24 +2,20 @@
 #include <cassert>
 #include <Windows.h>
 #include "error.h"
-#include <iostream> // ---------------------
 
 namespace Rc
 {
-    void Input::UpdateMousePosition(int x, int y)
-    {
-        mouse.x = x;
-        mouse.y = y;
-    }
-
     void Input::PushButton(int btn)
     {
         assert(btn >= 0);
         assert(btn < buttons.size());
 
-        buttons[btn] = ButtonState::Down;
+        if (buttons[btn] != ButtonState::Down)
+        {
+            buttons[btn] = ButtonState::Down;
 
-        std::cout << btn << " push" << std::endl;
+            m_event_button_push.Dispatch(btn);
+        }
     }
 
     void Input::ReleaseButton(int btn)
@@ -27,16 +23,12 @@ namespace Rc
         assert(btn >= 0);
         assert(btn < buttons.size());
 
-        buttons[btn] = ButtonState::Up;
+        if (buttons[btn] != ButtonState::Up)
+        {
+            buttons[btn] = ButtonState::Up;
 
-        std::cout << btn << " release" << std::endl;
-    }
-
-    void Input::SetViewport(Rectangle<int> value)
-    {
-        viewport = value;
-
-        //------------------------ align current position
+            m_event_button_release.Dispatch(btn);
+        }
     }
 
     void Input::Read()
@@ -65,7 +57,6 @@ namespace Rc
         int mx = 0;
         int my = 0;
 
-
         for (UINT i = 0; i < count; i++)
         {
             auto const* raw = reinterpret_cast<RAWINPUT const*>(pb);
@@ -76,8 +67,6 @@ namespace Rc
                 {
                     mx += raw->data.mouse.lLastX;
                     my += raw->data.mouse.lLastY;
-
-                    // input.UpdateMousePosition(mx, my);
                 }
                 // MOUSE_MOVE_ABSOLUTE ... ?
 
@@ -128,15 +117,20 @@ namespace Rc
             {
                 if ((raw->data.keyboard.Flags & RI_KEY_BREAK) != 0)
                 {
-                    // input.ReleaseButton(raw->data.keyboard.VKey);
+                    ReleaseButton(raw->data.keyboard.VKey);
                 }
-                else
+                else if (raw->data.keyboard.Flags == RI_KEY_MAKE)
                 {
-                    // input.PushButton(raw->data.keyboard.VKey);
+                    PushButton(raw->data.keyboard.VKey);
                 }
             }
 
             pb += raw->header.dwSize;
+        }
+
+        if ((mx != 0) || (my != 0))
+        {
+            m_event_mouse_move.Dispatch({mx, my});
         }
     }
 

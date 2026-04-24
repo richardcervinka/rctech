@@ -2,54 +2,49 @@
 #include <gmock/gmock.h>
 #include "base/event.h"
 
-using namespace Rc;
-
 class Dispatcher
 {
 public:
-    using TestEvent = Event<int>;
+    using Event = Rc::Event<int>;
 
-    void AddTestEvent(TestEvent::Handler& handler)
-    {
-        event.Add(handler);
-    }
-
-    void Dispatch(int value)
-    {
-        event.Dispatch(value);
-    }
-    
-private:
-    TestEvent event; 
+    Event event; 
 };
 
 class Listener
 {
 public:
-    void Bind(Dispatcher& dispatcher)
-    {
-        dispatcher.AddTestEvent(handler);
-    }
+    virtual void OnTestEvent1(int value) = 0;
+    virtual void OnTestEvent2(int value) = 0;
 
-    virtual void OnTestEvent(int value) = 0;
-
-private:
-    Dispatcher::TestEvent::Handler handler {this, &Listener::OnTestEvent};
+    Dispatcher::Event::Handler handler1 {this, &Listener::OnTestEvent1};
+    Dispatcher::Event::Handler handler2 {this, &Listener::OnTestEvent2};
 };
 
 class ListenerMock : public Listener
 {
 public:
-    MOCK_METHOD(void, OnTestEvent, (int value), (override));
+    MOCK_METHOD(void, OnTestEvent1, (int value), (override));
+    MOCK_METHOD(void, OnTestEvent2, (int value), (override));
 };
 
 TEST(EventTest, Dispatch)
 {
     Dispatcher dispatcher;
     ListenerMock listener;
-    listener.Bind(dispatcher);
 
-    EXPECT_CALL(listener, OnTestEvent(8));
+    dispatcher.event.Add(listener.handler1);
+    dispatcher.event.Add(listener.handler1);
+    dispatcher.event.Add(listener.handler2);
 
-    dispatcher.Dispatch(8);
+    EXPECT_CALL(listener, OnTestEvent1(8)).Times(1);
+    EXPECT_CALL(listener, OnTestEvent2(8)).Times(1);
+
+    dispatcher.event.Dispatch(8);
+
+    listener.handler1.Unbind();
+
+    EXPECT_CALL(listener, OnTestEvent1(8)).Times(0);
+    EXPECT_CALL(listener, OnTestEvent2(8)).Times(1);
+
+    dispatcher.event.Dispatch(8);
 }
