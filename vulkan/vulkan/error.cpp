@@ -84,8 +84,6 @@ namespace Rc
                 return "VK_ERROR_VIDEO_STD_VERSION_NOT_SUPPORTED_KHR";
             case VK_ERROR_INVALID_DRM_FORMAT_MODIFIER_PLANE_LAYOUT_EXT:
                 return "VK_ERROR_INVALID_DRM_FORMAT_MODIFIER_PLANE_LAYOUT_EXT";
-            case VK_ERROR_PRESENT_TIMING_QUEUE_FULL_EXT:
-                return "VK_ERROR_PRESENT_TIMING_QUEUE_FULL_EXT";
             case VK_ERROR_FULL_SCREEN_EXCLUSIVE_MODE_LOST_EXT:
                 return "VK_ERROR_FULL_SCREEN_EXCLUSIVE_MODE_LOST_EXT";
             case VK_THREAD_IDLE_KHR:
@@ -106,29 +104,11 @@ namespace Rc
                 return "VK_PIPELINE_BINARY_MISSING_KHR";
             case VK_ERROR_NOT_ENOUGH_SPACE_KHR:
                 return "VK_ERROR_NOT_ENOUGH_SPACE_KHR";
-            case VK_ERROR_VALIDATION_FAILED_EXT:
-                return "VK_ERROR_VALIDATION_FAILED_EXT";
-            case VK_ERROR_OUT_OF_POOL_MEMORY_KHR:
-                return "VK_ERROR_OUT_OF_POOL_MEMORY_KHR";
-            case VK_ERROR_INVALID_EXTERNAL_HANDLE_KHR:
-                return "VK_ERROR_INVALID_EXTERNAL_HANDLE_KHR";
-            case VK_ERROR_FRAGMENTATION_EXT:
-                return "VK_ERROR_FRAGMENTATION_EXT";
-            case VK_ERROR_NOT_PERMITTED_EXT:
-                return "VK_ERROR_NOT_PERMITTED_EXT";
-            case VK_ERROR_NOT_PERMITTED_KHR:
-                return "VK_ERROR_NOT_PERMITTED_KHR";
-            case VK_ERROR_INVALID_DEVICE_ADDRESS_EXT:
-                return "VK_ERROR_INVALID_DEVICE_ADDRESS_EXT";
-            case VK_ERROR_INVALID_OPAQUE_CAPTURE_ADDRESS_KHR:
-                return "VK_ERROR_INVALID_OPAQUE_CAPTURE_ADDRESS_KHR";
-            case VK_PIPELINE_COMPILE_REQUIRED_EXT:
-                return "VK_PIPELINE_COMPILE_REQUIRED_EXT";
-            case VK_ERROR_PIPELINE_COMPILE_REQUIRED_EXT:
-                return "VK_ERROR_PIPELINE_COMPILE_REQUIRED_EXT";
+            case VK_RESULT_MAX_ENUM:
+                return "VK_RESULT_MAX_ENUM";
         }
 
-        return std::to_string(value);
+        return std::to_string(m_result);
     }
 
     char const* VulkanException::what() const noexcept
