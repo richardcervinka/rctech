@@ -4,6 +4,7 @@ add_library(vulkan STATIC
     "allocator.h"
     "allocator.cpp"
     "error.h"
+    "error.cpp"
     "context.h"
     "context.cpp"
     "instance.h"

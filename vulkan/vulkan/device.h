@@ -25,7 +25,7 @@ namespace Rc
 
         // vkCreateGraphicsPipelines
         VkPipeline CreateGraphicsPipeline(VkPipelineCache pipeline_cache, VkGraphicsPipelineCreateInfo const& create_info) const;
-        
+
         // vkDestroyPipeline
         void DestroyPipeline(VkPipeline& pipeline) const noexcept;
 
@@ -52,7 +52,7 @@ namespace Rc
 
         // vkWaitForFences
         void WaitForFence(VkFence const& fence, uint64_t timeout = UINT64_MAX) const;
-        
+
         // vkResetFences
         void ResetFences(std::span<VkFence> fences) const;
 
@@ -167,7 +167,7 @@ namespace Rc
 
     private:
         friend class VulkanContext;
-        
+
         template<typename T>
         void Load(char const* name, T& dst)
         {
@@ -175,7 +175,7 @@ namespace Rc
 
             if (dst == nullptr)
             {
-                throw VulkanLoaderError(name);
+                throw VulkanLoaderException(name);
             }
         }
 

@@ -1,15 +1,7 @@
 #pragma once
 
-#include <Windows.h>
-
-namespace Rc
+namespace Rc::System
 {
-    class System
-    {
-    public:
-        int GetCpuThreads() const;
-
-    private:
-    };
+    int GetCpuThreads();
 
 } // Rc

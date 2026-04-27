@@ -3,7 +3,7 @@
 
 namespace Rc
 {
-    const char* SystemError::what() const
+    const char* SystemException::what() const
     {
         LPWSTR buffer = nullptr;
 

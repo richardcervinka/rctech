@@ -43,7 +43,7 @@ namespace Rc
         Load("vkCmdDraw", m_vkCmdDraw);
         Load("vkCmdBindPipeline", m_vkCmdBindPipeline);
         Load("vkCmdSetViewport", m_vkCmdSetViewport);
-        Load("vkCmdSetScissor", m_vkCmdSetScissor); 
+        Load("vkCmdSetScissor", m_vkCmdSetScissor);
         Load("vkCmdCopyBuffer", m_vkCmdCopyBuffer);
         Load("vkCmdBindVertexBuffers", m_vkCmdBindVertexBuffers);
     }
@@ -57,7 +57,7 @@ namespace Rc
     {
         if (auto vk_result = m_vkDeviceWaitIdle(m_vk_device); vk_result != VK_SUCCESS)
         {
-            throw VulkanError(vk_result);
+            throw VulkanException(vk_result);
         }
     }
 
@@ -66,7 +66,7 @@ namespace Rc
         VkPipeline result = VK_NULL_HANDLE;
         if (auto vk_result = m_vkCreateGraphicsPipelines(m_vk_device, pipeline_cache, 1, &create_info, nullptr, &result); vk_result != VK_SUCCESS)
         {
-            throw VulkanError(vk_result);
+            throw VulkanException(vk_result);
         }
         return result;
     }
@@ -89,7 +89,7 @@ namespace Rc
         VkPipelineLayout result = VK_NULL_HANDLE;
         if (auto vk_result = m_vkCreatePipelineLayout(m_vk_device, &create_info, nullptr, &result); vk_result != VK_SUCCESS)
         {
-            throw VulkanError(vk_result);
+            throw VulkanException(vk_result);
         }
         return result;
     }
@@ -105,7 +105,7 @@ namespace Rc
         VkShaderModule result = VK_NULL_HANDLE;
         if (auto vk_result = m_vkCreateShaderModule(m_vk_device, &create_info, nullptr, &result); vk_result != VK_SUCCESS)
         {
-            throw VulkanError(vk_result);
+            throw VulkanException(vk_result);
         }
         return result;
     }
@@ -121,7 +121,7 @@ namespace Rc
         VkFence result = VK_NULL_HANDLE;
         if (auto vk_result = m_vkCreateFence(m_vk_device, &create_info, nullptr, &result); vk_result != VK_SUCCESS)
         {
-            throw VulkanError(vk_result);
+            throw VulkanException(vk_result);
         }
         return result;
     }
@@ -137,7 +137,7 @@ namespace Rc
         VkSemaphore result = VK_NULL_HANDLE;
         if (auto vk_result = m_vkCreateSemaphore(m_vk_device, &create_info, nullptr, &result); vk_result != VK_SUCCESS)
         {
-            throw VulkanError(vk_result);
+            throw VulkanException(vk_result);
         }
         return result;
     }
@@ -152,7 +152,7 @@ namespace Rc
     {
         if (auto vk_result = m_vkWaitForFences(m_vk_device, fences.size(), fences.data(), VkBool32{wait_all}, timeout); vk_result != VK_SUCCESS)
         {
-            throw VulkanError(vk_result);
+            throw VulkanException(vk_result);
         }
     }
 
@@ -160,7 +160,7 @@ namespace Rc
     {
         if (auto vk_result = m_vkWaitForFences(m_vk_device, 1, &fence, VK_TRUE, timeout); vk_result != VK_SUCCESS)
         {
-            throw VulkanError(vk_result);
+            throw VulkanException(vk_result);
         }
     }
 
@@ -168,7 +168,7 @@ namespace Rc
     {
         if (auto vk_result = m_vkResetFences(m_vk_device, fences.size(), fences.data()); vk_result != VK_SUCCESS)
         {
-            throw VulkanError(vk_result);
+            throw VulkanException(vk_result);
         }
     }
 
@@ -176,7 +176,7 @@ namespace Rc
     {
         if (auto vk_result = m_vkResetFences(m_vk_device, 1, &fence); vk_result != VK_SUCCESS)
         {
-            throw VulkanError(vk_result);
+            throw VulkanException(vk_result);
         }
     }
 
@@ -185,7 +185,7 @@ namespace Rc
         uint32_t result {};
         if (auto vk_result = m_vkAcquireNextImageKHR(m_vk_device, swapchain, timeout, semaphore, fence, &result); vk_result != VK_SUCCESS)
         {
-            throw VulkanError(vk_result);
+            throw VulkanException(vk_result);
         }
         return result;
     }
@@ -195,7 +195,7 @@ namespace Rc
         VkSwapchainKHR result = VK_NULL_HANDLE;
         if (auto vk_result = m_vkCreateSwapchainKHR(m_vk_device, &create_info, nullptr, &result); vk_result != VK_SUCCESS)
         {
-            throw VulkanError(vk_result);
+            throw VulkanException(vk_result);
         }
         return result;
     }
@@ -211,7 +211,7 @@ namespace Rc
         uint32_t result {};
         if (auto vk_result = m_vkGetSwapchainImagesKHR(m_vk_device, swapchain, &result, nullptr); vk_result != VK_SUCCESS)
         {
-            throw VulkanError(vk_result);
+            throw VulkanException(vk_result);
         }
         return result;
     }
@@ -222,7 +222,7 @@ namespace Rc
 
         if (auto vk_result = m_vkGetSwapchainImagesKHR(m_vk_device, swapchain, &count, buffer.data()); vk_result != VK_SUCCESS)
         {
-            throw VulkanError(vk_result);
+            throw VulkanException(vk_result);
         }
         return buffer.subspan(0, count);
     }
@@ -232,7 +232,7 @@ namespace Rc
         VkCommandPool result = VK_NULL_HANDLE;
         if (auto vk_result = m_vkCreateCommandPool(m_vk_device, &create_info, nullptr, &result); vk_result != VK_SUCCESS)
         {
-            throw VulkanError(vk_result);
+            throw VulkanException(vk_result);
         }
         return result;
     }
@@ -250,7 +250,7 @@ namespace Rc
         VkCommandBuffer result = VK_NULL_HANDLE;
         if (auto vk_result = m_vkAllocateCommandBuffers(m_vk_device, &allocate_info, &result); vk_result != VK_SUCCESS)
         {
-            throw VulkanError(vk_result);
+            throw VulkanException(vk_result);
         }
         return result;
     }
@@ -265,7 +265,7 @@ namespace Rc
     {
         if (auto vk_result = m_vkResetCommandPool(m_vk_device, command_pool, flags); vk_result != VK_SUCCESS)
         {
-            throw VulkanError(vk_result);
+            throw VulkanException(vk_result);
         }
     }
 
@@ -274,7 +274,7 @@ namespace Rc
         VkImageView result = VK_NULL_HANDLE;
         if (auto vk_result = m_vkCreateImageView(m_vk_device, &create_info, nullptr, &result); vk_result != VK_SUCCESS)
         {
-            throw VulkanError(vk_result);
+            throw VulkanException(vk_result);
         }
         return result;
     }
@@ -289,7 +289,7 @@ namespace Rc
     {
         if (auto vk_result = m_vkQueueSubmit(queue, submits.size(), submits.data(), fence); vk_result != VK_SUCCESS)
         {
-            throw VulkanError(vk_result);
+            throw VulkanException(vk_result);
         }
     }
 
@@ -297,7 +297,7 @@ namespace Rc
     {
         if (auto vk_result = m_vkQueueSubmit(queue, 1, &submit, fence); vk_result != VK_SUCCESS)
         {
-            throw VulkanError(vk_result);
+            throw VulkanException(vk_result);
         }
     }
 
@@ -310,7 +310,7 @@ namespace Rc
     {
         if (auto vk_result = m_vkBeginCommandBuffer(command_buffer, &begin_info); vk_result != VK_SUCCESS)
         {
-            throw VulkanError(vk_result);
+            throw VulkanException(vk_result);
         }
     }
 
@@ -318,8 +318,8 @@ namespace Rc
     {
         if (auto vk_result = m_vkEndCommandBuffer(command_buffer); vk_result != VK_SUCCESS)
         {
-            throw VulkanError(vk_result);
-        }  
+            throw VulkanException(vk_result);
+        }
     }
 
     void VulkanDevice::CmdPipelineBarrier(

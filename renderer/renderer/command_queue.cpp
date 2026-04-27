@@ -28,7 +28,6 @@ namespace Rc
             .pCommandBuffers = &(cb.m_vk_buffer),
             .signalSemaphoreCount = 0,
             .pSignalSemaphores = nullptr
-
         };
         
         m_vk_device->QueueSubmit(m_vk_queue, submit_info, fence.m_vk_fence);

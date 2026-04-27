@@ -8,7 +8,7 @@ namespace Rc
     Device::Device(
         VulkanContext const& context,
         VulkanInstance const& instance,
-        VkPhysicalDevice vk_physical_device, 
+        VkPhysicalDevice vk_physical_device,
         Surface const& surface
     ) :
         m_instance{&instance},
@@ -191,10 +191,10 @@ namespace Rc
         allocator_info.vulkanApiVersion = VK_API_VERSION_1_4; //------------------------------- Precist z instance
         allocator_info.pVulkanFunctions = &vma_functions;
         allocator_info.flags = allocator_ext_flags;
-    
+
         if (auto vk_result = vmaCreateAllocator(&allocator_info, &m_vma_allocator); vk_result != VK_SUCCESS)
         {
-            throw VulkanError(vk_result);
+            throw VulkanException(vk_result);
         }
     }
 
@@ -224,7 +224,7 @@ namespace Rc
 
         result.resize(span.size());
 
-        return result; 
+        return result;
     }
 
     Device::~Device()

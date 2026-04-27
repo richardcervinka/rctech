@@ -9,7 +9,7 @@ namespace Rc
 
         if (m_hmodule == NULL)
         {
-            throw SystemError(GetLastError());
+            throw SystemException(GetLastError());
         }
     }
 

@@ -56,6 +56,15 @@ namespace Rc
             };
         }
 
+        template<typename T>
+        EventHandler(T* instance, void(T::*callback)(E))
+        {
+            m_callback = [instance, callback](E const& e)
+            {
+                return std::invoke(callback, instance, e);
+            };
+        }
+
         EventHandler(EventHandler const&) = delete;
         EventHandler(EventHandler&&) = delete;
         EventHandler& operator=(EventHandler const&) = delete;

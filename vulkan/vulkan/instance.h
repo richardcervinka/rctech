@@ -75,7 +75,7 @@ namespace Rc
 
             if (dst == nullptr)
             {
-                throw VulkanLoaderError(name);
+                throw VulkanLoaderException(name);
             }
         }
 

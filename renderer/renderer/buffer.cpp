@@ -27,7 +27,7 @@ void Buffer::Create(
 
     if (vk_result != VK_SUCCESS)
     {
-        throw VulkanError(vk_result);
+        throw VulkanException(vk_result);
     }
 
     m_vma_allocator = vma_allocator;

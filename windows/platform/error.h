@@ -5,11 +5,11 @@
 
 namespace Rc
 {
-    class SystemError : public Error
+    class SystemException : public Exception
     {
     public:
-        SystemError(HRESULT h) : m_hresult{h} {}
-        SystemError(DWORD e) : m_hresult{HRESULT_FROM_WIN32(e)} {}
+        SystemException(HRESULT h) : m_hresult{h} {}
+        SystemException(DWORD e) : m_hresult{HRESULT_FROM_WIN32(e)} {}
 
         const char* what() const override;
 

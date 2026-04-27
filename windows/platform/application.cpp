@@ -34,7 +34,7 @@ namespace Rc::Platform
 
         if (!RegisterRawInputDevices(rid.data(), rid.size(), sizeof(RAWINPUTDEVICE)))
         {
-            throw SystemError(GetLastError());
+            throw SystemException(GetLastError());
         }
     }
 

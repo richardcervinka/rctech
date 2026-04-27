@@ -50,3 +50,18 @@ target_link_libraries(test_stopwatch
 target_compile_features(test_stopwatch
 	PRIVATE cxx_std_26
 )
+
+# event
+
+add_executable(test_event "test_event.cpp")
+
+target_link_libraries(test_event
+	PRIVATE base
+	PRIVATE gtest_main
+	PRIVATE gmock_main
+	PRIVATE gmock
+)
+
+target_compile_features(test_event
+	PRIVATE cxx_std_26
+)
