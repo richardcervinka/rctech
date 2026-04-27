@@ -1,10 +1,17 @@
 ﻿#include "input.h"
 #include <cassert>
+#include <array>
+#include <cstdint>
 #include <Windows.h>
 #include "error.h"
 
-namespace Rc
+namespace Rc::Input
 {
+    ButtonEvent g_event_button_pushed;
+    ButtonEvent g_event_button_released;
+    MouseMoveEvent g_event_mouse_move;
+    std::array<ButtonState, 256> g_buttons {};
+
     KeyCode TranslateMakeCode(USHORT code)
     {
         static constexpr std::array<KeyCode, 255> table
@@ -291,28 +298,29 @@ namespace Rc
         return table[static_cast<uint8_t>(code & 0x7F)];
     }
 
-
-    void Input::PushKey(KeyCode btn)
+    // Push button identified by the virtual key code.
+    void PushKey(KeyCode btn)
     {
-        if (m_buttons[(int)btn] != ButtonState::Released)
+        if (g_buttons[(int)btn] != ButtonState::Released)
         {
-            m_buttons[(int)btn] = ButtonState::Released;
+            g_buttons[(int)btn] = ButtonState::Released;
 
-            m_event_button_pushed.Dispatch(btn);
+            g_event_button_pushed.Dispatch(btn);
         }
     }
 
-    void Input::ReleaseKey(KeyCode btn)
+    // Release button identified by the virtual key code.
+    void ReleaseKey(KeyCode btn)
     {
-        if (m_buttons[(int)btn] != ButtonState::Pushed)
+        if (g_buttons[(int)btn] != ButtonState::Pushed)
         {
-            m_buttons[(int)btn] = ButtonState::Pushed;
+            g_buttons[(int)btn] = ButtonState::Pushed;
 
-            m_event_button_released.Dispatch(btn);
+            g_event_button_released.Dispatch(btn);
         }
     }
 
-    void Input::Read()
+    void Read()
     {
         alignas(RAWINPUT) std::array<std::byte, sizeof(RAWINPUT) * 32> buffer;
 
@@ -424,8 +432,23 @@ namespace Rc
 
         if ((mx != 0) || (my != 0))
         {
-            m_event_mouse_move.Dispatch({mx, my});
+            g_event_mouse_move.Dispatch({mx, my});
         }
     }
 
-} // Rc
+    void OnButtonPushed(ButtonEvent::Handler& handler)
+    {
+        g_event_button_pushed.Add(handler);
+    }
+
+    void OnButtonReleased(ButtonEvent::Handler& handler)
+    {
+        g_event_button_released.Add(handler);
+    }
+
+    void OnMouseMove(MouseMoveEvent::Handler& handler)
+    {
+        g_event_mouse_move.Add(handler);
+    }
+
+} // Rc::Input

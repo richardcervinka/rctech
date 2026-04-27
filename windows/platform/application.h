@@ -5,7 +5,6 @@
 #include <cassert>
 #include <atomic>
 #include <windows.h>
-#include "input.h"
 
 namespace Rc::Platform
 {

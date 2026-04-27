@@ -1,6 +1,9 @@
 add_library(generic STATIC
 	"application.h"
 	"application.cpp"
+	"input.h"
+	"char_input.h"
+	"char_input.cpp"
 )
 
 target_compile_features(generic
