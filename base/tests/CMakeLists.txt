@@ -65,3 +65,16 @@ target_link_libraries(test_event
 target_compile_features(test_event
 	PRIVATE cxx_std_26
 )
+
+# utf
+
+add_executable(test_utf "test_utf.cpp")
+
+target_link_libraries(test_utf
+	PRIVATE base
+	PRIVATE gtest_main
+)
+
+target_compile_features(test_utf
+	PRIVATE cxx_std_26
+)

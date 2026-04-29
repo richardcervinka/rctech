@@ -8,6 +8,8 @@
 #include <array>
 #include "input.h"
 #include "error.h"
+#include "generic/char_input.h"
+#include "input.h"
 
 namespace Rc::Platform
 {
@@ -114,6 +116,13 @@ namespace Rc::Platform
     {
         switch (msg.message)
         {
+            case WM_CHAR:
+                // Ignore surrogate characters
+                if (!IS_HIGH_SURROGATE(msg.wParam) && !IS_LOW_SURROGATE(msg.wParam))
+                {
+                    Rc::CharInput::Dispatch(static_cast<char32_t>(msg.wParam));
+                }
+                return;
         }
 
         TranslateMessage(&msg);
