@@ -10,6 +10,8 @@
 	"event.h"
 	"error.h"
 	"stopwatch.h"
+	"utf.h"
+	"utf.cpp"
 )
 
 target_compile_features(base
