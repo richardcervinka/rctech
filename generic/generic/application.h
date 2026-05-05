@@ -10,7 +10,7 @@ namespace Rc::Generic
 {
     struct ApplicationInfo
     {
-        std::optional<std::string> name;
+        std::optional<std::u32string> name;
     };
 
     class Application : private Platform::Application
@@ -19,6 +19,7 @@ namespace Rc::Generic
         using Clock = std::chrono::high_resolution_clock;
 
         using Platform::Application::Quit;
+        using Platform::Application::GetCmdArgs;
 
         Application();
 
@@ -35,12 +36,12 @@ namespace Rc::Generic
 
         Clock::time_point Now() { return m_time_now; }
 
-        std::string Name() { return m_name; }
+        std::u32string Name() { return m_name; }
 
     private:
         inline static Application* m_instance {nullptr};
 
-        std::string m_name;
+        std::u32string m_name;
 
         // Main window.
 		std::unique_ptr<Window> m_window;

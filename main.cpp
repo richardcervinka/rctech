@@ -5,10 +5,6 @@
 #include "generic/input.h"
 #include <print>
 
-// TODO
-// int argc;
-// LPWSTR* argv = CommandLineToArgvW(GetCommandLineW(), &argc);
-
 int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PWSTR cmdline, int cmdshow)
 {
 	Rc::Input::ButtonEvent::Handler button_push_handler {[](auto key) {
@@ -30,13 +26,10 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PWSTR cmdline, int c
     Rc::Platform::Application::AttachDebugConsole(); // ------------------------- move to debug
     
 	Rc::Generic::Application app;
-	
-	Rc::Generic::ApplicationInfo app_info
-	{
-		.name = "RcTech"
-	};
-	
-    app.Create(app_info);
+
+    app.Create({
+		.name = U"RcTech"
+	});
 
 	app.Run();
 

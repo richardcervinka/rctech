@@ -1,6 +1,6 @@
 ﻿#include "utility.h"
 
-namespace Windows
+namespace Rc::Windows
 {
     std::string WcharToString(const WCHAR* wstr)
     {
@@ -13,4 +13,5 @@ namespace Windows
         WideCharToMultiByte(CP_UTF8, 0, wstr, -1, str.data(), size, nullptr, nullptr);
         return str;
     }
-}
+    
+} // Rc::Windows

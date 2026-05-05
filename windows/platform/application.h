@@ -4,6 +4,7 @@
 #include <string>
 #include <cassert>
 #include <atomic>
+#include <vector>
 #include <windows.h>
 
 namespace Rc::Platform
@@ -15,12 +16,9 @@ namespace Rc::Platform
 
 		virtual ~Application();
 
-		static void AttachDebugConsole();
-
-		// Stop event loop as soon as possible.
-		void Quit();
-
 		// Abort()
+
+		static void AttachDebugConsole(); // --------------- to protected
 
 	protected:
 		virtual void Initialize();
@@ -31,6 +29,11 @@ namespace Rc::Platform
 		virtual void BeginFrame();
 
 		virtual void EndFrame();
+
+		// Stop event loop as soon as possible.
+		void Quit();
+
+		std::vector<std::u32string> GetCmdArgs() const;
 
 	private:
 		void ProcessMessage(MSG const& msg);

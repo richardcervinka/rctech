@@ -4,6 +4,8 @@
 #include <cassert>
 #include <array>
 #include <hidusage.h>
+#include "base/utf.h"
+#include "utility.h"
 
 namespace Rc
 {
@@ -52,28 +54,30 @@ namespace Rc
         return DefWindowProc(hwnd, msg, wparam, lparam);
     }
 
-    Window::Window(std::string const& label)
+    Window::Window(std::u32string_view label)
     {
-        // Define window class
-        const char class_name[] = "MainWindowClass";
+        const auto wlabel = Windows::ToWString(label);
 
-        WNDCLASS wc {};
+        // Define window class
+        constexpr wchar_t class_name[] = L"MainWindowClass";
+
+        WNDCLASSW wc {};
         wc.lpfnWndProc = WindowProc;
         wc.hInstance = GetModuleHandle(NULL);
         wc.lpszClassName = class_name;
 
-        RegisterClass(&wc);
+        RegisterClassW(&wc);
 
         // Create the window
-        m_hwnd = CreateWindowEx(
+        m_hwnd = CreateWindowExW(
             0,  // Optional window styles
             class_name,  // Window class
-            label.c_str(),  // Window text
+            wlabel.c_str(),  // Window text
             WS_OVERLAPPEDWINDOW,  // Window style
             CW_USEDEFAULT,
             CW_USEDEFAULT,
             CW_USEDEFAULT,
-            CW_USEDEFAULT, // Size and position
+            CW_USEDEFAULT,  // Size and position
             NULL,  // Parent
             NULL,  // Menu
             wc.hInstance,
