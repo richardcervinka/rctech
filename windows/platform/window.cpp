@@ -54,9 +54,9 @@ namespace Rc
         return DefWindowProc(hwnd, msg, wparam, lparam);
     }
 
-    Window::Window(std::u32string_view label)
+    Window::Window(std::string_view label)
     {
-        const auto wlabel = Windows::ToWString(label);
+        const auto wlabel = Windows::ToWString(Utf16::FromUtf8(label));
 
         // Define window class
         constexpr wchar_t class_name[] = L"MainWindowClass";

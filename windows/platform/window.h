@@ -15,7 +15,7 @@ namespace Rc
 	public:
 		using EventSize = Event<Rectangle<int>>;
 
-		explicit Window(std::u32string_view label);
+		explicit Window(std::string_view label);
 
 		void Show();
 

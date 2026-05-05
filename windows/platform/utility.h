@@ -13,10 +13,4 @@ namespace Rc::Windows
         return std::wstring(str.begin(), str.end());
     }
 
-    inline std::wstring ToWString(std::u32string_view str)
-    {
-        const auto u16 = Utf16::FromUtf32(str);
-        return {u16.begin(), u16.end()};
-    }
-
 } // Rc::Windows

@@ -28,7 +28,7 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PWSTR cmdline, int c
 	Rc::Generic::Application app;
 
     app.Create({
-		.name = U"RcTech"
+		.name = "RcTech"
 	});
 
 	app.Run();
