@@ -18,7 +18,7 @@ namespace Rc::Cli
         BadFormat
     };
 
-    // Use this method to imlement application-specific cmd args parser (see test-cmdargs)
+    // Use this method to implement application-specific cmd args parser (see test-cli)
     std::expected<std::pair<std::string_view, std::optional<std::string_view>>, Error> Parse(std::string_view arg);
 
     // Map cmd line arguments to a generic map.

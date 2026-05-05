@@ -10,9 +10,9 @@ class CmdArgs
 public:
     CmdArgs(int argc, char* argv[])
     {
-        for (int i = 0; i < argc; i++)
+        for (int i = 1; i < argc; i++)
         {
-            if (auto arg = Cli::Parse(std::string_view(argv[i])))
+            if (auto arg = Cli::Parse(argv[i]))
             {
                 auto const& [name, value] = arg.value();
 
@@ -34,7 +34,7 @@ public:
 
 TEST(ParseCmdArg, ParseOption)
 {
-    char const* argv[] {"--option=10"};
+    char const* argv[] {"test", "--option=10"};
 
     CmdArgs args(std::size(argv), const_cast<char**>(argv));
 
@@ -44,7 +44,7 @@ TEST(ParseCmdArg, ParseOption)
 
 TEST(ParseCmdArg, ParseFlag)
 {
-    char const* argv[] {"--flag"};
+    char const* argv[] {"test", "--flag"};
 
     CmdArgs args(std::size(argv), const_cast<char**>(argv));
 
