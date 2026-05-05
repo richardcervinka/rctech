@@ -33,7 +33,7 @@ namespace Rc::Platform
 		// Stop event loop as soon as possible.
 		void Quit();
 
-		std::vector<std::u32string> GetCmdArgs() const;
+		std::vector<std::string> GetCmdArgs() const;
 
 	private:
 		void ProcessMessage(MSG const& msg);

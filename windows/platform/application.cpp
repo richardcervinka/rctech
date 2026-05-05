@@ -139,18 +139,18 @@ namespace Rc::Platform
 
     void Application::EndFrame() {}
 
-    std::vector<std::u32string> Application::GetCmdArgs() const
+    std::vector<std::string> Application::GetCmdArgs() const
     {
 	    int argc = 0;
 	    LPWSTR* argv = CommandLineToArgvW(GetCommandLineW(), &argc);
 
-        std::vector<std::u32string> result;
+        std::vector<std::string> result;
         result.reserve(argc);
         
         for (int i = 0; i < argc; i++)
         {
             char16_t const* arg = reinterpret_cast<char16_t const*>(argv[i]);
-            result.emplace_back(Utf32::FromUtf16({arg, std::wcslen(argv[i])}));
+            result.emplace_back(Utf8::FromUtf16({arg, std::wcslen(argv[i])}));
         }
         
         return result;
