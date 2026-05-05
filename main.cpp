@@ -5,7 +5,11 @@
 #include "generic/input.h"
 #include <print>
 
-int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PSTR cmdline, int cmdshow)
+// TODO
+// int argc;
+// LPWSTR* argv = CommandLineToArgvW(GetCommandLineW(), &argc);
+
+int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PWSTR cmdline, int cmdshow)
 {
 	Rc::Input::ButtonEvent::Handler button_push_handler {[](auto key) {
 		std::println("PUSH {}", int(key));
