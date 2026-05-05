@@ -19,7 +19,7 @@ namespace Rc
             return 0;
         }
 
-        if (auto* wnd = (Window*)GetWindowLongPtr(hwnd, GWLP_USERDATA))
+        if (auto* wnd = reinterpret_cast<Window*>(GetWindowLongPtr(hwnd, GWLP_USERDATA)))
         {
             return wnd->ProcessMessage(hwnd, msg, wparam, lparam);
         }
@@ -56,7 +56,7 @@ namespace Rc
 
     Window::Window(std::string_view label)
     {
-        const auto wlabel = Windows::ToWString(Utf16::FromUtf8(label));
+        const auto ulabel = Utf16::FromUtf8(label);
 
         // Define window class
         constexpr wchar_t class_name[] = L"MainWindowClass";
@@ -72,7 +72,7 @@ namespace Rc
         m_hwnd = CreateWindowExW(
             0,  // Optional window styles
             class_name,  // Window class
-            wlabel.c_str(),  // Window text
+            reinterpret_cast<wchar_t const*>(ulabel.data()),  // Window text
             WS_OVERLAPPEDWINDOW,  // Window style
             CW_USEDEFAULT,
             CW_USEDEFAULT,
