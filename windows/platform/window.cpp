@@ -4,6 +4,8 @@
 #include <cassert>
 #include <array>
 #include <hidusage.h>
+#include "base/utf.h"
+#include "utility.h"
 
 namespace Rc
 {
@@ -17,7 +19,7 @@ namespace Rc
             return 0;
         }
 
-        if (auto* wnd = (Window*)GetWindowLongPtr(hwnd, GWLP_USERDATA))
+        if (auto* wnd = reinterpret_cast<Window*>(GetWindowLongPtr(hwnd, GWLP_USERDATA)))
         {
             return wnd->ProcessMessage(hwnd, msg, wparam, lparam);
         }
@@ -52,28 +54,30 @@ namespace Rc
         return DefWindowProc(hwnd, msg, wparam, lparam);
     }
 
-    Window::Window(std::string const& label)
+    Window::Window(std::string_view label)
     {
-        // Define window class
-        const char class_name[] = "MainWindowClass";
+        const auto ulabel = Utf16::FromUtf8(label);
 
-        WNDCLASS wc {};
+        // Define window class
+        constexpr wchar_t class_name[] = L"MainWindowClass";
+
+        WNDCLASSW wc {};
         wc.lpfnWndProc = WindowProc;
         wc.hInstance = GetModuleHandle(NULL);
         wc.lpszClassName = class_name;
 
-        RegisterClass(&wc);
+        RegisterClassW(&wc);
 
         // Create the window
-        m_hwnd = CreateWindowEx(
+        m_hwnd = CreateWindowExW(
             0,  // Optional window styles
             class_name,  // Window class
-            label.c_str(),  // Window text
+            reinterpret_cast<wchar_t const*>(ulabel.data()),  // Window text
             WS_OVERLAPPEDWINDOW,  // Window style
             CW_USEDEFAULT,
             CW_USEDEFAULT,
             CW_USEDEFAULT,
-            CW_USEDEFAULT, // Size and position
+            CW_USEDEFAULT,  // Size and position
             NULL,  // Parent
             NULL,  // Menu
             wc.hInstance,

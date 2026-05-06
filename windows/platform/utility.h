@@ -2,8 +2,10 @@
 
 #include <string>
 #include <Windows.h>
+#include "base/utf.h"
 
-namespace Windows
+namespace Rc::Windows
 {
     std::string WcharToString(const WCHAR* wstr);
-}
+
+} // Rc::Windows

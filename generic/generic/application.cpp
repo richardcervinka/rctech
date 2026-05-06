@@ -20,7 +20,9 @@ namespace Rc::Generic
     {
         Platform::Application::Initialize();
 
-        m_window = std::make_unique<Window>(info.name.value_or("rctech"));
+        m_name = info.name.value_or("RcTech");
+        
+        m_window = std::make_unique<Window>(info.name.value_or("RcTech"));
         m_window->Show();
 
         m_renderer = std::make_unique<Renderer>();

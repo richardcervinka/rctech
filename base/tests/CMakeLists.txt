@@ -16,10 +16,6 @@ target_link_libraries(test_matrix
 	PRIVATE gtest_main
 )
 
-target_compile_features(test_matrix
-	PRIVATE cxx_std_26
-)
-
 # color
 
 add_executable(test_color "test_color.cpp")
@@ -47,10 +43,6 @@ target_link_libraries(test_stopwatch
 	PRIVATE gtest_main
 )
 
-target_compile_features(test_stopwatch
-	PRIVATE cxx_std_26
-)
-
 # event
 
 add_executable(test_event "test_event.cpp")
@@ -62,10 +54,6 @@ target_link_libraries(test_event
 	PRIVATE gmock
 )
 
-target_compile_features(test_event
-	PRIVATE cxx_std_26
-)
-
 # utf
 
 add_executable(test_utf "test_utf.cpp")
@@ -75,6 +63,20 @@ target_link_libraries(test_utf
 	PRIVATE gtest_main
 )
 
-target_compile_features(test_utf
-	PRIVATE cxx_std_26
+# cli
+
+add_executable(test_cli "test_cli.cpp")
+
+target_link_libraries(test_cli
+	PRIVATE base
+	PRIVATE gtest_main
+)
+
+# chars
+
+add_executable(test_chars "test_chars.cpp")
+
+target_link_libraries(test_chars
+	PRIVATE base
+	PRIVATE gtest_main
 )

@@ -1,5 +1,5 @@
 #include "error.h"
-#include "windows/utility.h"
+#include "utility.h"
 
 namespace Rc
 {

@@ -10,6 +10,7 @@
 #include "error.h"
 #include "generic/char_input.h"
 #include "input.h"
+#include "base/utf.h"
 
 namespace Rc::Platform
 {
@@ -137,5 +138,22 @@ namespace Rc::Platform
     void Application::BeginFrame() {}
 
     void Application::EndFrame() {}
+
+    std::vector<std::string> Application::GetCmdArgs() const
+    {
+	    int argc = 0;
+	    LPWSTR* argv = CommandLineToArgvW(GetCommandLineW(), &argc);
+
+        std::vector<std::string> result;
+        result.reserve(argc);
+        
+        for (int i = 0; i < argc; i++)
+        {
+            char16_t const* arg = reinterpret_cast<char16_t const*>(argv[i]);
+            result.emplace_back(Utf8::FromUtf16({arg, std::wcslen(argv[i])}));
+        }
+        
+        return result;
+    }
 
 } // Rc::Platform

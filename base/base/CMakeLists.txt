@@ -12,6 +12,9 @@
 	"stopwatch.h"
 	"utf.h"
 	"utf.cpp"
+	"cli.h"
+	"cli.cpp"
+	"chars.h"
 )
 
 target_compile_features(base

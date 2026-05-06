@@ -19,6 +19,7 @@ namespace Rc::Generic
         using Clock = std::chrono::high_resolution_clock;
 
         using Platform::Application::Quit;
+        using Platform::Application::GetCmdArgs;
 
         Application();
 

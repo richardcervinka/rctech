@@ -5,7 +5,7 @@
 #include "generic/input.h"
 #include <print>
 
-int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PSTR cmdline, int cmdshow)
+int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PWSTR cmdline, int cmdshow)
 {
 	Rc::Input::ButtonEvent::Handler button_push_handler {[](auto key) {
 		std::println("PUSH {}", int(key));
@@ -26,13 +26,10 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PSTR cmdline, int cmd
     Rc::Platform::Application::AttachDebugConsole(); // ------------------------- move to debug
     
 	Rc::Generic::Application app;
-	
-	Rc::Generic::ApplicationInfo app_info
-	{
+
+    app.Create({
 		.name = "RcTech"
-	};
-	
-    app.Create(app_info);
+	});
 
 	app.Run();
 

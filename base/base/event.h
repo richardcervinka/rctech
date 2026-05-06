@@ -33,6 +33,9 @@ namespace Rc
 
     private:
         std::vector<EventHandler<E> const*> m_handlers;
+
+        // Reentrant dispatch guard.
+        bool m_dispatching {false};
     };
 
     template<typename E>
@@ -134,6 +137,10 @@ namespace Rc
     template<typename E>
     inline void EventDispatcher<E>::Dispatch(E const& e) noexcept
     {
+        assert(!m_dispatching && "Reentrant dispatch");
+
+        m_dispatching = true;
+
         std::size_t const end = m_handlers.size();
 
         // Call the handler.
@@ -154,6 +161,8 @@ namespace Rc
 
         // Remove null handlers.
         std::erase_if(m_handlers, [](auto h){ return h == nullptr; });
+
+        m_dispatching = false;
     }
 
     // Dispatcher wrapper to reduce std::shared_ptr verbosity...
@@ -210,6 +219,9 @@ namespace Rc
 
     private:
         std::vector<EventHandler<void> const*> m_handlers;
+
+        // Reentrant dispatch guard.
+        bool m_dispatching {false};
     };
 
     template<>
@@ -299,6 +311,10 @@ namespace Rc
 
     inline void EventDispatcher<void>::Dispatch() noexcept
     {
+        assert(!m_dispatching && "Reentrant dispatch");
+        
+        m_dispatching = true;
+
         std::size_t const end = m_handlers.size();
 
         // Call the handler.
@@ -319,6 +335,8 @@ namespace Rc
 
         // Remove null handlers.
         std::erase_if(m_handlers, [](auto h){ return h == nullptr; });
+
+        m_dispatching = false;
     }
 
     // Dispatcher wrapper to reduce std::shared_ptr verbosity...
