@@ -14,7 +14,7 @@ public:
         {
             if (auto arg = Cli::Parse(argv[i]))
             {
-                auto const& [name, value] = arg.value();
+                auto const [name, value] = arg.value();
 
                 if (name == "option")
                 {
