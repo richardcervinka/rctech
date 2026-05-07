@@ -6,6 +6,10 @@
 #include <optional>
 #include <functional>
 #include <map>
+#include <cassert>
+#include <format>
+#include <ostream>
+#include "str.h"
 
 // Command Line Interface
 namespace Rc::Cli
@@ -25,3 +29,13 @@ namespace Rc::Cli
     std::map<std::string, std::string> Map(int argc, char* argv[]);
 
 } // Rc::Cli
+
+namespace Rc::Str
+{
+    template<>
+    std::expected<Rc::Cli::Error, std::errc> To(std::string_view str);
+
+    template<>
+    std::string From(Rc::Cli::Error value);
+
+} // Rc::Str

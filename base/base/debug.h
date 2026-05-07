@@ -2,6 +2,7 @@
 #include "vector.h"
 #include "color.h"
 #include "geometry.h"
+#include "str.h"
 
 std::ostream& operator<<(std::ostream& os, Rc::Vector4 const& v)
 {

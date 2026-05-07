@@ -1,6 +1,53 @@
 #include "cli.h"
 #include <cctype>
 
+namespace Rc::Str
+{
+    template<>
+    std::string From(Rc::Cli::Error value)
+    {
+        switch (value)
+        {
+            case Rc::Cli::Error::BadPrefix:
+                return "BadPrefix";
+            case Rc::Cli::Error::BadName:
+                return "BadName";
+            case Rc::Cli::Error::BadValue:
+                return "BadValue";
+            case Rc::Cli::Error::BadFormat:
+                return "BadFormat";
+        }
+
+        assert(false && "Unknown Rc::Cli::Error value");
+        throw std::invalid_argument("Unknown Rc::Cli::Error value");
+    }
+
+    template<>
+    std::expected<Rc::Cli::Error, std::errc> To(std::string_view str)
+    {
+        if (str ==  "BadPrefix")
+        {
+            return Rc::Cli::Error::BadPrefix;
+        }
+        if (str ==  "BadName")
+        {
+            return Rc::Cli::Error::BadName;
+        }
+        if (str ==  "BadValue")
+        {
+            return Rc::Cli::Error::BadValue;
+        }
+        if (str ==  "BadFormat")
+        {
+            return Rc::Cli::Error::BadFormat;
+        }
+
+        assert(false && "Unknown Rc::Cli::Error string");
+        throw std::invalid_argument("Unknown Rc::Cli::Error string");
+    }
+
+} // Rc::Str
+
 namespace Rc::Cli
 {
     std::expected<std::pair<std::string_view, std::optional<std::string_view>>, Error> Parse(std::string_view arg)
