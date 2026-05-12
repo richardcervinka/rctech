@@ -3,7 +3,7 @@
 
 using namespace Rc;
 
-TEST(StrToNumber, ValidInput)
+TEST(Str_To, ValidInput)
 {
     EXPECT_TRUE(Str::To<int>("0").has_value());
     EXPECT_TRUE(Str::To<int>("10").value());
@@ -11,7 +11,7 @@ TEST(StrToNumber, ValidInput)
     EXPECT_TRUE(Str::To<int>("0002").value());
 }
 
-TEST(StrToNumber, InvalidInput)
+TEST(Str_To, InvalidInput)
 {
     EXPECT_FALSE(Str::To<uint8_t>("256").has_value());
     EXPECT_FALSE(Str::To<uint8_t>("-10").has_value());
