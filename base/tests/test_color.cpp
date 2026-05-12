@@ -3,7 +3,7 @@
 
 using namespace Rc;
 
-TEST(ColorTest, RgbToHsv)
+TEST(Color_HSV, ConstructedFromRGB)
 {
     auto a = Color::Rgb8(200, 100, 50, 255);
     auto b = static_cast<HSV>(a);
@@ -14,7 +14,7 @@ TEST(ColorTest, RgbToHsv)
     EXPECT_NEAR(b.a, 1.0f, 0.001f);
 }
 
-TEST(ColorTest, HsvToRgb)
+TEST(Color_RGB, ConstructedFromHSV)
 {
     auto a = Color::Rgb8(200, 100, 50, 255);
     auto b = Color::Hsv(0.05f, 0.75f, 0.78f, 1.f);
