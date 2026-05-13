@@ -99,7 +99,7 @@ namespace Rc
         }
 
         // Linear interpolation.
-        static Vector4 Lerp(Vector4 const& a, Vector4 const& b, T t)
+        static Vector4 Lerp(Vector4 const& a, Vector4 const& b, T t) noexcept
         {
             return {
                 a.x + ((b.x - a.x) * t),
@@ -218,7 +218,7 @@ namespace Rc
 } // Rc
 
 template<typename T>
-static inline Rc::Vector4<T> operator*(float value, Rc::Vector4<T> const& vector)
+static inline Rc::Vector4<T> operator*(float value, Rc::Vector4<T> const& vector) noexcept
 {
     return vector * value;
 }

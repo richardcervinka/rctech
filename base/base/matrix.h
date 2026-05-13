@@ -40,7 +40,7 @@ namespace Rc
 
         // Typecast
         template<typename U>
-        Matrix4<U> To() const
+        Matrix4<U> To() const noexcept
         {
             return {
                 static_cast<U>(At(0, 0)),
@@ -63,7 +63,7 @@ namespace Rc
         }
 
         // Create an identity matrix.
-        static Matrix4 Identity()
+        static Matrix4 Identity() noexcept
         {
             return {
                 1, 0, 0, 0,
@@ -74,10 +74,13 @@ namespace Rc
         }
 
         // Create a zero matrix.
-        static Matrix4 Zero() { return {}; }
+        static Matrix4 Zero() noexcept
+        {
+            return {};
+        }
 
         // Create transpose matrix.
-        static Matrix4 Transpose(Matrix4 const& m)
+        static Matrix4 Transpose(Matrix4 const& m) noexcept
         {
             return {
                 m.At(0, 0), m.At(1, 0), m.At(2, 0), m.At(3, 0),
@@ -88,7 +91,7 @@ namespace Rc
         }
 
         // Create inverse matrix.
-        static std::optional<Matrix4> Inverse(Matrix4 const& m)
+        static std::optional<Matrix4> Inverse(Matrix4 const& m) noexcept
         {
             Matrix4 inverted;
             if (!Matrix4::Invert(m, inverted))
@@ -99,7 +102,7 @@ namespace Rc
         }
 
         // Create rotation matrices around the world axe.
-        static Matrix4 RotationX(T rad)
+        static Matrix4 RotationX(T rad) noexcept
         {
             T const sin = std::sin(rad);
             T const cos = std::cos(rad);
@@ -113,7 +116,7 @@ namespace Rc
         }
 
         // Create rotation matrices around the world axe.
-        static Matrix4 RotationY(T rad)
+        static Matrix4 RotationY(T rad) noexcept
         {
             T const sin = std::sin(rad);
             T const cos = std::cos(rad);
@@ -127,7 +130,7 @@ namespace Rc
         }
 
         // Create rotation matrices around the world axe.
-        static Matrix4 RotationZ(T rad)
+        static Matrix4 RotationZ(T rad) noexcept
         {
             T const sin = std::sin(rad);
             T const cos = std::cos(rad);
@@ -141,7 +144,7 @@ namespace Rc
         }
 
         // Create a rotation matrix around the axis defined as an unit vector.
-        static Matrix4 RotationAxis(Vector4<T> const& v, T rad)
+        static Matrix4 RotationAxis(Vector4<T> const& v, T rad) noexcept
         {
             T const sin = std::sin(rad);
             T const cos = std::cos(rad);
@@ -168,7 +171,7 @@ namespace Rc
         }
 
         // Create a scale matrix.
-        static Matrix4 Scale(T x, T y, T z)
+        static Matrix4 Scale(T x, T y, T z) noexcept
         {
             return {
                 x, 0, 0, 0,
@@ -179,7 +182,7 @@ namespace Rc
         }
 
         // Create a translation matrix.
-        static Matrix4 Translation(T x, T y, T z)
+        static Matrix4 Translation(T x, T y, T z) noexcept
         {
             return {
                 1, 0, 0, x,
@@ -189,7 +192,7 @@ namespace Rc
             };
         }
 
-        constexpr T& At(std::size_t row, std::size_t col)
+        constexpr T& At(std::size_t row, std::size_t col) noexcept
         {
             assert(row < Rows);
             assert(col < Cols);
@@ -197,7 +200,7 @@ namespace Rc
             return m[col][row];
         }
 
-        constexpr T At(std::size_t row, std::size_t col) const
+        constexpr T At(std::size_t row, std::size_t col) const noexcept
         {
             assert(row < Rows);
             assert(col < Cols);
@@ -205,12 +208,12 @@ namespace Rc
             return m[col][row];
         }
 
-        bool Invert()
+        bool Invert() noexcept
         {
             return Matrix4::Invert(*this, *this);
         }
 
-        void Transpose()
+        void Transpose() noexcept
         {
             std::swap(At(1, 0), At(0, 1));
             std::swap(At(2, 0), At(0, 2));
@@ -220,7 +223,7 @@ namespace Rc
             std::swap(At(3, 2), At(2, 3));
         }
 
-        T Determinant() const
+        T Determinant() const noexcept
         {
             T const t0 = (At(2, 2) * At(3, 3)) - (At(2, 3) * At(3, 2));
             T const t1 = (At(2, 3) * At(3, 1)) - (At(2, 1) * At(3, 3));
@@ -255,22 +258,22 @@ namespace Rc
 
         // Apply transformations (this * v).
         // Keep in mind that cumuleted transformations are applied "from right to left" order.
-        Vector4<T> Transform(Vector4<T> const& v) const
+        Vector4<T> Transform(Vector4<T> const& v) const noexcept
         {
             return (*this) * v;
         }
 
-        void AppendTransformations(Matrix4 const& t)
+        void AppendTransformations(Matrix4 const& t) noexcept
         {
             *this = t * (*this);
         }
 
-        void PrependTransformations(Matrix4 const& t)
+        void PrependTransformations(Matrix4 const& t) noexcept
         {
             *this = (*this) * t;
         }
 
-        void AppendTranslation(T x, T y, T z)
+        void AppendTranslation(T x, T y, T z) noexcept
         {
             At(0, 3) += (At(0, 0) * x) + (At(0, 1) * y) + (At(0, 2) * z);
             At(1, 3) += (At(1, 0) * x) + (At(1, 1) * y) + (At(1, 2) * z);
@@ -278,7 +281,7 @@ namespace Rc
             At(3, 3) += (At(3, 0) * x) + (At(3, 1) * y) + (At(3, 2) * z);
         }
 
-        void PrependTranslation(T x, T y, T z)
+        void PrependTranslation(T x, T y, T z) noexcept
         {
             At(0, 0) += x * At(3, 0);
             At(0, 1) += x * At(3, 1);
@@ -294,7 +297,7 @@ namespace Rc
             At(2, 3) += z * At(3, 3);
         }
 
-        void AppendScaling(T x, T y, T z)
+        void AppendScaling(T x, T y, T z) noexcept
         {
             At(0, 0) *= x;
             At(1, 0) *= x;
@@ -307,7 +310,7 @@ namespace Rc
             At(2, 2) *= z;
         }
 
-        void PrependScaling(T x, T y, T z)
+        void PrependScaling(T x, T y, T z) noexcept
         {
             At(0, 0) *= x;
             At(0, 1) *= x;
@@ -324,7 +327,7 @@ namespace Rc
         }
 
         // Multiply.
-        Matrix4 operator*(Matrix4 const& r) const
+        Matrix4 operator*(Matrix4 const& r) const noexcept
         {
             return {
                 Mul(*this, r, 0, 0),
@@ -347,7 +350,7 @@ namespace Rc
         }
 
         // Matrix4 * column-major vector (vector transformation).
-        Vector4<T> operator*(Vector4<T> const& r) const
+        Vector4<T> operator*(Vector4<T> const& r) const noexcept
         {
             return {
                 (At(0, 0) * r.x) + (At(0, 1) * r.y) + (At(0, 2) * r.z) + (At(0, 3) * r.w),
@@ -358,7 +361,7 @@ namespace Rc
         }
 
         // Swap rows.
-        void SwapRows(int r1, int r2)
+        void SwapRows(int r1, int r2) noexcept
         {
             std::swap(At(r1, 0), At(r2, 0));
             std::swap(At(r1, 1), At(r2, 1));
@@ -367,7 +370,7 @@ namespace Rc
         }
 
         // Add a multiplied src row to a dest row.
-        void AddRow(int src_row, int dst_row, T multiplier)
+        void AddRow(int src_row, int dst_row, T multiplier) noexcept
         {
             At(dst_row, 0) += (At(src_row, 0) * multiplier);
             At(dst_row, 1) += (At(src_row, 1) * multiplier);
@@ -376,7 +379,7 @@ namespace Rc
         }
 
         // Multiply all entries of a row by the scalar.
-        void MulRow(int row, T value)
+        void MulRow(int row, T value) noexcept
         {
             At(row, 0) *= value;
             At(row, 1) *= value;
@@ -386,7 +389,7 @@ namespace Rc
 
     private:
         // Store inverse matrix 'm' to the output matrix 'o'
-        static bool Invert(Matrix4 const& m, Matrix4& o)
+        static bool Invert(Matrix4 const& m, Matrix4& o) noexcept
         {
             // Precomputationed values.
             T const t00 = (m.At(2, 2) * m.At(3, 3)) - (m.At(2, 3) * m.At(3, 2));
@@ -454,7 +457,8 @@ namespace Rc
             return true;
         }
 
-        static constexpr T Mul(Matrix4 const& l, Matrix4 const& r, std::size_t row, std::size_t col) {
+        static constexpr T Mul(Matrix4 const& l, Matrix4 const& r, std::size_t row, std::size_t col) noexcept
+        {
             return (
                 (l.At(row, 0) * r.At(0, col)) +
                 (l.At(row, 1) * r.At(1, col)) +
@@ -463,7 +467,7 @@ namespace Rc
             );
         };
 
-        static Matrix4 Mul(Matrix4 const& l, Matrix4 const& r)
+        static Matrix4 Mul(Matrix4 const& l, Matrix4 const& r) noexcept
         {
             return l * r;
         }

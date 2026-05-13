@@ -5,4 +5,4 @@ target_include_directories(core
 )
 
 #TODO if (ENABLE_TESTING)
-# add_subdirectory(tests)
+add_subdirectory(tests)

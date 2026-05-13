@@ -25,7 +25,7 @@ namespace Rc::Math
     constexpr auto phi = std::numbers::phi_v<float>;
 
     template <typename T>
-    inline bool Range(T value, T min, T max)
+    inline bool Range(T value, T min, T max) noexcept
     {
         return (value >= min) && (value <= max);
     }
