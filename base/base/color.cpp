@@ -5,7 +5,7 @@
 
 namespace Rc
 {
-	Color Color::Hsv(float h, float s, float v, float a)
+	Color Color::Hsv(float h, float s, float v, float a) noexcept
 	{
 		assert((h >= 0.0f) && (h <= 1.0f));
 		assert((s >= 0.0f) && (s <= 1.0f));
@@ -32,7 +32,7 @@ namespace Rc
 		assert(false && "Unreachable");
 	}
 
-	void Color::Set(float r, float g, float b, float a)
+	void Color::Set(float r, float g, float b, float a) noexcept
 	{
 		this->r = r;
 		this->g = g;
@@ -40,7 +40,7 @@ namespace Rc
 		this->a = a;
 	}
 
-	Color::operator HSV() const
+	Color::operator HSV() const noexcept
 	{
 		float const max = std::max(std::max(r, g), b);
 		float const min = std::min(std::min(r, g), b);

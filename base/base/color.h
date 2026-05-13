@@ -42,7 +42,7 @@ namespace Rc
 		
 		// From string...
 
-		static constexpr Color Rgb8(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
+		static constexpr Color Rgb8(uint8_t r, uint8_t g, uint8_t b, uint8_t a) noexcept
 		{
 			return {
 				static_cast<float>(r) / 255.0f,
@@ -53,9 +53,9 @@ namespace Rc
 		}
 
 		// Make RGB color form HSV
-		static Color Hsv(float h, float s, float v, float a);
+		static Color Hsv(float h, float s, float v, float a) noexcept;
 
-		static Color Hsv8(uint8_t h, uint8_t s, uint8_t v, uint8_t a)
+		static Color Hsv8(uint8_t h, uint8_t s, uint8_t v, uint8_t a) noexcept
 		{
 			return Color::Hsv(
 				static_cast<float>(h) / 255.0f,
@@ -66,11 +66,11 @@ namespace Rc
 		}
 
 		
-		float const* Data() const { return &r; }
+		float const* Data() const noexcept { return &r; }
 
-		void Set(float r, float g, float b, float a);
+		void Set(float r, float g, float b, float a) noexcept;
 
-		operator HSV() const;
+		operator HSV() const noexcept;
 		
 		// store to; store metody jsou rychlejsi nez cast metody, nevytvari se docasny objekt
 		// void StoreUnorm( ColorUnorm& target ) const;
@@ -97,19 +97,19 @@ namespace Rc
 			return {r - rhs.r, g - rhs.g, b - rhs.b, a - rhs.a};
 		}
 
-		Color operator*(float s)
+		Color operator*(float s) const noexcept
 		{
 			return {r * s, g * s, b * s, a * s};
 		}
 
-		Color operator*=(float s)
+		Color operator*=(float s) noexcept
 		{
 			Set(r * s, g * s, b * s, a * s);
 			return *this;
 		}
 	};
 
-	inline Color operator*(float s, Color const& c)
+	inline Color operator*(float s, Color const& c) noexcept
 	{
 		return {c.r * s, c.g * s, c.b * s, c.a * s};
 	}

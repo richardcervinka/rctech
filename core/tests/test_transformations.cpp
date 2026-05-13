@@ -56,7 +56,7 @@ TEST(Transformations_ScalingAndTranslation, ScaleAndTranslatePoint)
 TEST(Transformations_Rotation, Yaw_RotateBy720Degrees)
 {
     Transformations t;
-    t.yaw = std::numbers::pi * 4.0;
+    t.yaw = Math::pi * 4.0;
 
     const auto p = Vector4<float>{1, 2, 3, 1};
     const auto m = t.GetTransformations();
@@ -71,7 +71,7 @@ TEST(Transformations_Rotation, Yaw_RotateBy720Degrees)
 TEST(Transformations_Rotation, Yaw_RotateBy90Degrees)
 {
     Transformations t;
-    t.yaw = std::numbers::pi / 2.0;
+    t.yaw = Math::pi / 2.0;
 
     const auto p = Vector4<float>{1, 2, 3, 1};
     const auto m = t.GetTransformations();
@@ -86,7 +86,7 @@ TEST(Transformations_Rotation, Yaw_RotateBy90Degrees)
 TEST(Transformations_Rotation, Pitch_RotateBy90Degrees)
 {
     Transformations t;
-    t.pitch = std::numbers::pi / 2.0;
+    t.pitch = Math::pi / 2.0;
 
     const auto p = Vector4<float>{1, 2, 3, 1};
     const auto m = t.GetTransformations();
@@ -101,7 +101,7 @@ TEST(Transformations_Rotation, Pitch_RotateBy90Degrees)
 TEST(Transformations_Rotation, Roll_RotateBy90Degrees)
 {
     Transformations t;
-    t.roll = std::numbers::pi / 2.0;
+    t.roll = Math::pi / 2.0;
 
     const auto p = Vector4<float>{1, 2, 3, 1};
     const auto m = t.GetTransformations();
@@ -116,8 +116,8 @@ TEST(Transformations_Rotation, Roll_RotateBy90Degrees)
 TEST(Transformations_Rotation, YawAndPitch_RotateBy90Degrees)
 {
     Transformations t;
-    t.yaw = std::numbers::pi / 2.0;
-    t.pitch = std::numbers::pi / 2.0;
+    t.yaw = Math::pi / 2.0;
+    t.pitch = Math::pi / 2.0;
 
     const auto p = Vector4<float>{1, 2, 3, 1};
     const auto m = t.GetTransformations();
@@ -132,8 +132,8 @@ TEST(Transformations_Rotation, YawAndPitch_RotateBy90Degrees)
 TEST(Transformations_Rotation, PitchAndRoll_RotateBy90Degrees)
 {
     Transformations t;
-    t.pitch = std::numbers::pi / 2.0;
-    t.roll = std::numbers::pi / 2.0;
+    t.pitch = Math::pi / 2.0;
+    t.roll = Math::pi / 2.0;
 
     const auto p = Vector4<float>{1, 2, 3, 1};
     const auto m = t.GetTransformations();

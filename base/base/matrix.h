@@ -13,8 +13,8 @@ namespace Rc
     class alignas(16) Matrix4
     {
     public:
-        static constexpr std::size_t Rows = 4;
-        static constexpr std::size_t Cols = 4;
+        static constexpr std::size_t rows = 4;
+        static constexpr std::size_t cols = 4;
 
         // Create a zero matrix.
         Matrix4() = default;
@@ -194,16 +194,16 @@ namespace Rc
 
         constexpr T& At(std::size_t row, std::size_t col) noexcept
         {
-            assert(row < Rows);
-            assert(col < Cols);
+            assert(row < rows);
+            assert(col < cols);
 
             return m[col][row];
         }
 
         constexpr T At(std::size_t row, std::size_t col) const noexcept
         {
-            assert(row < Rows);
-            assert(col < Cols);
+            assert(row < rows);
+            assert(col < cols);
 
             return m[col][row];
         }
@@ -473,7 +473,7 @@ namespace Rc
         }
 
         // Row major entries.
-        T m[Cols][Rows] {};
+        T m[cols][rows] {};
     };
 
 } // Rc

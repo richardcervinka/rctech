@@ -10,19 +10,33 @@
 // Math constants.
 namespace Rc::Math
 {
-    constexpr auto e = std::numbers::e_v<float>;
-    constexpr auto log2e = std::numbers::log2e_v<float>;
-    constexpr auto log10e = std::numbers::log10e_v<float>;
-    constexpr auto pi = std::numbers::pi_v<float>;
-    constexpr auto inv_pi = std::numbers::inv_pi_v<float>;
-    constexpr auto inv_sqrtpi = std::numbers::inv_sqrtpi_v<float>;
-    constexpr auto ln2 = std::numbers::ln2_v<float>;
-    constexpr auto ln10 = std::numbers::ln10_v<float>;
-    constexpr auto sqrt2 = std::numbers::sqrt2_v<float>;
-    constexpr auto sqrt3 = std::numbers::sqrt3_v<float>;
-    constexpr auto inv_sqrt3 = std::numbers::inv_sqrt3_v<float>;
-    constexpr auto egamma = std::numbers::egamma_v<float>;
-    constexpr auto phi = std::numbers::phi_v<float>;
+    constexpr double e = std::numbers::e;
+    constexpr double log2e = std::numbers::log2e;
+    constexpr double log10e = std::numbers::log10e;
+    constexpr double pi = std::numbers::pi;
+    constexpr double inv_pi = std::numbers::inv_pi;
+    constexpr double inv_sqrtpi = std::numbers::inv_sqrtpi;
+    constexpr double ln2 = std::numbers::ln2;
+    constexpr double ln10 = std::numbers::ln10;
+    constexpr double sqrt2 = std::numbers::sqrt2;
+    constexpr double sqrt3 = std::numbers::sqrt3;
+    constexpr double inv_sqrt3 = std::numbers::inv_sqrt3;
+    constexpr double egamma = std::numbers::egamma;
+    constexpr double phi = std::numbers::phi;
+    
+    constexpr float fe = std::numbers::e_v<float>;
+    constexpr float flog2e = std::numbers::log2e_v<float>;
+    constexpr float flog10e = std::numbers::log10e_v<float>;
+    constexpr float fpi = std::numbers::pi_v<float>;
+    constexpr float finv_pi = std::numbers::inv_pi_v<float>;
+    constexpr float finv_sqrtpi = std::numbers::inv_sqrtpi_v<float>;
+    constexpr float fln2 = std::numbers::ln2_v<float>;
+    constexpr float fln10 = std::numbers::ln10_v<float>;
+    constexpr float fsqrt2 = std::numbers::sqrt2_v<float>;
+    constexpr float fsqrt3 = std::numbers::sqrt3_v<float>;
+    constexpr float finv_sqrt3 = std::numbers::inv_sqrt3_v<float>;
+    constexpr float fegamma = std::numbers::egamma_v<float>;
+    constexpr float fphi = std::numbers::phi_v<float>;
 
     template <typename T>
     inline bool Range(T value, T min, T max) noexcept

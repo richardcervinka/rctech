@@ -17,7 +17,7 @@ namespace Rc
 
         // Get time duration to the end.
         template<typename T>
-        T Elapsed(Clock::time_point end) const
+        T Elapsed(Clock::time_point end) const noexcept
         {
             return std::chrono::duration_cast<T>(end - m_begin);
         }
@@ -50,7 +50,7 @@ namespace Rc
             return Restart<Duration>();
         }
 
-        Clock::time_point Begin() const { return m_begin; }
+        Clock::time_point Begin() const noexcept { return m_begin; }
 
     private:
         Clock::time_point m_begin {Clock::now()};
