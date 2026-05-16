@@ -24,7 +24,7 @@ int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PWSTR cmdline, int c
 	Rc::CharInput::OnChar(char_handler);
 
     Rc::Platform::Application::AttachDebugConsole(); // ------------------------- move to debug
-    
+
 	Rc::Generic::Application app;
 
     app.Create({

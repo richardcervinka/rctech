@@ -15,6 +15,8 @@
 	"cli.h"
 	"cli.cpp"
 	"str.h"
+	"jsonstream.h"
+	"jsonstream.cpp"
 )
 
 target_compile_features(base

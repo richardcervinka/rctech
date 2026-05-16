@@ -80,3 +80,12 @@ target_link_libraries(test_str
 	PRIVATE base
 	PRIVATE gtest_main
 )
+
+# jsonstream
+
+add_executable(test_jsonstream "test_jsonstream.cpp")
+
+target_link_libraries(test_jsonstream
+	PRIVATE base
+	PRIVATE gtest_main
+)
