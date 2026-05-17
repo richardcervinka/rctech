@@ -6,9 +6,11 @@ using namespace Rc;
 TEST(JsonStream, WriteEmptyObject)
 {
     std::string json;
-    Json::Stream(json)
+    json
+        << Json::BeginJson
         << Json::BeginObject
-        << Json::EndObject;
+        << Json::EndObject
+        << Json::EndJson;
 
     EXPECT_EQ(json, "{}");
 }
@@ -16,9 +18,11 @@ TEST(JsonStream, WriteEmptyObject)
 TEST(JsonStream, WriteEmptyArray)
 {
     std::string json;
-    Json::Stream(json)
+    json
+        << Json::BeginJson
         << Json::BeginArray
-        << Json::EndArray;
+        << Json::EndArray
+        << Json::EndJson;
 
     EXPECT_EQ(json, "[]");
 }
@@ -26,7 +30,10 @@ TEST(JsonStream, WriteEmptyArray)
 TEST(JsonStream, WriteBool)
 {
     std::string json;
-    Json::Stream(json) << true;
+    json
+        << Json::BeginJson
+        << Json::True
+        << Json::EndJson;
 
     EXPECT_EQ(json, "true");
 }
@@ -34,7 +41,10 @@ TEST(JsonStream, WriteBool)
 TEST(JsonStream, WriteNull)
 {
     std::string json;
-    Json::Stream(json) << nullptr;
+    json
+        << Json::BeginJson
+        << Json::Null
+        << Json::EndJson;
 
     EXPECT_EQ(json, "null");
 }
@@ -42,7 +52,10 @@ TEST(JsonStream, WriteNull)
 TEST(JsonStream, WriteInteger)
 {
     std::string json;
-    Json::Stream(json) << -10;
+    json
+        << Json::BeginJson
+        << Json::Number{-10}
+        << Json::EndJson;
 
     EXPECT_EQ(json, "-10");
 }
@@ -50,7 +63,10 @@ TEST(JsonStream, WriteInteger)
 TEST(JsonStream, WriteUnsignedInteger)
 {
     std::string json;
-    Json::Stream(json) << 10u;
+    json
+        << Json::BeginJson
+        << Json::Number{10u}
+        << Json::EndJson;
 
     EXPECT_EQ(json, "10");
 }
@@ -58,11 +74,13 @@ TEST(JsonStream, WriteUnsignedInteger)
 TEST(JsonStream, WriteEmptyArrayInArray)
 {
     std::string json;
-    Json::Stream(json)
+    json
+        << Json::BeginJson
         << Json::BeginArray
         << Json::BeginArray
         << Json::EndArray
-        << Json::EndArray;
+        << Json::EndArray
+        << Json::EndJson;
 
     EXPECT_EQ(json, "[[]]");
 }
@@ -70,13 +88,54 @@ TEST(JsonStream, WriteEmptyArrayInArray)
 TEST(JsonStream, WriteEmptyObjectInArray)
 {
     std::string json;
-    Json::Stream(json)
+    json
+        << Json::BeginJson
         << Json::BeginArray
         << Json::BeginObject
         << Json::EndObject
-        << Json::EndArray;
+        << Json::EndArray
+        << Json::EndJson;
 
     EXPECT_EQ(json, "[{}]");
+}
+
+TEST(JsonStream, SimpleObject)
+{
+    std::string json;
+    json
+        << Json::BeginJson
+        << Json::BeginObject
+        << Json::Key{"float"}
+        << Json::Number{1.2f}
+        << Json::Key{"array"}
+        << Json::BeginArray
+        << Json::EndArray
+        << Json::EndObject
+        << Json::EndJson;
+
+    EXPECT_EQ(json, R"({"float":1.2,"array":[]})");
+}
+
+TEST(JsonStream, StringWithEscapedChars)
+{
+    std::string json;
+    json
+        << Json::BeginJson
+        << Json::String{"\r\n\t"}
+        << Json::EndJson;
+
+    EXPECT_EQ(json, R"("\r\n\t")");
+}
+
+TEST(JsonStream, RawString)
+{
+    std::string json;
+    json
+        << Json::BeginJson
+        << Json::RawString{R"(\r\n\t)"}
+        << Json::EndJson;
+
+    EXPECT_EQ(json, R"("\r\n\t")");
 }
 
 TEST(JsonStream, Assert)
@@ -84,10 +143,12 @@ TEST(JsonStream, Assert)
     std::string json;
 
     ASSERT_DEATH({
-            Json::Stream(json)
+            json
+                << Json::BeginJson
                 << Json::BeginObject
                 << Json::BeginObject
-                << Json::EndObject;
+                << Json::EndObject
+                << Json::EndJson;
         },
         ".+"
     );
@@ -98,10 +159,12 @@ TEST(Json, Assert2)
     std::string json;
     
     ASSERT_DEATH({
-            Json::Stream(json)
+            json
+                << Json::BeginJson
                 << Json::BeginObject
                 << Json::EndObject
-                << Json::EndObject;
+                << Json::EndObject
+                << Json::EndJson;
         },
         ".+"
     );
@@ -112,10 +175,12 @@ TEST(Json, ObjectKeyRequired)
     std::string json;
     
     ASSERT_DEATH({
-            Json::Stream(json)
+            json
+                << Json::BeginJson
                 << Json::BeginObject
                 << Json::BeginArray
-                << Json::EndObject;
+                << Json::EndObject
+                << Json::EndJson;
         },
         ".+"
     );
@@ -126,11 +191,13 @@ TEST(Json, ObjectKeyAfterKey)
     std::string json;
     
     ASSERT_DEATH({
-            Json::Stream(json)
+            json
+                << Json::BeginJson
                 << Json::BeginObject
                 << Json::Key{"key"}
                 << Json::Key{"key"}
-                << Json::EndObject;
+                << Json::EndObject
+                << Json::EndJson;
         },
         ".+"
     );
@@ -138,21 +205,22 @@ TEST(Json, ObjectKeyAfterKey)
 
 // 
 
-TEST(Json, Develop)
+TEST(Json, Dev)
 {
     std::string json;
 
-    Json::Stream(json)
+    json
+        << Json::BeginJson
         << Json::BeginObject
-        << Json::Key{"a"} << 10
+        << Json::Key{"a"}
+        << Json::Number{10}
         << Json::Key{"b"}
         << Json::BeginArray
-        << 1
         << Json::BeginArray
         << Json::EndArray
-        << 2
         << Json::EndArray
-        << Json::EndObject;
+        << Json::EndObject
+        << Json::EndJson;
 
     SUCCEED();
 }
