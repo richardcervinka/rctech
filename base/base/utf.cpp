@@ -244,43 +244,49 @@ namespace Rc::Utf8
         return count;
     }
 
-    void PushUtf8(const char32_t ch, std::string& target)
+    std::size_t PushBack(const char32_t ch, std::string& dst)
     {
         // 1 byte
         if (ch <= 0x7Fu)
         {
-            target.push_back(static_cast<char>(ch));
-            return;
+            dst.push_back(static_cast<char>(ch));
+            return 1u;
         }
         // 2 byte
         if (ch <= 0x7FFu)
         {
-            target.push_back(static_cast<char>(0xC0u | ((ch >> 6) & 0x1Fu)));
-            target.push_back(static_cast<char>(0x80u | ((ch >> 0) & 0x3Fu)));
-            return;
+            dst.push_back(static_cast<char>(0xC0u | ((ch >> 6) & 0x1Fu)));
+            dst.push_back(static_cast<char>(0x80u | ((ch >> 0) & 0x3Fu)));
+            return 2u;
         }
         // 3 byte
         if (ch <= 0xFFFFu)
         {
-            target.push_back(static_cast<char>(0xE0u | ((ch >> 12) & 0x0Fu)));
-            target.push_back(static_cast<char>(0x80u | ((ch >> 6) & 0x3Fu)));
-            target.push_back(static_cast<char>(0x80u | ((ch >> 0) & 0x3Fu)));
-            return;
+            dst.push_back(static_cast<char>(0xE0u | ((ch >> 12) & 0x0Fu)));
+            dst.push_back(static_cast<char>(0x80u | ((ch >> 6) & 0x3Fu)));
+            dst.push_back(static_cast<char>(0x80u | ((ch >> 0) & 0x3Fu)));
+            return 3u;
         }
         // 4 byte
         if (ch <= 0x1FFFFFu)
         {
-            target.push_back(static_cast<char>(0xF0u | ((ch >> 18) & 0x07u)));
-            target.push_back(static_cast<char>(0x80u | ((ch >> 12) & 0x3Fu)));
-            target.push_back(static_cast<char>(0x80u | ((ch >> 6) & 0x3Fu)));
-            target.push_back(static_cast<char>(0x80u | ((ch >> 0) & 0x3Fu)));
-            return;
+            dst.push_back(static_cast<char>(0xF0u | ((ch >> 18) & 0x07u)));
+            dst.push_back(static_cast<char>(0x80u | ((ch >> 12) & 0x3Fu)));
+            dst.push_back(static_cast<char>(0x80u | ((ch >> 6) & 0x3Fu)));
+            dst.push_back(static_cast<char>(0x80u | ((ch >> 0) & 0x3Fu)));
+            return 4u;
         }
     }
 
     std::string FromUtf8(std::u8string_view src)
     {
         return std::string(reinterpret_cast<char const*>(src.data()), src.size());
+    }
+
+    std::string FromUtf8(std::u8string_view src, std::string&& buffer)
+    {
+        buffer.append(reinterpret_cast<char const*>(src.data()), src.size());
+        return buffer;
     }
 
     std::string FromUtf16(std::u16string_view src)
@@ -290,10 +296,22 @@ namespace Rc::Utf8
 
         for (Utf16::Iterator it{src}; it != Utf16::Sentinel(); ++it)
         {
-            PushUtf8(*it, str);
+            PushBack(*it, str);
         }
 
         return str;
+    }
+
+    std::string FromUtf16(std::u16string_view src, std::string&& buffer)
+    {
+        buffer.reserve(buffer.size() + src.size());
+
+        for (Utf16::Iterator it{src}; it != Utf16::Sentinel(); ++it)
+        {
+            PushBack(*it, buffer);
+        }
+
+        return buffer;
     }
 
     std::string FromUtf32(std::u32string_view src)
@@ -303,10 +321,22 @@ namespace Rc::Utf8
 
         for (auto ch : src)
         {
-            PushUtf8(ch, str);
+            PushBack(ch, str);
         }
 
         return str;
+    }
+
+    std::string FromUtf32(std::u32string_view src, std::string&& dst)
+    {
+        dst.reserve(dst.size() + src.size());
+
+        for (auto ch : src)
+        {
+            PushBack(ch, dst);
+        }
+
+        return dst;
     }
 
 } // Rc::Utf8
@@ -323,24 +353,25 @@ namespace Rc::Utf16
         return count;
     }
 
-    void PushUtf16(const char32_t ch, std::u16string& target)
+    std::size_t PushBack(const char32_t ch, std::u16string& dst)
     {
         // Unicode define no characters in range 0xd800 - 0xdfff.
         if ((ch >= 0xD800u) && (ch <= 0xDFFFu))
         {
-            return;
+            return 0u;
         }
 
         // Surrogate pairs.
         if (ch > 0xFFFFu)
         {
-            target.push_back(0xD800u | (((ch - 0x010000u) >> 10) & 0x3FFu));
-            target.push_back(0xDC00u | (((ch - 0x010000u) >> 0) & 0x3FFu));
-            return;
+            dst.push_back(0xD800u | (((ch - 0x010000u) >> 10) & 0x3FFu));
+            dst.push_back(0xDC00u | (((ch - 0x010000u) >> 0) & 0x3FFu));
+            return 2u;
         }
 
         // One character.
-        target.push_back(static_cast<char16_t>(ch));
+        dst.push_back(static_cast<char16_t>(ch));
+        return 1u;
     }
 
     std::u16string FromUtf8(std::string_view src)
@@ -350,10 +381,22 @@ namespace Rc::Utf16
 
         for (Utf8::Iterator it{src}; it != Utf8::Sentinel(); ++it)
         {
-            PushUtf16(*it, str);
+            PushBack(*it, str);
         }
 
         return str;
+    }
+
+    std::u16string FromUtf8(std::string_view src, std::u16string&& buffer)
+    {
+        buffer.reserve(buffer.size() + src.size());
+
+        for (Utf8::Iterator it{src}; it != Utf8::Sentinel(); ++it)
+        {
+            PushBack(*it, buffer);
+        }
+
+        return buffer;
     }
 
     std::u16string FromUtf8(std::u8string_view src)
@@ -363,10 +406,22 @@ namespace Rc::Utf16
 
         for (Utf8::Iterator it{src}; it != Utf8::Sentinel(); ++it)
         {
-            PushUtf16(*it, str);
+            PushBack(*it, str);
         }
 
         return str;
+    }
+
+    std::u16string FromUtf8(std::u8string_view src, std::u16string&& buffer)
+    {
+        buffer.reserve(buffer.size() + src.size());
+
+        for (Utf8::Iterator it{src}; it != Utf8::Sentinel(); ++it)
+        {
+            PushBack(*it, buffer);
+        }
+
+        return buffer;
     }
 
     std::u16string FromUtf32(std::u32string_view src)
@@ -376,10 +431,22 @@ namespace Rc::Utf16
 
         for (auto ch : src)
         {
-            PushUtf16(ch, str);
+            PushBack(ch, str);
         }
 
         return str;
+    }
+
+    std::u16string FromUtf32(std::u32string_view src, std::u16string&& buffer)
+    {
+        buffer.reserve(buffer.size() + src.size());
+
+        for (auto ch : src)
+        {
+            PushBack(ch, buffer);
+        }
+
+        return buffer;
     }
 
 } // Rc::Utf16
@@ -404,6 +471,18 @@ namespace Rc::Utf32
         return str; 
     }
 
+    std::u32string FromUtf8(std::string_view src, std::u32string&& buffer)
+    {
+        buffer.reserve(buffer.size() + src.size());
+
+        for (Utf8::Iterator it{src}; it != Utf8::Sentinel(); ++it)
+        {
+            buffer.push_back(*it);
+        }
+
+        return buffer; 
+    }
+
     std::u32string FromUtf8(std::u8string_view src)
     {
         std::u32string str;
@@ -417,6 +496,18 @@ namespace Rc::Utf32
         return str; 
     }
 
+    std::u32string FromUtf8(std::u8string_view src, std::u32string&& buffer)
+    {
+        buffer.reserve(buffer.size() + src.size());
+
+        for (Utf8::Iterator it{src}; it != Utf8::Sentinel(); ++it)
+        {
+            buffer.push_back(*it);
+        }
+
+        return buffer; 
+    }
+
     std::u32string FromUtf16(std::u16string_view src)
     {
         std::u32string str;
@@ -428,6 +519,18 @@ namespace Rc::Utf32
         }
 
         return str;
+    }
+    
+    std::u32string FromUtf16(std::u16string_view src, std::u32string&& buffer)
+    {
+        buffer.reserve(buffer.size() + src.size());
+
+        for (Utf16::Iterator it{src}; it != Utf16::Sentinel(); ++it)
+        {
+            buffer.push_back(*it);
+        }
+
+        return buffer;
     }
    
 } // Rc

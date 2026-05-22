@@ -14,7 +14,9 @@
 	"utf.cpp"
 	"cli.h"
 	"cli.cpp"
-	"chars.h"
+	"str.h"
+	"jsonstream.h"
+	"jsonstream.cpp"
 )
 
 target_compile_features(base

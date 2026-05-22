@@ -4,7 +4,7 @@
 using namespace Rc;
 using namespace std::chrono;
 
-TEST(StopwatchTest, Stopwatch)
+TEST(Stopwatch, InstantiateTemplateMethods)
 {
     Stopwatch<steady_clock> s(steady_clock::now());
     

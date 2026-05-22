@@ -72,11 +72,20 @@ target_link_libraries(test_cli
 	PRIVATE gtest_main
 )
 
-# chars
+# str
 
-add_executable(test_chars "test_chars.cpp")
+add_executable(test_str "test_str.cpp")
 
-target_link_libraries(test_chars
+target_link_libraries(test_str
+	PRIVATE base
+	PRIVATE gtest_main
+)
+
+# jsonstream
+
+add_executable(test_jsonstream "test_jsonstream.cpp")
+
+target_link_libraries(test_jsonstream
 	PRIVATE base
 	PRIVATE gtest_main
 )
