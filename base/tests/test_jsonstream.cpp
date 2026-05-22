@@ -6,7 +6,7 @@ using namespace Rc;
 TEST(JsonStream, WriteEmptyObject)
 {
     std::string json;
-    json
+    Json::Stream(json)
         << Json::BeginJson
         << Json::BeginObject
         << Json::EndObject
@@ -18,7 +18,7 @@ TEST(JsonStream, WriteEmptyObject)
 TEST(JsonStream, WriteEmptyArray)
 {
     std::string json;
-    json
+    Json::Stream(json)
         << Json::BeginJson
         << Json::BeginArray
         << Json::EndArray
@@ -30,7 +30,7 @@ TEST(JsonStream, WriteEmptyArray)
 TEST(JsonStream, WriteBool)
 {
     std::string json;
-    json
+    Json::Stream(json)
         << Json::BeginJson
         << Json::True
         << Json::EndJson;
@@ -41,7 +41,7 @@ TEST(JsonStream, WriteBool)
 TEST(JsonStream, WriteNull)
 {
     std::string json;
-    json
+    Json::Stream(json)
         << Json::BeginJson
         << Json::Null
         << Json::EndJson;
@@ -52,7 +52,7 @@ TEST(JsonStream, WriteNull)
 TEST(JsonStream, WriteInteger)
 {
     std::string json;
-    json
+    Json::Stream(json)
         << Json::BeginJson
         << Json::Number{-10}
         << Json::EndJson;
@@ -63,7 +63,7 @@ TEST(JsonStream, WriteInteger)
 TEST(JsonStream, WriteUnsignedInteger)
 {
     std::string json;
-    json
+    Json::Stream(json)
         << Json::BeginJson
         << Json::Number{10u}
         << Json::EndJson;
@@ -74,7 +74,7 @@ TEST(JsonStream, WriteUnsignedInteger)
 TEST(JsonStream, WriteEmptyArrayInArray)
 {
     std::string json;
-    json
+    Json::Stream(json)
         << Json::BeginJson
         << Json::BeginArray
         << Json::BeginArray
@@ -88,7 +88,7 @@ TEST(JsonStream, WriteEmptyArrayInArray)
 TEST(JsonStream, WriteEmptyObjectInArray)
 {
     std::string json;
-    json
+    Json::Stream(json)
         << Json::BeginJson
         << Json::BeginArray
         << Json::BeginObject
@@ -102,7 +102,7 @@ TEST(JsonStream, WriteEmptyObjectInArray)
 TEST(JsonStream, SimpleObject)
 {
     std::string json;
-    json
+    Json::Stream(json)
         << Json::BeginJson
         << Json::BeginObject
         << Json::Key{"float"}
@@ -119,7 +119,7 @@ TEST(JsonStream, SimpleObject)
 TEST(JsonStream, StringWithEscapedChars)
 {
     std::string json;
-    json
+    Json::Stream(json)
         << Json::BeginJson
         << Json::Chars{"\r\n\t"}
         << Json::EndJson;
@@ -130,12 +130,12 @@ TEST(JsonStream, StringWithEscapedChars)
 TEST(JsonStream, RawString)
 {
     std::string json;
-    json
+    Json::Stream(json)
         << Json::BeginJson
-        << Json::Chars{R"(\r\n\t)"}
+        << Json::String{"\r\n\t"}
         << Json::EndJson;
 
-    EXPECT_EQ(json, R"("\r\n\t")");
+    EXPECT_EQ(json, "\"\r\n\t\"");
 }
 
 TEST(JsonStream, Assert)
@@ -143,7 +143,7 @@ TEST(JsonStream, Assert)
     std::string json;
 
     ASSERT_DEATH({
-            json
+            Json::Stream(json)
                 << Json::BeginJson
                 << Json::BeginObject
                 << Json::BeginObject
@@ -159,7 +159,7 @@ TEST(Json, Assert2)
     std::string json;
     
     ASSERT_DEATH({
-            json
+            Json::Stream(json)
                 << Json::BeginJson
                 << Json::BeginObject
                 << Json::EndObject
@@ -175,7 +175,7 @@ TEST(Json, ObjectKeyRequired)
     std::string json;
     
     ASSERT_DEATH({
-            json
+            Json::Stream(json)
                 << Json::BeginJson
                 << Json::BeginObject
                 << Json::BeginArray
@@ -186,15 +186,31 @@ TEST(Json, ObjectKeyRequired)
     );
 }
 
-TEST(Json, ObjectKeyAfterKey)
+TEST(Json, ObjectKeyAsValue)
 {
     std::string json;
     
     ASSERT_DEATH({
-            json
+            Json::Stream(json)
                 << Json::BeginJson
                 << Json::BeginObject
                 << Json::Key{"key"}
+                << Json::Key{"key"}
+                << Json::EndObject
+                << Json::EndJson;
+        },
+        ".+"
+    );
+}
+
+TEST(Json, MissingObjectValue)
+{
+    std::string json;
+    
+    ASSERT_DEATH({
+            Json::Stream(json)
+                << Json::BeginJson
+                << Json::BeginObject
                 << Json::Key{"key"}
                 << Json::EndObject
                 << Json::EndJson;
@@ -209,7 +225,7 @@ TEST(Json, Dev)
 {
     std::string json;
 
-    json
+    Json::Stream(json)
         << Json::BeginJson
         << Json::BeginObject
         << Json::Key{"a"}

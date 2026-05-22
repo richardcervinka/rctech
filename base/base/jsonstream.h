@@ -129,8 +129,3 @@ namespace Rc::Json
     };
 
 } // Rc::Json
-
-inline Rc::Json::Stream& operator<<(std::string& lhs, Rc::Json::BeginJsonTag)
-{
-    return Rc::Json::Stream(lhs) << Rc::Json::BeginJsonTag{};
-}
