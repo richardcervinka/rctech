@@ -3,6 +3,7 @@
 #include <string>
 #include <string_view>
 #include <vector>
+#include <cassert>
 
 namespace Rc::Json
 {
@@ -37,13 +38,26 @@ namespace Rc::Json
         T value {};
     };
 
-    struct String
+    template<typename T>
+    struct CharsView
     {
-        std::string_view str;
+        std::basic_string_view<T> str;
     };
 
+    // UTF-8 string
+    using Chars = CharsView<char>;
+
+    // UTF-8 string
+    using Chars8 = CharsView<char8_t>;
+
+    // UTF-16 string
+    using Chars16 = CharsView<char16_t>;
+
+    // UTF-32 string
+    using Chars32 = CharsView<char32_t>;
+
     // Valid json string
-    struct RawString
+    struct String
     {
         std::string_view str;
     };
@@ -74,10 +88,10 @@ namespace Rc::Json
         Stream& operator<<(FalseTag);
         Stream& operator<<(NullTag);
         Stream& operator<<(String value);
-        Stream& operator<<(RawString value);
-        
-        // TODO: string
-        // TODO: char
+        Stream& operator<<(Chars value);
+        Stream& operator<<(Chars8 value);
+        Stream& operator<<(Chars16 value);
+        Stream& operator<<(Chars32 value);
 
     private:
         enum class Scope
@@ -101,15 +115,17 @@ namespace Rc::Json
         std::string& m_dst;
         State m_state {State::Initial};
 
-#ifndef NDEBUG
+        #ifndef NDEBUG
         std::vector<Scope> m_scope;
+        #endif
 
-        Scope GetScope() const
-        {
-            return m_scope.empty() ? Scope::Empty : m_scope.back();
-        }
-#endif
-
+        void AssertInitial() const;
+        void AssertState(State first, State second) const;
+        void AssertKey() const;
+        void AssertScope(Scope scope) const;
+        void AssertScope() const;
+        void EnterScope(Scope scope);
+        void LeaveScope();
     };
 
 } // Rc::Json

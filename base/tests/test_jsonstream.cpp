@@ -121,7 +121,7 @@ TEST(JsonStream, StringWithEscapedChars)
     std::string json;
     json
         << Json::BeginJson
-        << Json::String{"\r\n\t"}
+        << Json::Chars{"\r\n\t"}
         << Json::EndJson;
 
     EXPECT_EQ(json, R"("\r\n\t")");
@@ -132,7 +132,7 @@ TEST(JsonStream, RawString)
     std::string json;
     json
         << Json::BeginJson
-        << Json::RawString{R"(\r\n\t)"}
+        << Json::Chars{R"(\r\n\t)"}
         << Json::EndJson;
 
     EXPECT_EQ(json, R"("\r\n\t")");
