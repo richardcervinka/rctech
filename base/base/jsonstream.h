@@ -127,5 +127,5 @@ namespace Rc::Json
         void EnterScope(Scope scope);
         void LeaveScope();
     };
-
+    
 } // Rc::Json
