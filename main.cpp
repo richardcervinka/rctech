@@ -1,6 +1,4 @@
 ﻿#include "generic/application.h"
-#include "platform/window.h"
-#include "renderer/renderer.h"
 #include "generic/char_input.h"
 #include "generic/input.h"
 #include <print>

@@ -6,7 +6,7 @@ namespace Rc
 {
     Library::Library(std::string name) : m_name{std::move(name)}
     {
-        const auto uname = Utf16::FromUtf8(name);
+        const auto uname = Utf16::FromUtf8(m_name);
         m_hmodule = LoadLibrary(reinterpret_cast<LPCWSTR>(uname.c_str()));
 
         if (m_hmodule == NULL)

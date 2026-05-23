@@ -1,12 +1,8 @@
 ﻿#include "application.h"
 #include <cassert>
-#include <stdexcept>
 #include <iostream>
 #include <cstddef>
-#include <chrono>
-#include <array>
 #include "input.h"
-#include "error.h"
 #include "generic/char_input.h"
 #include "input.h"
 #include "base/utf.h"
