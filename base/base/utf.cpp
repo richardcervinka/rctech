@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <cassert>
 
+static_assert(sizeof("ě") == 3, "String literals are not UTF-8!");
+
 namespace Rc::Utf8
 {
     void Iterator::Decode() const
@@ -15,7 +17,7 @@ namespace Rc::Utf8
         // 1 byte character 0xxxxxxx
         if (m_src[0] < 0x80u)
         {
-            m_code = m_src[0];
+            m_code = static_cast<char32_t>(m_src[0]);
             m_step = 1;
             return;
         }
@@ -276,6 +278,8 @@ namespace Rc::Utf8
             dst.push_back(static_cast<char>(0x80u | ((ch >> 0) & 0x3Fu)));
             return 4u;
         }
+
+        throw std::runtime_error("Bad UTF-8 character");
     }
 
     std::string FromUtf8(std::u8string_view src)
