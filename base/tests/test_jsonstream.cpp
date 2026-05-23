@@ -116,15 +116,15 @@ TEST(JsonStream, SimpleObject)
     EXPECT_EQ(json, R"({"float":1.2,"array":[]})");
 }
 
-TEST(JsonStream, StringWithEscapedChars)
+TEST(JsonStream, EscapedAllSpecialChars)
 {
     std::string json;
     Json::Stream(json)
         << Json::BeginJson
-        << Json::Chars{"\r\n\t"}
+        << Json::Chars{"\"\b\f\n\r\t\\"}
         << Json::EndJson;
 
-    EXPECT_EQ(json, R"("\r\n\t")");
+    EXPECT_EQ(json, R"("\"\b\f\n\r\t\\")");
 }
 
 TEST(JsonStream, RawString)
@@ -136,6 +136,68 @@ TEST(JsonStream, RawString)
         << Json::EndJson;
 
     EXPECT_EQ(json, "\"\r\n\t\"");
+}
+
+TEST(JsonStream, ArrayCommaPlacement)
+{
+    std::string json;
+    Json::Stream(json)
+        << Json::BeginJson
+        << Json::BeginArray
+        << Json::Number{1}
+        << Json::Number{2}
+        << Json::Number{3}
+        << Json::EndArray
+        << Json::EndJson;
+
+    EXPECT_EQ(json, "[1,2,3]");
+}
+
+TEST(JsonStream, ObjectCommaPlacement)
+{
+    std::string json;
+    Json::Stream(json)
+        << Json::BeginJson
+        << Json::BeginObject
+        << Json::Key{"a"} << Json::Number{1}
+        << Json::Key{"b"} << Json::Number{2}
+        << Json::Key{"c"} << Json::Number{3}
+        << Json::EndObject
+        << Json::EndJson;
+
+    EXPECT_EQ(json, R"({"a":1,"b":2,"c":3})");
+}
+
+TEST(JsonStream, EscapedStringInObject)
+{
+    std::string json;
+    Json::Stream(json)
+        << Json::BeginJson
+        << Json::BeginObject
+        << Json::Key{"msg"}
+        << Json::Chars{"Hello \"Richard\""}
+        << Json::EndObject
+        << Json::EndJson;
+
+    EXPECT_EQ(json, R"({"msg":"Hello \"Richard\""})");
+}
+
+TEST(JsonStream, DeepNesting)
+{
+    std::string json;
+    Json::Stream(json)
+        << Json::BeginJson
+        << Json::BeginObject
+        << Json::Key{"outer"}
+        << Json::BeginArray
+        << Json::BeginObject
+        << Json::Key{"x"} << Json::Number{1}
+        << Json::EndObject
+        << Json::EndArray
+        << Json::EndObject
+        << Json::EndJson;
+
+    EXPECT_EQ(json, R"({"outer":[{"x":1}]})");
 }
 
 TEST(JsonStream, Assert)
@@ -219,24 +281,52 @@ TEST(Json, MissingObjectValue)
     );
 }
 
-// 
-
-TEST(Json, Dev)
+TEST(JsonStream, ValueWithoutKeyInObject)
 {
     std::string json;
 
-    Json::Stream(json)
-        << Json::BeginJson
-        << Json::BeginObject
-        << Json::Key{"a"}
-        << Json::Number{10}
-        << Json::Key{"b"}
-        << Json::BeginArray
-        << Json::BeginArray
-        << Json::EndArray
-        << Json::EndArray
-        << Json::EndObject
-        << Json::EndJson;
+    ASSERT_DEATH({
+        Json::Stream(json)
+            << Json::BeginJson
+            << Json::BeginObject
+            << Json::Number{123}
+            << Json::EndObject
+            << Json::EndJson;
+    }, ".+");
+}
 
-    SUCCEED();
+TEST(JsonStream, KeyOutsideObject)
+{
+    std::string json;
+
+    ASSERT_DEATH({
+        Json::Stream(json)
+            << Json::BeginJson
+            << Json::Key{"x"}
+            << Json::EndJson;
+    }, ".+");
+}
+
+TEST(JsonStream, EndArrayWithoutBegin)
+{
+    std::string json;
+
+    ASSERT_DEATH({
+        Json::Stream(json)
+            << Json::BeginJson
+            << Json::EndArray
+            << Json::EndJson;
+    }, ".+");
+}
+
+TEST(JsonStream, EndJsonBeforeClosing)
+{
+    std::string json;
+
+    ASSERT_DEATH({
+        Json::Stream(json)
+            << Json::BeginJson
+            << Json::BeginObject
+            << Json::EndJson;
+    }, ".+");
 }

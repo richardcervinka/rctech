@@ -1,8 +1,6 @@
 ﻿cmake_minimum_required(VERSION 4.0)
 
-project(lib3d)
-
-############################## if (ENABLE_TESTING)
+project(rctech)
 
 find_program(
 	TOOL_DXC dxc
