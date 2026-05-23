@@ -1,7 +1,6 @@
 ﻿#include "application.h"
 #include <cassert>
 #include <stdexcept>
-#include <hidusage.h>
 #include <iostream>
 #include <cstddef>
 #include <chrono>
@@ -14,33 +13,6 @@
 
 namespace Rc::Platform
 {
-    static void RegisterRawInput()
-    {
-        std::array<RAWINPUTDEVICE, 2> rid = {
-            // Keyboard
-            RAWINPUTDEVICE
-            {
-                .usUsagePage = 0x01,
-                .usUsage = HID_USAGE_GENERIC_KEYBOARD,
-                .dwFlags = RIDEV_DEVNOTIFY, //RIDEV_DEVNOTIFY,
-                .hwndTarget = NULL
-            },
-            // Mouse
-            RAWINPUTDEVICE
-            {
-                .usUsagePage = 0x01,
-                .usUsage = HID_USAGE_GENERIC_MOUSE,
-                .dwFlags = RIDEV_DEVNOTIFY,
-                .hwndTarget = NULL
-            }
-        };
-
-        if (!RegisterRawInputDevices(rid.data(), rid.size(), sizeof(RAWINPUTDEVICE)))
-        {
-            throw SystemException(GetLastError());
-        }
-    }
-
     Application::Application()
     {
     }
@@ -51,7 +23,7 @@ namespace Rc::Platform
 
     void Application::Initialize()
     {
-        RegisterRawInput();
+        Input::Register();
     }
 
     void Application::AttachDebugConsole()
@@ -59,7 +31,7 @@ namespace Rc::Platform
         if (!AttachConsole(ATTACH_PARENT_PROCESS))
         {
             AllocConsole();
-            SetConsoleTitle("Debug Console");
+            SetConsoleTitle(L"Debug Console");
         }
 
         freopen("CONOUT$", "w", stdout);

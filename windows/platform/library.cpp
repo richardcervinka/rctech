@@ -1,11 +1,13 @@
 #include "library.h"
 #include "error.h"
+#include "base/utf.h"
 
 namespace Rc
 {
     Library::Library(std::string name) : m_name{std::move(name)}
     {
-        m_hmodule = LoadLibrary(m_name.c_str());
+        const auto uname = Utf16::FromUtf8(name);
+        m_hmodule = LoadLibrary(reinterpret_cast<LPCWSTR>(uname.c_str()));
 
         if (m_hmodule == NULL)
         {

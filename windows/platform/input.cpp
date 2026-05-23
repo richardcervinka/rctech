@@ -3,6 +3,7 @@
 #include <array>
 #include <cstdint>
 #include <Windows.h>
+#include <hidusage.h>
 #include "error.h"
 
 namespace Rc::Input
@@ -317,6 +318,33 @@ namespace Rc::Input
             g_buttons[(int)btn] = ButtonState::Pushed;
 
             g_event_button_released.Dispatch(btn);
+        }
+    }
+
+    void Register()
+    {
+        std::array<RAWINPUTDEVICE, 2> rid = {
+            // Keyboard
+            RAWINPUTDEVICE
+            {
+                .usUsagePage = 0x01,
+                .usUsage = HID_USAGE_GENERIC_KEYBOARD,
+                .dwFlags = RIDEV_DEVNOTIFY, //RIDEV_DEVNOTIFY,
+                .hwndTarget = NULL
+            },
+            // Mouse
+            RAWINPUTDEVICE
+            {
+                .usUsagePage = 0x01,
+                .usUsage = HID_USAGE_GENERIC_MOUSE,
+                .dwFlags = RIDEV_DEVNOTIFY,
+                .hwndTarget = NULL
+            }
+        };
+
+        if (!RegisterRawInputDevices(rid.data(), rid.size(), sizeof(RAWINPUTDEVICE)))
+        {
+            throw SystemException(GetLastError());
         }
     }
 
