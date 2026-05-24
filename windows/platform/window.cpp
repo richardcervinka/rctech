@@ -1,11 +1,8 @@
 ﻿#include "window.h"
 #include <stdexcept>
-#include <iostream>
 #include <cassert>
-#include <array>
 #include <hidusage.h>
 #include "base/utf.h"
-#include "utility.h"
 
 namespace Rc
 {
@@ -69,7 +66,7 @@ namespace Rc
         RegisterClassW(&wc);
 
         // Create the window
-        m_hwnd = CreateWindowExW(
+        m_hwnd = CreateWindowEx(
             0,  // Optional window styles
             class_name,  // Window class
             reinterpret_cast<wchar_t const*>(ulabel.data()),  // Window text

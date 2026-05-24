@@ -1,17 +1,17 @@
 ﻿#include "utility.h"
+#include "base/utf.h"
+#include <string>
+#include <string_view>
 
 namespace Rc::Windows
 {
-    std::string WcharToString(const WCHAR* wstr)
+    std::string WcharToUtf8(const WCHAR* wstr)
     {
-        int const size = WideCharToMultiByte(CP_UTF8, 0, wstr, -1, nullptr, 0, nullptr, nullptr);
-        if (size < 1)
-        {
-            return {};
-        }
-        std::string str(size - 1, 0);
-        WideCharToMultiByte(CP_UTF8, 0, wstr, -1, str.data(), size, nullptr, nullptr);
-        return str;
+        return Utf8::FromUtf16({reinterpret_cast<char16_t const*>(wstr)});
     }
+
+    // std::wstring Utf8ToWchar(std::string_view str)
+    // {
+    // }
     
 } // Rc::Windows

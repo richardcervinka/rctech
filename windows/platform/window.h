@@ -3,13 +3,10 @@
 #include <windows.h>
 #include "base/geometry.h"
 #include "base/event.h"
-#include <functional>
 
 namespace Rc
 {
-	//
 	// Main application window
-	//
 	class Window
 	{
 	public:
