@@ -1,7 +1,6 @@
 ﻿#pragma once
 
 #include <cstring>
-#include <stdexcept>
 #include <optional>
 #include "vector.h"
 

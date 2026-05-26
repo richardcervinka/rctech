@@ -264,7 +264,7 @@ namespace Rc::Json
             }
             else
             {
-                m_dst += ch;
+                m_dst += static_cast<char>(ch);
             }
         }
 

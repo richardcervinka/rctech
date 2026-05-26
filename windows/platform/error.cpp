@@ -12,7 +12,7 @@ namespace Rc
             nullptr,
             m_hresult,
             MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-            (LPWSTR)&buffer,
+            reinterpret_cast<LPWSTR>(&buffer),
             0,
             nullptr
         );

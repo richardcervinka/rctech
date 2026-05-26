@@ -1,7 +1,6 @@
 #include "utf.h"
-#include <cctype>
-#include <algorithm>
 #include <cassert>
+#include <stdexcept>
 
 static_assert(sizeof("ě") == 3, "String literals are not UTF-8!");
 
@@ -150,12 +149,12 @@ namespace Rc::Utf8
         return *this;
     }
 
-    bool Iterator::operator==(Sentinel const& sentinel) const noexcept
+    bool Iterator::operator==(Sentinel) const noexcept
     {
         return m_src.empty();
     }
 
-    bool Iterator::operator!=(Sentinel const& sentinel) const noexcept
+    bool Iterator::operator!=(Sentinel) const noexcept
     {
         return !m_src.empty();
     }
@@ -190,7 +189,7 @@ namespace Rc::Utf16
         m_step = 1;
     }
 
-    const char32_t Iterator::operator*() const
+    char32_t Iterator::operator*() const
     {
         if (m_step == 0)
         {
@@ -212,12 +211,12 @@ namespace Rc::Utf16
         return *this;
     }
 
-    bool Iterator::operator==(Sentinel const& sentinel) const noexcept
+    bool Iterator::operator==(Sentinel) const noexcept
     {
         return m_src.empty();
     }
 
-    bool Iterator::operator!=(Sentinel const& sentinel) const noexcept
+    bool Iterator::operator!=(Sentinel) const noexcept
     {
         return !m_src.empty();
     }
@@ -246,7 +245,7 @@ namespace Rc::Utf8
         return count;
     }
 
-    std::size_t PushBack(const char32_t ch, std::string& dst)
+    std::size_t PushBack(char32_t ch, std::string& dst)
     {
         // 1 byte
         if (ch <= 0x7Fu)
@@ -331,16 +330,16 @@ namespace Rc::Utf8
         return str;
     }
 
-    std::string FromUtf32(std::u32string_view src, std::string&& dst)
+    std::string FromUtf32(std::u32string_view src, std::string&& buffer)
     {
-        dst.reserve(dst.size() + src.size());
+        buffer.reserve(buffer.size() + src.size());
 
         for (auto ch : src)
         {
-            PushBack(ch, dst);
+            PushBack(ch, buffer);
         }
 
-        return dst;
+        return buffer;
     }
 
 } // Rc::Utf8
@@ -357,7 +356,7 @@ namespace Rc::Utf16
         return count;
     }
 
-    std::size_t PushBack(const char32_t ch, std::u16string& dst)
+    std::size_t PushBack(char32_t ch, std::u16string& dst)
     {
         // Unicode define no characters in range 0xd800 - 0xdfff.
         if ((ch >= 0xD800u) && (ch <= 0xDFFFu))

@@ -2,7 +2,6 @@
 
 #include <cmath>
 #include <cassert>
-#include <vector>
 #include "vector.h"
 #include "matrix.h"
 

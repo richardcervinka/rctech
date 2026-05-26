@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include <windows.h>
+#include <string_view>
 #include "base/geometry.h"
 #include "base/event.h"
 

@@ -15,11 +15,11 @@ namespace Rc
         }
     }
 
-    Library::Library(Library&& other) noexcept
+    Library::Library(Library&& other) noexcept :
+        m_hmodule{other.m_hmodule},
+        m_name{std::move(other.m_name)}
     {
-        m_hmodule = other.m_hmodule;
         other.m_hmodule = NULL;
-        m_name = std::move(other.m_name);
     }
 
     Library& Library::operator=(Library&& other) noexcept

@@ -5,7 +5,6 @@
 #include <expected>
 #include <array>
 #include <format>
-#include <ostream>
 #include <charconv>
 
 namespace Rc::Str

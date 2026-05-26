@@ -4,7 +4,6 @@
 #include <cstddef>
 #include "input.h"
 #include "generic/char_input.h"
-#include "input.h"
 #include "base/utf.h"
 
 namespace Rc::Platform
@@ -24,7 +23,7 @@ namespace Rc::Platform
 
     void Application::AttachDebugConsole()
     {
-        if (!AttachConsole(ATTACH_PARENT_PROCESS))
+        if (AttachConsole(ATTACH_PARENT_PROCESS) != TRUE)
         {
             AllocConsole();
             SetConsoleTitle(L"Debug Console");
@@ -92,6 +91,9 @@ namespace Rc::Platform
                     Rc::CharInput::Dispatch(static_cast<char32_t>(msg.wParam));
                 }
                 return;
+
+            default:
+                break;
         }
 
         TranslateMessage(&msg);
