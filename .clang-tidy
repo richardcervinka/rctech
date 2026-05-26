@@ -1,0 +1,53 @@
+Checks: >
+  -*,
+  bugprone-*,
+  performance-*,
+  readability-*,
+  modernize-*,
+  cppcoreguidelines-*,
+  misc-*,
+  portability-*,
+  clang-analyzer-*,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -cppcoreguidelines-owning-memory,
+  -cppcoreguidelines-pro-type-reinterpret-cast,
+  -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
+  -cppcoreguidelines-pro-bounds-pointer-arithmetic,
+  -cppcoreguidelines-avoid-non-const-global-variables,
+  -cppcoreguidelines-pro-type-union-access,
+  -cppcoreguidelines-pro-bounds-constant-array-index,
+  -cppcoreguidelines-rvalue-reference-param-not-moved,
+  -cppcoreguidelines-avoid-const-or-ref-data-members,
+  -cppcoreguidelines-prefer-member-initializer,
+  -cppcoreguidelines-non-private-member-variables-in-classes,
+  -cppcoreguidelines-avoid-c-arrays,
+  -modernize-use-nullptr,
+  -modernize-use-trailing-return-type,
+  -modernize-use-designated-initializers,
+  -readability-identifier-length,
+  -readability-function-cognitive-complexity,
+  -readability-magic-numbers,
+  -readability-convert-member-functions-to-static,
+  -readability-uppercase-literal-suffix,
+  -readability-named-parameter,
+  -readability-braces-around-scalar-initializer,
+  -misc-use-anonymous-namespace,
+  -misc-non-private-member-variables-in-classes,
+  -performance-no-int-to-ptr,
+  -performance-enum-size,
+  -performance-avoid-endl,
+  -bugprone-easily-swappable-parameters
+
+WarningsAsErrors: ''
+
+HeaderFilterRegex: '.*'
+
+CheckOptions:
+  - key:             readability-identifier-naming.VariableCase
+    value:           lower_case
+  - key:             readability-identifier-naming.FunctionCase
+    value:           CamelCase
+  - key:             readability-identifier-naming.ClassCase
+    value:           CamelCase
+  - key:             modernize-use-trailing-return-type.MinTypeNameLength
+    value:           '5'
