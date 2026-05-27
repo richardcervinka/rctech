@@ -1,7 +1,6 @@
 #pragma once
 
 #include "buffer.h"
-#include <memory>
 #include <span>
 #include <cstddef>
 

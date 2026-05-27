@@ -1,6 +1,5 @@
 #include "renderer.h"
 #include "resources.h"
-#include <iostream>
 #include <span>
 #include "platform/log.h"
 

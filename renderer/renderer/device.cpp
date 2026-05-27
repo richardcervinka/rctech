@@ -95,8 +95,8 @@ namespace Rc
         {
             auto const& properties = family_properties[family];
 
-            if ((properties.queueFlags & VK_QUEUE_GRAPHICS_BIT) &&
-                (properties.queueFlags & VK_QUEUE_TRANSFER_BIT))
+            if (((properties.queueFlags & VK_QUEUE_GRAPHICS_BIT) != 0) &&
+                ((properties.queueFlags & VK_QUEUE_TRANSFER_BIT) != 0))
             {
                 if (!m_instance->GetPhysicalDevicePresentationSupport(vk_physical_device, family))
                 {

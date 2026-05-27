@@ -4,7 +4,6 @@
 #include "command_list.h"
 #include "swap_chain.h"
 #include "fence.h"
-#include <span>
 
 namespace Rc
 {

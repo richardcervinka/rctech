@@ -1,5 +1,4 @@
 #include "fence.h"
-#include "error.h"
 
 namespace Rc
 {

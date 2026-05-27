@@ -1,6 +1,4 @@
 #include "staging_buffer.h"
-#include <algorithm>
-#include "error.h"
 
 namespace Rc
 {

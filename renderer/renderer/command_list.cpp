@@ -1,5 +1,4 @@
 #include "command_list.h"
-#include "error.h"
 
 // ----------test
 #include "base/color.h"
@@ -35,7 +34,7 @@ namespace Rc
 
     CommandBuffer::~CommandBuffer()
     {
-        if (m_vk_device)
+        if (m_vk_device != nullptr)
         {
             m_vk_device->FreeCommandBuffer(m_vk_pool, m_vk_buffer);
             m_vk_device->DestroyCommandPool(m_vk_pool);

@@ -1,5 +1,4 @@
 #include "pipeline_state.h"
-#include "error.h"
 #include <array>
 #include <vector>
 #include <cassert>
@@ -16,7 +15,7 @@ namespace Rc
 
     Pipeline::~Pipeline()
     {
-        if (m_vk_device)
+        if (m_vk_device != nullptr)
         {
             m_vk_device->DestroyPipeline(m_vk_pipeline);
         }
@@ -43,7 +42,7 @@ namespace Rc
 
     PipelineLayout::~PipelineLayout()
     {
-        if (m_vk_device)
+        if (m_vk_device != nullptr)
         {
             m_vk_device->DestroyPipelineLayout(m_vk_pipeline_layout);
         }

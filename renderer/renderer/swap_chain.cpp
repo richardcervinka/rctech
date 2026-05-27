@@ -1,5 +1,4 @@
 #include "swap_chain.h"
-#include "error.h"
 #include <cassert>
 
 namespace Rc
@@ -29,7 +28,7 @@ namespace Rc
 
     SwapChain::~SwapChain()
     {
-        if (m_vk_device)
+        if (m_vk_device != nullptr)
         {
             m_vk_device->DestroySwapchainKHR(m_vk_swap_chain);
         }

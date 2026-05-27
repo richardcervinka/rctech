@@ -3,7 +3,6 @@
 #include "vulkan/device.h"
 #include <memory>
 #include <span>
-#include <optional>
 #include <vector>
 
 namespace Rc
@@ -55,12 +54,12 @@ namespace Rc
 
         void SetVertexShader(VkShaderModule vs)
         {
-            m_vk_vs = std::move(vs);
+            m_vk_vs = vs;
         }
 
         void SetPixelShader(VkShaderModule ps)
         {
-            m_vk_ps = std::move(ps);
+            m_vk_ps = ps;
         }
 
         void SetVertexInputAttributes(std::span<VkVertexInputAttributeDescription const> attributes)

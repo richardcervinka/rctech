@@ -5,7 +5,6 @@
 #include "texture.h"
 #include "vertex_traits.h"
 #include <array>
-#include <optional>
 #include "shader.h"
 
 namespace Rc

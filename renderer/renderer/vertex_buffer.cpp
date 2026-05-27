@@ -1,6 +1,4 @@
 #include "vertex_buffer.h"
-#include <algorithm>
-#include "error.h"
 
 namespace Rc
 {
@@ -17,7 +15,7 @@ namespace Rc
             .pNext = nullptr,
             .flags = 0,
             .size = size,
-            .usage = {
+            .usage = VkBufferUsageFlags{
                 VK_BUFFER_USAGE_TRANSFER_DST_BIT |
                 VK_BUFFER_USAGE_VERTEX_BUFFER_BIT
             },
