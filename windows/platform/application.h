@@ -8,36 +8,34 @@
 
 namespace Rc::Platform
 {
-	class Application
-	{
-	public:
-		Application();
+    class Application
+    {
+    public:
+        Application();
 
-		virtual ~Application();
+        virtual ~Application();
 
-		// Abort()
+        // Abort()
 
-		static void AttachDebugConsole(); // --------------- to protected
+    protected:
+        virtual void Initialize();
 
-	protected:
-		virtual void Initialize();
+        // Start main message loop.
+        int StartMessageLoop();
 
-		// Start main message loop.
-		int StartMessageLoop();
+        virtual void BeginFrame();
 
-		virtual void BeginFrame();
+        virtual void EndFrame();
 
-		virtual void EndFrame();
+        // Stop event loop as soon as possible.
+        void Quit();
 
-		// Stop event loop as soon as possible.
-		void Quit();
+        std::vector<std::string> GetCmdArgs() const;
 
-		std::vector<std::string> GetCmdArgs() const;
+    private:
+        void ProcessMessage(MSG const& msg);
 
-	private:
-		void ProcessMessage(MSG const& msg);
-
-		std::atomic<bool> running {false};
-	};
-	
+        std::atomic<bool> running {false};
+    };
+    
 } // Rc::Platform

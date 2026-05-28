@@ -16,26 +16,6 @@ namespace Rc::Platform
         Input::Register();
     }
 
-    void Application::AttachDebugConsole()
-    {
-        if (AttachConsole(ATTACH_PARENT_PROCESS) != TRUE)
-        {
-            AllocConsole();
-            SetConsoleTitle(L"Debug Console");
-        }
-
-        // TODO: SetConsoleOutputCP(CP_UTF8);
-        freopen("CONOUT$", "w", stdout);
-        freopen("CONOUT$", "w", stderr);
-        freopen("CONIN$", "r", stdin);
-
-        std::ios::sync_with_stdio(true);
-
-        std::cout.clear();
-        std::cerr.clear();
-        std::cin.clear();
-    }
-
     int Application::StartMessageLoop()
     {
         assert(running == false);
@@ -107,8 +87,8 @@ namespace Rc::Platform
 
     std::vector<std::string> Application::GetCmdArgs() const
     {
-	    int argc = 0;
-	    LPWSTR* argv = CommandLineToArgvW(GetCommandLineW(), &argc);
+        int argc = 0;
+        LPWSTR* argv = CommandLineToArgvW(GetCommandLineW(), &argc);
 
         std::vector<std::string> result;
         result.reserve(argc);

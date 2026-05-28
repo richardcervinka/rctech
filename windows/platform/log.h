@@ -1,23 +1,20 @@
 #pragma once
 
 #include <string>
-#include <string_view>
 #include <Windows.h>
-#include <format>
-#include "base/utf.h"
 
 namespace Rc::Log
 {
-    inline void Debug(std::string_view str)
+    inline void Debug(std::string str)
     {
-        const auto ustr = Utf16::FromUtf8(str);
-        OutputDebugString(reinterpret_cast<LPCWSTR>(ustr.data()));
+        str += '\n';
+        OutputDebugStringA(reinterpret_cast<LPCSTR>(str.data()));
     }
 
-    inline void Error(std::string_view str)
+    inline void Error(std::string str)
     {
-        const auto ustr = Utf16::FromUtf8(str);
-        OutputDebugString(reinterpret_cast<LPCWSTR>(ustr.data()));
+        str += '\n';
+        OutputDebugStringA(reinterpret_cast<LPCSTR>(str.data()));
     }
     
 } // namespce Rc::Log
