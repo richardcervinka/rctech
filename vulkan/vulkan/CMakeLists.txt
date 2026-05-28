@@ -28,3 +28,12 @@ target_compile_definitions(vulkan
     PUBLIC VMA_DYNAMIC_VULKAN_FUNCTIONS=1
     PUBLIC VMA_STATIC_VULKAN_FUNCTIONS=0
 )
+
+target_compile_options(vulkan
+	PRIVATE $<$<CXX_COMPILER_ID:Clang>:-finput-charset=UTF-8>
+	PRIVATE $<$<CXX_COMPILER_ID:Clang>:-fexec-charset=UTF-8>
+	PRIVATE $<$<CXX_COMPILER_ID:GNU>:-finput-charset=UTF-8>
+	PRIVATE $<$<CXX_COMPILER_ID:GNU>:-fexec-charset=UTF-8>
+	PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/utf-8>
+    PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/execution-charset:utf-8>
+)

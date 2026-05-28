@@ -8,13 +8,8 @@
 
 namespace Rc::Platform
 {
-    Application::Application()
-    {
-    }
-
-    Application::~Application()
-    {
-    }
+    Application::Application() = default;
+    Application::~Application() = default;
 
     void Application::Initialize()
     {
@@ -29,6 +24,7 @@ namespace Rc::Platform
             SetConsoleTitle(L"Debug Console");
         }
 
+        // TODO: SetConsoleOutputCP(CP_UTF8);
         freopen("CONOUT$", "w", stdout);
         freopen("CONOUT$", "w", stderr);
         freopen("CONIN$", "r", stdin);
@@ -119,7 +115,7 @@ namespace Rc::Platform
         
         for (int i = 0; i < argc; i++)
         {
-            char16_t const* arg = reinterpret_cast<char16_t const*>(argv[i]);
+            auto const* arg = reinterpret_cast<char16_t const*>(argv[i]);
             result.emplace_back(Utf8::FromUtf16({arg, std::wcslen(argv[i])}));
         }
         
