@@ -22,8 +22,12 @@ namespace Rc::Generic
         using Platform::Application::GetCmdArgs;
 
         Application();
-
         ~Application();
+
+        Application(Application const&) = delete;
+        Application(Application&&) = delete;
+        Application& operator=(Application const&) = delete;
+        Application& operator=(Application&&) = delete;
 
         void Create(ApplicationInfo const& info);
 

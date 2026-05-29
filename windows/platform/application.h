@@ -11,9 +11,14 @@ namespace Rc::Platform
     class Application
     {
     public:
-        Application();
+        Application() = default;
 
-        virtual ~Application();
+        virtual ~Application() = default;
+
+        Application(Application const&) = delete;
+        Application(Application&&) = delete;
+        Application& operator=(Application const&) = delete;
+        Application& operator=(Application&&) = delete;
 
         // Abort()
 

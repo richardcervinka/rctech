@@ -1,6 +1,5 @@
 ﻿#include "application.h"
 #include <cassert>
-#include <iostream>
 #include <cstddef>
 #include "input.h"
 #include "generic/char_input.h"
@@ -8,9 +7,6 @@
 
 namespace Rc::Platform
 {
-    Application::Application() = default;
-    Application::~Application() = default;
-
     void Application::Initialize()
     {
         Input::Register();

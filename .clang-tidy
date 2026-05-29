@@ -39,7 +39,8 @@ Checks: >
   -performance-no-int-to-ptr,
   -performance-enum-size,
   -performance-avoid-endl,
-  -bugprone-easily-swappable-parameters
+  -bugprone-easily-swappable-parameters,
+  -bugprone-switch-missing-default-case
 
 WarningsAsErrors: ''
 

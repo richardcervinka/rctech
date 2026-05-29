@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cmath>
+#include <utility>
 
 namespace Rc
 {
@@ -21,15 +22,15 @@ namespace Rc
         
         switch (hi)
         {
-            case 0: return{v, t, p, a}; break;
-            case 1: return{q, v, p, a}; break;
-            case 2: return{p, v, t, a}; break;
-            case 3: return{p, q, v, a}; break;
-            case 4: return{t, p, v, a}; break;
-            case 5: return{v, p, q, a}; break;
+            case 0: return{v, t, p, a};
+            case 1: return{q, v, p, a};
+            case 2: return{p, v, t, a};
+            case 3: return{p, q, v, a};
+            case 4: return{t, p, v, a};
+            case 5: return{v, p, q, a};
         }
 
-        assert(false && "Unreachable");
+        std::unreachable();
     }
 
     void Color::Set(float r, float g, float b, float a) noexcept
