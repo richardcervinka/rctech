@@ -80,20 +80,20 @@ namespace Rc
         return result;
     }
 
-    uint32_t VulkanInstance::EnumerateDeviceExtensionPropertiesCount(VkPhysicalDevice physical_device, std::string_view layer_name) const
+    uint32_t VulkanInstance::EnumerateDeviceExtensionPropertiesCount(VkPhysicalDevice physical_device, std::string const& layer_name) const
     {
         uint32_t result {};
-        if (auto vk_result = m_vkEnumerateDeviceExtensionProperties(physical_device, nullptr, &result, nullptr); vk_result != VK_SUCCESS)
+        if (auto vk_result = m_vkEnumerateDeviceExtensionProperties(physical_device, layer_name.c_str(), &result, nullptr); vk_result != VK_SUCCESS)
         {
             throw VulkanException(vk_result);
         }
         return result;
     }
 
-    std::span<VkExtensionProperties> VulkanInstance::EnumerateDeviceExtensionProperties(VkPhysicalDevice physical_device, std::string_view layer_name, std::span<VkExtensionProperties> buffer) const
+    std::span<VkExtensionProperties> VulkanInstance::EnumerateDeviceExtensionProperties(VkPhysicalDevice physical_device, std::string const& layer_name, std::span<VkExtensionProperties> buffer) const
     {
         auto count = static_cast<uint32_t>(buffer.size());
-        if (auto vk_result = m_vkEnumerateDeviceExtensionProperties(physical_device, layer_name.data(), &count, buffer.data()); vk_result != VK_SUCCESS)
+        if (auto vk_result = m_vkEnumerateDeviceExtensionProperties(physical_device, layer_name.c_str(), &count, buffer.data()); vk_result != VK_SUCCESS)
         {
             throw VulkanException(vk_result);
         }
@@ -114,10 +114,10 @@ namespace Rc
         return buffer.subspan(0, count);
     }
 
-    bool VulkanInstance::GetPhysicalDevicePresentationSupport(VkPhysicalDevice physical_device, uint32_t queueFamilyIndex) const
+    bool VulkanInstance::GetPhysicalDevicePresentationSupport(VkPhysicalDevice physical_device, uint32_t queue_family_index) const
     {
     #ifdef VK_USE_PLATFORM_WIN32_KHR
-        return m_vkGetPhysicalDeviceWin32PresentationSupportKHR(physical_device, queueFamilyIndex) == VK_TRUE;
+        return m_vkGetPhysicalDeviceWin32PresentationSupportKHR(physical_device, queue_family_index) == VK_TRUE;
     #else
         return true;
     #endif

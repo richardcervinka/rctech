@@ -39,10 +39,10 @@ namespace Rc
         VkPhysicalDeviceMemoryProperties GetPhysicalDeviceMemoryProperties(VkPhysicalDevice physical_device) const;
 
         // vkEnumerateDeviceExtensionProperties
-        uint32_t EnumerateDeviceExtensionPropertiesCount(VkPhysicalDevice physical_device, std::string_view layer_name) const;
+        uint32_t EnumerateDeviceExtensionPropertiesCount(VkPhysicalDevice physical_device, std::string const& layer_name) const;
 
         // vkEnumerateDeviceExtensionProperties
-        std::span<VkExtensionProperties> EnumerateDeviceExtensionProperties(VkPhysicalDevice physical_device, std::string_view layer_name, std::span<VkExtensionProperties> buffer) const;
+        std::span<VkExtensionProperties> EnumerateDeviceExtensionProperties(VkPhysicalDevice physical_device, std::string const& layer_name, std::span<VkExtensionProperties> buffer) const;
 
         // vkGetPhysicalDeviceQueueFamilyProperties
         uint32_t GetPhysicalDeviceQueueFamilyPropertiesCount(VkPhysicalDevice physical_device) const;
