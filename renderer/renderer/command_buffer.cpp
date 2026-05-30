@@ -1,4 +1,4 @@
-#include "command_list.h"
+#include "command_buffer.h"
 
 // ----------test
 #include "base/color.h"
@@ -212,7 +212,7 @@ namespace Rc
         m_vk_device->CmdBindPipeline(m_vk_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.Handle());
     }
 
-    void CommandBuffer::TransferBuffer(StagingBuffer& src, Buffer& dst, int offset, int size) // ------------------- not int
+    void CommandBuffer::TransferBuffer(StagingBuffer& src, Buffer& dst, uint64_t src_offset, uint64_t dst_offset, uint64_t size)
     {
         VkBufferMemoryBarrier const barrier
         {
@@ -223,8 +223,8 @@ namespace Rc
             .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
             .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
             .buffer = dst.Handle(),
-            .offset = static_cast<VkDeviceSize>(offset),
-            .size = static_cast<VkDeviceSize>(size)
+            .offset = VkDeviceSize{dst_offset},
+            .size = VkDeviceSize{size}
         };
 
         m_vk_device->CmdPipelineBarrier(
@@ -242,12 +242,50 @@ namespace Rc
 
         struct VkBufferCopy region
         {
-            .srcOffset = 0, //----------------------------------------------------------------------------------
-            .dstOffset = 0, //------------------------------------------------------------------------------------
-            .size = static_cast<VkDeviceSize>(size)
+            .srcOffset = VkDeviceSize{src_offset},
+            .dstOffset = VkDeviceSize{dst_offset},
+            .size = VkDeviceSize{size}
         };
         
         m_vk_device->CmdCopyBuffer(m_vk_buffer, src.Handle(), dst.Handle(), {&region, 1});
+    }
+
+    void CommandBuffer::UseBuffer(VertexBuffer& vb, uint64_t offset, uint64_t size)
+    {
+        VkBufferMemoryBarrier const barrier
+        {
+            .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
+            .pNext = nullptr,
+            .srcAccessMask = vb.m_access_flags,
+            .dstAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT,
+            .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+            .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+            .buffer = vb.Handle(),
+            .offset = static_cast<VkDeviceSize>(offset),
+            .size = static_cast<VkDeviceSize>(size)
+        };
+
+        m_vk_device->CmdPipelineBarrier(
+            m_vk_buffer,
+            vb.m_stage_flags,
+            VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
+            {},
+            {},
+            {&barrier, 1},
+            {}
+        );
+
+        vb.m_access_flags = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
+        vb.m_stage_flags = VK_PIPELINE_STAGE_VERTEX_INPUT_BIT;
+    }
+
+    void CommandBuffer::BindVertexBuffer(VertexBuffer& vb, uint64_t offset)
+    {
+        const std::array<VkDeviceSize, 1> vk_offset {offset};
+        const std::array<VkBuffer, 1> vk_buffers {vb.Handle()};
+
+        m_vk_device->CmdBindVertexBuffers(m_vk_buffer, 0, 1, vk_buffers, vk_offset);
+
     }
 
     void CommandBuffer::Draw(uint32_t vertex_count, uint32_t instance_count, uint32_t first_vertex, uint32_t first_instance)

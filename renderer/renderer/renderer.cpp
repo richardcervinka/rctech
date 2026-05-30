@@ -2,6 +2,7 @@
 #include "resources.h"
 #include <span>
 #include "platform/log.h"
+#include "core/vertex.h" //----------
 
 namespace Rc
 {
@@ -108,6 +109,7 @@ namespace Rc
             pv[0].color = Float3(1, 0, 0);
             pv[1].color = Float3(0, 1, 0);
             pv[2].color = Float3(0, 0, 1);
+
         }
 
         m_pipeline_layout = m_device->CreatePipelineLayout();
@@ -119,11 +121,13 @@ namespace Rc
         pipeline_factory.SetPixelShader(GetPixelShader(PixelShaderSlot::Null));
         pipeline_factory.SetVertexInputRate(0);
         pipeline_factory.SetVertexInputAttributes({});
+        pipeline_factory.SetVertexInputBinding(0);
         m_test_pipeline = pipeline_factory.Create();
 
         pipeline_factory.SetVertexShader(GetVertexShader(VertexShaderSlot::Test));
         pipeline_factory.SetPixelShader(GetPixelShader(PixelShaderSlot::Null));
         pipeline_factory.SetVertexInputRate(VertexBasic::stride);
+        pipeline_factory.SetVertexInputBinding(sizeof(VertexBasic));
         pipeline_factory.SetVertexInputAttributes(Traits<VertexBasic>::attributes);
         m_test_vertex_pipeline = pipeline_factory.Create();
 
@@ -178,14 +182,16 @@ namespace Rc
         auto back_buffer_index = m_swap_chain->AcquireNextImage();
 
         // Transfer test
-        frame.render_commands->TransferBuffer(*m_staging_buffer, *m_vertex_buffer, 0, 4 * 3 * 2 * 3);
+        frame.render_commands->TransferBuffer(*m_staging_buffer, *m_vertex_buffer, 0, 0, 4 * 3 * 2 * 3);
+        frame.render_commands->UseBuffer(*m_vertex_buffer, 0, 4 * 3 * 2 * 3);
+        frame.render_commands->BindVertexBuffer(*m_vertex_buffer, 0);
 
         frame.render_commands->BarrierRenderFramebuffer(m_swap_chain->GetImage());
         frame.render_commands->SetRenderTargetsCount(1);
         frame.render_commands->AttachRenderTarget(0, *m_back_buffers.at(back_buffer_index));
         frame.render_commands->ClearRenderTarget(0, Color(0, 0, 0, 1));
         frame.render_commands->BeginRendering({0, 0, m_swap_chain->Width(), m_swap_chain->Height()});
-        frame.render_commands->BindPipeline(*m_test_pipeline);
+        frame.render_commands->BindPipeline(*m_test_vertex_pipeline);
         frame.render_commands->Test({0, 0, m_swap_chain->Width(), m_swap_chain->Height()});
         frame.render_commands->Draw(3, 1, 0, 0);
         frame.render_commands->EndRendering();

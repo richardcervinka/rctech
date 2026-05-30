@@ -34,6 +34,7 @@ Checks: >
   -readability-named-parameter,
   -readability-braces-around-scalar-initializer,
   -readability-simplify-boolean-expr,
+  -readability-qualified-auto,
   -misc-use-anonymous-namespace,
   -misc-non-private-member-variables-in-classes,
   -performance-no-int-to-ptr,

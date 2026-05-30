@@ -18,8 +18,8 @@ add_library(renderer STATIC
     "pipeline_state.cpp"
     "command_queue.h"
     "command_queue.cpp"
-    "command_list.h"
-    "command_list.cpp"
+    "command_buffer.h"
+    "command_buffer.cpp"
     "fence.h"
     "fence.cpp"
     "image.h" ######################x delete

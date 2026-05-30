@@ -45,6 +45,11 @@ namespace Rc
         VkPipelineLayout m_vk_pipeline_layout {VK_NULL_HANDLE};
     };
 
+    // Setup vertex buffer:
+    // 1. SetVertexInputBinding
+    // 2. SetVertexInputAttributes
+    // 3. SetVertexInputRate
+    //
     class PipelineFactory
     {
     public:
@@ -74,7 +79,7 @@ namespace Rc
 
         void SetPipelineLayout(std::shared_ptr<PipelineLayout> layout) { m_vk_pipeline_layout = std::move(layout); }
 
-        // stride = vertex size
+        // stride = size of vertex
         // 0 to disable vertex input binding
         void SetVertexInputBinding(std::size_t stride);
 

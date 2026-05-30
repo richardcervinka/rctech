@@ -74,12 +74,10 @@ namespace Rc
     std::unique_ptr<VulkanInstance> VulkanContext::CreateInstance(VkInstanceCreateInfo const& create_info) const
     {
         VkInstance vk_instance {VK_NULL_HANDLE};
-
         if (auto vk_result = m_vkCreateInstance(&create_info, nullptr, &vk_instance); vk_result != VK_SUCCESS)
         {
             throw VulkanException(vk_result);
         }
-
         return std::make_unique<VulkanInstance>(*this, vk_instance);
     }
 

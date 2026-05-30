@@ -1,10 +1,12 @@
 #pragma once
 
+#include "vertex_buffer.h"
 #include "vulkan/device.h"
 #include "buffer.h"
 #include "base/geometry.h"
 #include "base/color.h"
 #include <array>
+#include <cstdint>
 #include "image.h"
 #include "texture.h"
 #include "swap_chain.h" //----------------------- framebuffer
@@ -48,7 +50,11 @@ namespace Rc
         // Swap chain present target barrier
         void BarrierPresentFramebuffer(Texture2D const& image);
 
-        void TransferBuffer(StagingBuffer& src, Buffer& dst, int offset, int size);
+        void TransferBuffer(StagingBuffer& src, Buffer& dst, uint64_t src_offset, uint64_t dst_offset, uint64_t size);
+        // Set vertex buffer read barrier.
+        void UseBuffer(VertexBuffer& vb, uint64_t offset, uint64_t size);
+
+        void BindVertexBuffer(VertexBuffer& vb, uint64_t offset); // -------- Zkombinovat s Use?
 
         // void BeginRenderPass()
 
