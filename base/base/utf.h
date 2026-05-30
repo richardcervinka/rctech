@@ -3,7 +3,6 @@
 #include <string>
 #include <string_view>
 #include <iterator>
-#include <stdexcept>
 
 namespace Rc::Utf8
 {
@@ -20,8 +19,8 @@ namespace Rc::Utf8
 
         char32_t operator*() const;
         Iterator& operator++();
-        bool operator==(Sentinel const& sentinel) const noexcept;
-        bool operator!=(Sentinel const& sentinel) const noexcept;
+        bool operator==(Sentinel) const noexcept;
+        bool operator!=(Sentinel) const noexcept;
 
     private:
         void Decode() const;
@@ -31,7 +30,7 @@ namespace Rc::Utf8
         mutable int m_step {0};
     };
 
-    std::size_t PushBack(const char32_t ch, std::string& dst);
+    std::size_t PushBack(char32_t ch, std::string& dst);
 
     // Encoding conversion.
     std::string FromUtf8(std::u8string_view src);
@@ -56,21 +55,20 @@ namespace Rc::Utf16
     public:
         explicit Iterator(std::u16string_view src) : m_src{src} {}
 
-        const char32_t operator*() const;
+        char32_t operator*() const;
         Iterator& operator++();
-        bool operator==(Sentinel const& sentinel) const noexcept;
-        bool operator!=(Sentinel const& sentinel) const noexcept;
+        bool operator==(Sentinel) const noexcept;
+        bool operator!=(Sentinel) const noexcept;
 
     private:
         void Decode() const;
 
-    private:
         std::u16string_view m_src;
         mutable char32_t m_code {0};
         mutable int m_step {0};
     };
 
-    std::size_t PushBack(const char32_t ch, std::u16string& dst);
+    std::size_t PushBack(char32_t ch, std::u16string& dst);
 
     // Encoding conversion.
     std::u16string FromUtf8(std::string_view src);

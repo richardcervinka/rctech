@@ -1,76 +1,15 @@
 ﻿#include "application.h"
 #include <cassert>
-#include <stdexcept>
-#include <hidusage.h>
-#include <iostream>
 #include <cstddef>
-#include <chrono>
-#include <array>
 #include "input.h"
-#include "error.h"
 #include "generic/char_input.h"
-#include "input.h"
 #include "base/utf.h"
 
 namespace Rc::Platform
 {
-    static void RegisterRawInput()
-    {
-        std::array<RAWINPUTDEVICE, 2> rid = {
-            // Keyboard
-            RAWINPUTDEVICE
-            {
-                .usUsagePage = 0x01,
-                .usUsage = HID_USAGE_GENERIC_KEYBOARD,
-                .dwFlags = RIDEV_DEVNOTIFY, //RIDEV_DEVNOTIFY,
-                .hwndTarget = NULL
-            },
-            // Mouse
-            RAWINPUTDEVICE
-            {
-                .usUsagePage = 0x01,
-                .usUsage = HID_USAGE_GENERIC_MOUSE,
-                .dwFlags = RIDEV_DEVNOTIFY,
-                .hwndTarget = NULL
-            }
-        };
-
-        if (!RegisterRawInputDevices(rid.data(), rid.size(), sizeof(RAWINPUTDEVICE)))
-        {
-            throw SystemException(GetLastError());
-        }
-    }
-
-    Application::Application()
-    {
-    }
-
-    Application::~Application()
-    {
-    }
-
     void Application::Initialize()
     {
-        RegisterRawInput();
-    }
-
-    void Application::AttachDebugConsole()
-    {
-        if (!AttachConsole(ATTACH_PARENT_PROCESS))
-        {
-            AllocConsole();
-            SetConsoleTitle("Debug Console");
-        }
-
-        freopen("CONOUT$", "w", stdout);
-        freopen("CONOUT$", "w", stderr);
-        freopen("CONIN$", "r", stdin);
-
-        std::ios::sync_with_stdio(true);
-
-        std::cout.clear();
-        std::cerr.clear();
-        std::cin.clear();
+        Input::Register();
     }
 
     int Application::StartMessageLoop()
@@ -84,7 +23,7 @@ namespace Rc::Platform
         while (running)
         {
             Input::Read();
-
+            
             // Fetch all windows messages.
             while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
             {
@@ -123,7 +62,7 @@ namespace Rc::Platform
                 {
                     Rc::CharInput::Dispatch(static_cast<char32_t>(msg.wParam));
                 }
-                return;
+                break;
         }
 
         TranslateMessage(&msg);
@@ -141,15 +80,15 @@ namespace Rc::Platform
 
     std::vector<std::string> Application::GetCmdArgs() const
     {
-	    int argc = 0;
-	    LPWSTR* argv = CommandLineToArgvW(GetCommandLineW(), &argc);
+        int argc = 0;
+        LPWSTR* argv = CommandLineToArgvW(GetCommandLineW(), &argc);
 
         std::vector<std::string> result;
         result.reserve(argc);
         
         for (int i = 0; i < argc; i++)
         {
-            char16_t const* arg = reinterpret_cast<char16_t const*>(argv[i]);
+            auto const* arg = reinterpret_cast<char16_t const*>(argv[i]);
             result.emplace_back(Utf8::FromUtf16({arg, std::wcslen(argv[i])}));
         }
         

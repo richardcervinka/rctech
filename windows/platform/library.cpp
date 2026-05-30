@@ -1,11 +1,13 @@
 #include "library.h"
 #include "error.h"
+#include "base/utf.h"
 
 namespace Rc
 {
     Library::Library(std::string name) : m_name{std::move(name)}
     {
-        m_hmodule = LoadLibrary(m_name.c_str());
+        const auto lname = Utf16::FromUtf8(m_name);
+        m_hmodule = LoadLibrary(reinterpret_cast<LPCWSTR>(lname.c_str()));
 
         if (m_hmodule == NULL)
         {
@@ -13,11 +15,11 @@ namespace Rc
         }
     }
 
-    Library::Library(Library&& other) noexcept
+    Library::Library(Library&& other) noexcept :
+        m_hmodule{other.m_hmodule},
+        m_name{std::move(other.m_name)}
     {
-        m_hmodule = other.m_hmodule;
         other.m_hmodule = NULL;
-        m_name = std::move(other.m_name);
     }
 
     Library& Library::operator=(Library&& other) noexcept

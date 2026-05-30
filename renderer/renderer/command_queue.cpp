@@ -25,7 +25,7 @@ namespace Rc
             .pWaitSemaphores = nullptr,
             .pWaitDstStageMask = nullptr,
             .commandBufferCount = 1,
-            .pCommandBuffers = &(cb.m_vk_buffer),
+            .pCommandBuffers = &(cb.m_vk_command_buffer),
             .signalSemaphoreCount = 0,
             .pSignalSemaphores = nullptr
         };

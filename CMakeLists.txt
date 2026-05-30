@@ -3,10 +3,10 @@
 project(rctech)
 
 find_program(
-	TOOL_DXC dxc
-	PATHS "${CMAKE_CURRENT_SOURCE_DIR}/bin/dxc"
-	NO_DEFAULT_PATH
-	REQUIRED
+    TOOL_DXC dxc
+    PATHS "${CMAKE_CURRENT_SOURCE_DIR}/bin/dxc"
+    NO_DEFAULT_PATH
+    REQUIRED
 )
 
 add_subdirectory("res")
@@ -21,15 +21,15 @@ add_subdirectory("vulkan")
 add_subdirectory("renderer")
 
 add_executable(app WIN32
-	"main.cpp"
+    "main.cpp"
  )
 
 target_compile_features(app
-	PRIVATE cxx_std_26
+    PRIVATE cxx_std_26
 )
 
 target_link_libraries(app
-	PRIVATE base
-	PRIVATE generic
-	PRIVATE renderer
+    PRIVATE base
+    PRIVATE generic
+    PRIVATE renderer
 )

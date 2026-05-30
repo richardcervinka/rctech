@@ -1,5 +1,4 @@
 #include "semaphore.h"
-#include "error.h"
 
 namespace Rc
 {
@@ -17,7 +16,7 @@ namespace Rc
 
     Semaphore::~Semaphore()
     {
-        if (m_vk_device)
+        if (m_vk_device != nullptr)
         {
             m_vk_device->DestroySemaphore(m_vk_semaphore);
         }

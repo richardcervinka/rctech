@@ -4,7 +4,6 @@
 #include <functional>
 #include <vector>
 #include <cassert>
-#include <stdexcept>
 
 namespace Rc
 {

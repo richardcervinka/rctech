@@ -41,11 +41,13 @@ namespace Rc
         Load("vkCmdBeginRendering", m_vkCmdBeginRendering);
         Load("vkCmdEndRendering", m_vkCmdEndRendering);
         Load("vkCmdDraw", m_vkCmdDraw);
+        Load("vkCmdDrawIndexed", m_vkCmdDrawIndexed);
         Load("vkCmdBindPipeline", m_vkCmdBindPipeline);
         Load("vkCmdSetViewport", m_vkCmdSetViewport);
         Load("vkCmdSetScissor", m_vkCmdSetScissor);
         Load("vkCmdCopyBuffer", m_vkCmdCopyBuffer);
         Load("vkCmdBindVertexBuffers", m_vkCmdBindVertexBuffers);
+        Load("vkCmdBindIndexBuffer", m_vkCmdBindIndexBuffer);
     }
 
     VulkanDevice::~VulkanDevice()
@@ -385,6 +387,11 @@ namespace Rc
         m_vkCmdDraw(command_buffer, vertex_count, instance_count, first_vertex, first_instance);
     }
 
+    void VulkanDevice::CmdDrawIndexed(VkCommandBuffer command_buffer, uint32_t index_count, uint32_t instance_count, uint32_t first_index, int32_t vertex_offset, uint32_t first_instance) const
+    {
+        m_vkCmdDrawIndexed(command_buffer, index_count, instance_count, first_index, vertex_offset, first_instance);
+    }
+
     void VulkanDevice::CmdCopyBuffer(VkCommandBuffer command_buffer, VkBuffer src, VkBuffer dst, std::span<VkBufferCopy const> regions) const
     {
         m_vkCmdCopyBuffer(command_buffer, src, dst, regions.size(), regions.data());
@@ -393,6 +400,11 @@ namespace Rc
     void VulkanDevice::CmdBindVertexBuffers(VkCommandBuffer command_buffer, uint32_t first_binding, uint32_t binding_count, std::span<VkBuffer const> buffers, std::span<VkDeviceSize const> offsets) const
     {
         m_vkCmdBindVertexBuffers(command_buffer, first_binding, binding_count, buffers.data(), offsets.data());
+    }
+
+    void VulkanDevice::CmdBindIndexBuffer(VkCommandBuffer command_buffer, VkBuffer buffer, VkDeviceSize offset, VkIndexType index_type) const
+    {
+        m_vkCmdBindIndexBuffer(command_buffer, buffer, offset, index_type);
     }
 
 } // Rc

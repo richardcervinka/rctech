@@ -1,13 +1,15 @@
 #pragma once
 
+#include "vertex_buffer.h"
+#include "index_buffer.h"
 #include "vulkan/device.h"
 #include "buffer.h"
 #include "base/geometry.h"
 #include "base/color.h"
 #include <array>
+#include <cstdint>
 #include "image.h"
 #include "texture.h"
-#include "swap_chain.h" //----------------------- framebuffer
 #include "staging_buffer.h"
 #include "pipeline_state.h"
 
@@ -46,9 +48,20 @@ namespace Rc
         void BarrierRenderFramebuffer(Texture2D const& image);
 
         // Swap chain present target barrier
-        void BarrierPresentFramebuffer(Texture2D const& image);
+        void PresentFramebuffer(Texture2D const& image);
 
-        void TransferBuffer(StagingBuffer& src, Buffer& dst, int offset, int size);
+        void TransferBuffer(StagingBuffer& src, Buffer& dst, uint64_t src_offset, uint64_t dst_offset, uint64_t size);
+        
+        // Set vertex buffer read barrier.
+        void UseBuffer(VertexBuffer& vb, uint64_t offset, uint64_t size);
+
+        // Set index buffer read barrier.
+        void UseBuffer(IndexBuffer& ib, uint64_t offset, uint64_t size);
+
+        void BindVertexBuffer(VertexBuffer& vb, uint64_t offset);
+
+        void BindIndexBuffer16(IndexBuffer& ib, uint64_t offset);
+        void BindIndexBuffer32(IndexBuffer& ib, uint64_t offset);
 
         // void BeginRenderPass()
 
@@ -72,6 +85,9 @@ namespace Rc
 
         void Draw(uint32_t vertex_count, uint32_t instance_count, uint32_t first_vertex, uint32_t first_instance);
 
+        void DrawIndexed(uint32_t index_count, uint32_t instance_count, uint32_t first_index, int32_t vertex_offset, uint32_t first_instance);
+
+
         void Test(
             Rectangle<int> const& render_area
         );
@@ -87,7 +103,7 @@ namespace Rc
         VkCommandPool m_vk_pool {VK_NULL_HANDLE};
 
         // Primary command buffers.
-        VkCommandBuffer m_vk_buffer {VK_NULL_HANDLE}; // --------------------- rename to vk_command_buffer
+        VkCommandBuffer m_vk_command_buffer {VK_NULL_HANDLE};
 
         int m_color_attachments_count {0};
 

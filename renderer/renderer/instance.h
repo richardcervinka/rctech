@@ -1,14 +1,11 @@
 #pragma once
 
 #include "vulkan/instance.h"
-#include <cstdint>
 #include <vector>
 #include <map>
-#include "error.h"
 #include "adapter.h"
 #include <Windows.h>
 #include "platform/window.h"
-#include "swap_chain.h"
 #include "surface.h"
 
 namespace Rc

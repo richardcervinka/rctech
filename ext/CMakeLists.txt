@@ -2,6 +2,13 @@
 
 add_subdirectory("VulkanMemoryAllocator")
 
+# Disable warnings
+target_compile_options(VulkanMemoryAllocator INTERFACE
+    $<$<CXX_COMPILER_ID:MSVC>:/W0>
+    $<$<CXX_COMPILER_ID:Clang>:-w>
+    $<$<CXX_COMPILER_ID:GNU>:-w>
+)
+
 # Tiny glTF
 
 set(TINYGLTF_HEADER_ONLY ON CACHE INTERNAL "" FORCE)

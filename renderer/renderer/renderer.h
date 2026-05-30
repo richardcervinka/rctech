@@ -3,9 +3,7 @@
 #include "instance.h"
 #include "platform/window.h"
 #include "texture.h"
-#include "vertex_traits.h"
 #include <array>
-#include <optional>
 #include "shader.h"
 
 namespace Rc
@@ -42,15 +40,17 @@ namespace Rc
         Renderer(Renderer&& other) = delete;
         Renderer& operator=(Renderer&& other) = delete;
 
-        void Initialize(Window& wnd);
+        void Initialize(Window& window);
 
         void Resize(int width, int height);
 
+        // Get width of the associated swap chain.
         int Width() const
         {
             return m_swap_chain->Width();
         }
 
+        // Get height of the associated swap chain.
         int Height() const
         {
             return m_swap_chain->Width();
@@ -62,14 +62,14 @@ namespace Rc
         // BeginFrame -> render commands -> EndFrame
         void EndFrame();
 
-        void Test();
-
     private:
+        // Assign vertex shader to the slot.
         void SetVertexShader(VertexShaderSlot slot, std::unique_ptr<Shader> shader)
         {
             m_vertex_shaders[static_cast<std::size_t>(slot)] = std::move(shader);
         }
 
+        // Assign pixel shader to the slot.
         void SetPixelShader(PixelShaderSlot slot, std::unique_ptr<Shader> shader)
         {
             m_pixel_shaders[static_cast<std::size_t>(slot)] = std::move(shader);
@@ -113,7 +113,7 @@ namespace Rc
         // Frames-In-Flight
         std::vector<Frame> m_frames;
 
-        uint64_t m_frame {0}; // ------------------------ rename to frame_number
+        uint64_t m_frame_number {0};
 
         std::vector<std::unique_ptr<TextureView2D>> m_back_buffers; //--------------------------- docasne ?
 
@@ -125,8 +125,11 @@ namespace Rc
         std::unique_ptr<StagingBuffer> m_staging_buffer;
 
         std::unique_ptr<VertexBuffer> m_vertex_buffer; //------------------------- TEST
+        std::unique_ptr<IndexBuffer> m_index_buffer; //------------------------- TEST
 
         Window::EventSize::Handler m_on_window_size {this, &Renderer::OnWindowSize};
+
+        void Test(Frame& frame);
     };
 
 } // Rc

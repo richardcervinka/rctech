@@ -22,14 +22,16 @@ namespace Rc::Generic
         using Platform::Application::GetCmdArgs;
 
         Application();
-
         ~Application();
+
+        Application(Application const&) = delete;
+        Application(Application&&) = delete;
+        Application& operator=(Application const&) = delete;
+        Application& operator=(Application&&) = delete;
 
         void Create(ApplicationInfo const& info);
 
-		// static void AttachDebugConsole();
-
-		int Run();
+        int Run();
 
         void BeginFrame() override;
         void EndFrame() override;
@@ -44,15 +46,15 @@ namespace Rc::Generic
         std::string m_name;
 
         // Main window.
-		std::unique_ptr<Window> m_window;
+        std::unique_ptr<Window> m_window;
 
         std::unique_ptr<Renderer> m_renderer;
 
         // Main loop time point, application time epoch.
-		Clock::time_point m_time_run;
+        Clock::time_point m_time_run;
 
-		// Constant time between BeginFrame() and EndFrame().
-		Clock::time_point m_time_now;
+        // Constant time between BeginFrame() and EndFrame().
+        Clock::time_point m_time_now;
     };
 
 } // Rc::Generic

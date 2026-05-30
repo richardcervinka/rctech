@@ -1,5 +1,4 @@
 #include "shader.h"
-#include "error.h"
 
 namespace Rc
 {
@@ -20,7 +19,7 @@ namespace Rc
 
     Shader::~Shader()
     {
-        if (m_vk_device)
+        if (m_vk_device != nullptr)
         {
             m_vk_device->DestroyShaderModule(m_vk_shader_module);
         }

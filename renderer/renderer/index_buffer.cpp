@@ -1,10 +1,10 @@
-#include "vertex_buffer.h"
+#include "index_buffer.h"
 
 namespace Rc
 {
     // // VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT |
     // // VMA_ALLOCATION_CREATE_MAPPED_BIT
-    VertexBuffer::VertexBuffer(VmaAllocator vma_allocator, std::size_t size)
+    IndexBuffer::IndexBuffer(VmaAllocator vma_allocator, std::size_t size)
     {
         VmaAllocationCreateInfo alloc_info {};
         alloc_info.usage = VMA_MEMORY_USAGE_AUTO;
@@ -17,7 +17,7 @@ namespace Rc
             .size = size,
             .usage = VkBufferUsageFlags{
                 VK_BUFFER_USAGE_TRANSFER_DST_BIT |
-                VK_BUFFER_USAGE_VERTEX_BUFFER_BIT
+                VK_BUFFER_USAGE_INDEX_BUFFER_BIT
             },
             .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
             .queueFamilyIndexCount = 0,

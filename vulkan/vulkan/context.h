@@ -5,7 +5,7 @@
 #include "allocator.h"
 #include "platform/library.h"
 #include "error.h"
-#include <string_view>
+#include <string>
 #include <span>
 #include <memory>
 
@@ -50,10 +50,10 @@ namespace Rc
         VulkanVersion EnumerateInstanceVersion() const;
 
         // vkEnumerateInstanceExtensionProperties
-        uint32_t EnumerateInstanceExtensionPropertiesCount(std::string_view layer_name = {}) const;
+        uint32_t EnumerateInstanceExtensionPropertiesCount(std::string const& layer_name = {}) const;
 
         // vkEnumerateInstanceExtensionProperties
-        std::span<VkExtensionProperties> EnumerateInstanceExtensionProperties(std::span<VkExtensionProperties> buffer, std::string_view layer_name = {}) const;
+        std::span<VkExtensionProperties> EnumerateInstanceExtensionProperties(std::span<VkExtensionProperties> buffer, std::string const& layer_name = {}) const;
 
         // vkCreateInstance
         std::unique_ptr<VulkanInstance> CreateInstance(VkInstanceCreateInfo const& create_info) const;

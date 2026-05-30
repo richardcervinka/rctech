@@ -1,20 +1,20 @@
 #pragma once
 
 #include <string>
-#include <string_view>
 #include <Windows.h>
-#include <format>
 
 namespace Rc::Log
 {
-    void Debug(std::string_view str)
+    inline void Debug(std::string str)
     {
-        OutputDebugString(str.data());
+        str += '\n';
+        OutputDebugStringA(reinterpret_cast<LPCSTR>(str.data()));
     }
 
-    void Error(std::string_view str)
+    inline void Error(std::string str)
     {
-        OutputDebugString(str.data());
+        str += '\n';
+        OutputDebugStringA(reinterpret_cast<LPCSTR>(str.data()));
     }
     
 } // namespce Rc::Log

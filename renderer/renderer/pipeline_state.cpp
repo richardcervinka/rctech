@@ -1,5 +1,4 @@
 #include "pipeline_state.h"
-#include "error.h"
 #include <array>
 #include <vector>
 #include <cassert>
@@ -16,7 +15,7 @@ namespace Rc
 
     Pipeline::~Pipeline()
     {
-        if (m_vk_device)
+        if (m_vk_device != nullptr)
         {
             m_vk_device->DestroyPipeline(m_vk_pipeline);
         }
@@ -43,7 +42,7 @@ namespace Rc
 
     PipelineLayout::~PipelineLayout()
     {
-        if (m_vk_device)
+        if (m_vk_device != nullptr)
         {
             m_vk_device->DestroyPipelineLayout(m_vk_pipeline_layout);
         }
@@ -127,6 +126,10 @@ namespace Rc
         m_vk_pipeline_rendering.pColorAttachmentFormats = &m_vk_format;
         m_vk_pipeline_rendering.depthAttachmentFormat = VK_FORMAT_UNDEFINED;
         m_vk_pipeline_rendering.stencilAttachmentFormat = VK_FORMAT_UNDEFINED;
+
+        m_vk_vertex_binding_desc.stride = 0;
+        m_vk_vertex_binding_desc.binding = 0;
+        m_vk_vertex_binding_desc.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
     }
 
     std::unique_ptr<Pipeline> PipelineFactory::Create()
@@ -228,7 +231,16 @@ namespace Rc
     {
         m_vk_vertex_binding_desc.binding = 0;
         m_vk_vertex_binding_desc.stride = stride;
+    }
+
+    void PipelineFactory::SetVertexInputVertexRate()
+    {
         m_vk_vertex_binding_desc.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+    }
+
+    void PipelineFactory::SetVertexInputInstanceRate()
+    {
+        m_vk_vertex_binding_desc.inputRate = VK_VERTEX_INPUT_RATE_INSTANCE;
     }
 
 } // Rc

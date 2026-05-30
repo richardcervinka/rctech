@@ -3,16 +3,18 @@
 #include <array>
 #include <cstdint>
 #include <Windows.h>
+#include <hidusage.h>
+#include <utility>
 #include "error.h"
 
 namespace Rc::Input
 {
-    ButtonEvent g_event_button_pushed;
-    ButtonEvent g_event_button_released;
-    MouseMoveEvent g_event_mouse_move;
-    std::array<ButtonState, 256> g_buttons {};
+    static ButtonEvent g_event_button_pushed;
+    static ButtonEvent g_event_button_released;
+    static MouseMoveEvent g_event_mouse_move;
+    static std::array<ButtonState, 256> g_buttons {};
 
-    KeyCode TranslateMakeCode(USHORT code)
+    static KeyCode TranslateMakeCode(USHORT code)
     {
         static constexpr std::array<KeyCode, 255> table
         {
@@ -154,7 +156,7 @@ namespace Rc::Input
         return table[static_cast<uint8_t>(code & 0x7F)];
     }
 
-    KeyCode TranslateMakeCodeE0(USHORT code)
+    static KeyCode TranslateMakeCodeE0(USHORT code)
     {
         static constexpr std::array<KeyCode, 255> table
         {
@@ -299,35 +301,62 @@ namespace Rc::Input
     }
 
     // Push button identified by the virtual key code.
-    void PushKey(KeyCode btn)
+    static void PushKey(KeyCode btn)
     {
-        if (g_buttons[(int)btn] != ButtonState::Released)
+        if (g_buttons[std::to_underlying(btn)] != ButtonState::Released)
         {
-            g_buttons[(int)btn] = ButtonState::Released;
+            g_buttons[std::to_underlying(btn)] = ButtonState::Released;
 
             g_event_button_pushed.Dispatch(btn);
         }
     }
 
     // Release button identified by the virtual key code.
-    void ReleaseKey(KeyCode btn)
+    static void ReleaseKey(KeyCode btn)
     {
-        if (g_buttons[(int)btn] != ButtonState::Pushed)
+        if (g_buttons[std::to_underlying(btn)] != ButtonState::Pushed)
         {
-            g_buttons[(int)btn] = ButtonState::Pushed;
+            g_buttons[std::to_underlying(btn)] = ButtonState::Pushed;
 
             g_event_button_released.Dispatch(btn);
         }
     }
 
+    void Register()
+    {
+        std::array<RAWINPUTDEVICE, 2> rid = {
+            // Keyboard
+            RAWINPUTDEVICE
+            {
+                .usUsagePage = 0x01,
+                .usUsage = HID_USAGE_GENERIC_KEYBOARD,
+                .dwFlags = RIDEV_DEVNOTIFY, //RIDEV_DEVNOTIFY,
+                .hwndTarget = NULL
+            },
+            // Mouse
+            RAWINPUTDEVICE
+            {
+                .usUsagePage = 0x01,
+                .usUsage = HID_USAGE_GENERIC_MOUSE,
+                .dwFlags = RIDEV_DEVNOTIFY,
+                .hwndTarget = NULL
+            }
+        };
+
+        if (RegisterRawInputDevices(rid.data(), rid.size(), sizeof(RAWINPUTDEVICE)) == FALSE)
+        {
+            throw SystemException(GetLastError());
+        }
+    }
+
     void Read()
     {
-        alignas(RAWINPUT) std::array<std::byte, sizeof(RAWINPUT) * 32> buffer;
+        alignas(RAWINPUT) std::array<std::byte, sizeof(RAWINPUT) * 32> buffer {};
 
         UINT size = buffer.size();
 
         // Get raw input data
-        auto const count = GetRawInputBuffer((PRAWINPUT)buffer.data(), &size, sizeof(RAWINPUTHEADER));
+        auto const count = GetRawInputBuffer(reinterpret_cast<PRAWINPUT>(buffer.data()), &size, sizeof(RAWINPUTHEADER));
 
         // No raw inputs.
         if (count == 0)

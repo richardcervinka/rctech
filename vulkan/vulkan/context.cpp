@@ -51,20 +51,20 @@ namespace Rc
         return {result};
     }
 
-    uint32_t VulkanContext::EnumerateInstanceExtensionPropertiesCount(std::string_view layer_name) const
+    uint32_t VulkanContext::EnumerateInstanceExtensionPropertiesCount(std::string const& layer_name) const
     {
         uint32_t result = 0;
-        if (auto vk_result = m_vkEnumerateInstanceExtensionProperties(layer_name.data(), &result, nullptr); vk_result != VK_SUCCESS)
+        if (auto vk_result = m_vkEnumerateInstanceExtensionProperties(layer_name.c_str(), &result, nullptr); vk_result != VK_SUCCESS)
         {
             throw VulkanException(vk_result);
         }
         return result;
     }
 
-    std::span<VkExtensionProperties> VulkanContext::EnumerateInstanceExtensionProperties(std::span<VkExtensionProperties> buffer, std::string_view layer_name) const
+    std::span<VkExtensionProperties> VulkanContext::EnumerateInstanceExtensionProperties(std::span<VkExtensionProperties> buffer, std::string const& layer_name) const
     {
         auto count = static_cast<uint32_t>(buffer.size());
-        if (auto vk_result = m_vkEnumerateInstanceExtensionProperties(layer_name.data(), &count, buffer.data()); vk_result != VK_SUCCESS)
+        if (auto vk_result = m_vkEnumerateInstanceExtensionProperties(layer_name.c_str(), &count, buffer.data()); vk_result != VK_SUCCESS)
         {
             throw VulkanException(vk_result);
         }
@@ -74,12 +74,10 @@ namespace Rc
     std::unique_ptr<VulkanInstance> VulkanContext::CreateInstance(VkInstanceCreateInfo const& create_info) const
     {
         VkInstance vk_instance {VK_NULL_HANDLE};
-
         if (auto vk_result = m_vkCreateInstance(&create_info, nullptr, &vk_instance); vk_result != VK_SUCCESS)
         {
             throw VulkanException(vk_result);
         }
-
         return std::make_unique<VulkanInstance>(*this, vk_instance);
     }
 

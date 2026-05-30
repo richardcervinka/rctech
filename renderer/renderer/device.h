@@ -3,7 +3,6 @@
 #include "vulkan/instance.h"
 #include "vulkan/device.h"
 #include <cstdint>
-#include <optional>
 #include <string>
 #include <vector>
 #include <memory>
@@ -11,15 +10,13 @@
 #include <map>
 #include "swap_chain.h"
 #include "command_queue.h"
-#include "command_list.h"
 #include "pipeline_state.h"
 #include "fence.h"
-#include "vertex_buffer.h"
 #include "platform/window.h"
-#include "buffer.h"
 #include "shader.h"
 #include "surface.h"
 #include "vertex_buffer.h"
+#include "index_buffer.h"
 #include "staging_buffer.h"
 
 namespace Rc
@@ -58,6 +55,7 @@ namespace Rc
         PipelineFactory CreatePipelineFactory();
 
         std::unique_ptr<VertexBuffer> AllocateVertexBuffer(std::size_t size) const;
+        std::unique_ptr<IndexBuffer> AllocateIndexBuffer(std::size_t size) const;
         std::unique_ptr<StagingBuffer> AllocateStagingBuffer(std::size_t size) const;
 
     private:

@@ -4,6 +4,8 @@
 
 namespace Rc::Input
 {
+    void Register();
+
     void Read();
 
 } // Rc::Input

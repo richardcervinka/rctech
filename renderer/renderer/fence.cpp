@@ -1,5 +1,4 @@
 #include "fence.h"
-#include "error.h"
 
 namespace Rc
 {
@@ -17,7 +16,7 @@ namespace Rc
 
     Fence::~Fence()
     {
-        if (m_vk_device)
+        if (m_vk_device != nullptr)
         {
             m_vk_device->DestroyFence(m_vk_fence);
         }

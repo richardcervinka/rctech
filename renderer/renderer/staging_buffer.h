@@ -1,7 +1,6 @@
 #pragma once
 
 #include "buffer.h"
-#include <memory>
 #include <span>
 #include <cstddef>
 
@@ -20,7 +19,6 @@ namespace Rc
         StagingBuffer& operator=(StagingBuffer&& other) = delete;
 
         std::span<std::byte> Data();
-        //std::span<std::byte> Map(); // -------------- unmap?
     };
 
 } // Rc

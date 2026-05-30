@@ -7,7 +7,7 @@
   },
   "configurePresets": [
     {
-      "name": "base",
+      "name": "clang-base",
       "hidden": true,
       "generator": "Ninja",
       "cacheVariables": {
@@ -15,66 +15,31 @@
       }
     },
     {
-      "name": "msvc-debug",
-      "inherits": "base",
-      "binaryDir": "build/msvc-debug",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug",
-        "CMAKE_C_COMPILER": "cl",
-        "CMAKE_CXX_COMPILER": "cl"
-      }
-    },
-    {
-      "name": "msvc-release",
-      "inherits": "base",
-      "binaryDir": "build/msvc-release",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release",
-        "CMAKE_C_COMPILER": "cl",
-        "CMAKE_CXX_COMPILER": "cl"
-      }
-    },
-    {
       "name": "clang-debug",
-      "inherits": "base",
+      "displayName": "Clang (debug)",
+      "inherits": "clang-base",
       "binaryDir": "build/clang-debug",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_C_COMPILER": "clang",
-        "CMAKE_CXX_COMPILER": "clang++"
+        "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_CXX_FLAGS": "-finput-charset=UTF-8 -fexec-charset=UTF-8"
       }
     },
     {
       "name": "clang-release",
-      "inherits": "base",
+      "displayName": "Clang (release)",
+      "inherits": "clang-base",
       "binaryDir": "build/clang-release",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
         "CMAKE_C_COMPILER": "clang",
-        "CMAKE_CXX_COMPILER": "clang++"
-      }
-    },
-    {
-      "name": "clang-test",
-      "inherits": "base",
-      "binaryDir": "build/clang-test",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug",
-        "BUILD_TESTING": "ON",
-        "CMAKE_C_COMPILER": "clang",
-        "CMAKE_CXX_COMPILER": "clang++"
+        "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_CXX_FLAGS": "-finput-charset=UTF-8 -fexec-charset=UTF-8"
       }
     }
   ],
   "buildPresets": [
-    {
-      "name": "msvc-debug",
-      "configurePreset": "msvc-debug"
-    },
-    {
-      "name": "msvc-release",
-      "configurePreset": "msvc-release"
-    },
     {
       "name": "clang-debug",
       "configurePreset": "clang-debug"
@@ -82,10 +47,6 @@
     {
       "name": "clang-release",
       "configurePreset": "clang-release"
-    },
-    {
-      "name": "clang-test",
-      "configurePreset": "clang-test"
     }
   ]
 }

@@ -19,7 +19,7 @@ namespace Rc
 
     Surface::~Surface()
     {
-        if (m_vk_instance)
+        if (m_vk_instance != nullptr)
         {
             m_vk_instance->DestroySurfaceKHR(m_vk_surface);
         }

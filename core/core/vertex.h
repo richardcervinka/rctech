@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include "base/float.h"
 
 namespace Rc

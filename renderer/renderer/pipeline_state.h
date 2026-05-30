@@ -3,7 +3,6 @@
 #include "vulkan/device.h"
 #include <memory>
 #include <span>
-#include <optional>
 #include <vector>
 
 namespace Rc
@@ -46,6 +45,10 @@ namespace Rc
         VkPipelineLayout m_vk_pipeline_layout {VK_NULL_HANDLE};
     };
 
+    // Setup vertex buffer:
+    // 1. SetVertexInputBinding
+    // 2. SetVertexInputAttributes
+    //
     class PipelineFactory
     {
     public:
@@ -55,12 +58,12 @@ namespace Rc
 
         void SetVertexShader(VkShaderModule vs)
         {
-            m_vk_vs = std::move(vs);
+            m_vk_vs = vs;
         }
 
         void SetPixelShader(VkShaderModule ps)
         {
-            m_vk_ps = std::move(ps);
+            m_vk_ps = ps;
         }
 
         void SetVertexInputAttributes(std::span<VkVertexInputAttributeDescription const> attributes)
@@ -68,14 +71,12 @@ namespace Rc
             m_vk_vertex_input_arrtibutes = {attributes.begin(), attributes.end()};
         }
 
-        void SetVertexInputRate(uint32_t stride)
-        {
-            m_vk_vertex_binding_desc = VkVertexInputBindingDescription(0, stride, VK_VERTEX_INPUT_RATE_VERTEX);
-        }
+        void SetVertexInputVertexRate();
+        void SetVertexInputInstanceRate();
 
         void SetPipelineLayout(std::shared_ptr<PipelineLayout> layout) { m_vk_pipeline_layout = std::move(layout); }
 
-        // stride = vertex size
+        // stride = size of vertex
         // 0 to disable vertex input binding
         void SetVertexInputBinding(std::size_t stride);
 

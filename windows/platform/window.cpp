@@ -1,11 +1,9 @@
 ﻿#include "window.h"
 #include <stdexcept>
-#include <iostream>
 #include <cassert>
-#include <array>
 #include <hidusage.h>
+#include <string>
 #include "base/utf.h"
-#include "utility.h"
 
 namespace Rc
 {
@@ -49,6 +47,14 @@ namespace Rc
         case WM_PAINT:
             ValidateRect(hwnd, nullptr);
             return 0;
+
+        case WM_SETCURSOR:
+            if (LOWORD(lparam) == HTCLIENT)
+            {
+                SetCursor(LoadCursor(NULL, IDC_ARROW));
+                return TRUE;
+            }
+            break;
         }
 
         return DefWindowProc(hwnd, msg, wparam, lparam);
@@ -59,29 +65,29 @@ namespace Rc
         const auto ulabel = Utf16::FromUtf8(label);
 
         // Define window class
-        constexpr wchar_t class_name[] = L"MainWindowClass";
+        const std::wstring class_name {L"MainWindowClass"};
 
         WNDCLASSW wc {};
         wc.lpfnWndProc = WindowProc;
         wc.hInstance = GetModuleHandle(NULL);
-        wc.lpszClassName = class_name;
+        wc.lpszClassName = class_name.c_str();
 
         RegisterClassW(&wc);
 
         // Create the window
-        m_hwnd = CreateWindowExW(
-            0,  // Optional window styles
-            class_name,  // Window class
-            reinterpret_cast<wchar_t const*>(ulabel.data()),  // Window text
-            WS_OVERLAPPEDWINDOW,  // Window style
+        m_hwnd = CreateWindowEx(
+            0,
+            class_name.c_str(),
+            reinterpret_cast<LPCWSTR>(ulabel.c_str()),
+            WS_OVERLAPPEDWINDOW,
             CW_USEDEFAULT,
             CW_USEDEFAULT,
             CW_USEDEFAULT,
-            CW_USEDEFAULT,  // Size and position
-            NULL,  // Parent
-            NULL,  // Menu
+            CW_USEDEFAULT,
+            NULL,
+            NULL,
             wc.hInstance,
-            this  // Additional data
+            this
         );
 
         if (m_hwnd == NULL)
@@ -111,10 +117,10 @@ namespace Rc
         }
 
         return {
-            rect.left, 
-            rect.top,
-            rect.right - rect.left,
-            rect.bottom - rect.top
+            .x = rect.left, 
+            .y = rect.top,
+            .w = rect.right - rect.left,
+            .h = rect.bottom - rect.top
         };
     }
 

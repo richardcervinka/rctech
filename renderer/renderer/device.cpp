@@ -1,7 +1,7 @@
 #include "device.h"
 #include "error.h"
-#include <iostream>
 #include <map>
+#include <array>
 
 namespace Rc
 {
@@ -81,7 +81,7 @@ namespace Rc
         }
 
         // [graphics, transfer]
-        float gueue_priorities[] = {1.0};
+        std::array<float, 1> gueue_priorities = {1.0};
 
         // [graphics, transfer]
         std::array<VkDeviceQueueCreateInfo, 2> queue_info {};
@@ -95,8 +95,8 @@ namespace Rc
         {
             auto const& properties = family_properties[family];
 
-            if ((properties.queueFlags & VK_QUEUE_GRAPHICS_BIT) &&
-                (properties.queueFlags & VK_QUEUE_TRANSFER_BIT))
+            if (((properties.queueFlags & VK_QUEUE_GRAPHICS_BIT) != 0) &&
+                ((properties.queueFlags & VK_QUEUE_TRANSFER_BIT) != 0))
             {
                 if (!m_instance->GetPhysicalDevicePresentationSupport(vk_physical_device, family))
                 {
@@ -107,7 +107,7 @@ namespace Rc
                 {
                     queue_info[0].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
                     queue_info[0].queueFamilyIndex = family;
-                    queue_info[0].pQueuePriorities = gueue_priorities;
+                    queue_info[0].pQueuePriorities = gueue_priorities.data();
                     queue_info[0].queueCount = 1;
                     queue_info_count = 1;
 
@@ -132,7 +132,7 @@ namespace Rc
             {
                 queue_info[1].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
                 queue_info[1].queueFamilyIndex = family;
-                queue_info[1].pQueuePriorities = gueue_priorities; // --------------- review
+                queue_info[1].pQueuePriorities = gueue_priorities.data(); // --------------- review
                 queue_info[1].queueCount = 1;
                 queue_info_count = 2;
 
@@ -283,6 +283,11 @@ namespace Rc
     std::unique_ptr<VertexBuffer> Device::AllocateVertexBuffer(std::size_t size) const
     {
         return std::make_unique<VertexBuffer>(m_vma_allocator, size);
+    }
+
+    std::unique_ptr<IndexBuffer> Device::AllocateIndexBuffer(std::size_t size) const
+    {
+        return std::make_unique<IndexBuffer>(m_vma_allocator, size);
     }
 
     std::unique_ptr<StagingBuffer> Device::AllocateStagingBuffer(std::size_t size) const
