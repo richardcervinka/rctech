@@ -160,7 +160,7 @@ namespace Rc
 
     void Renderer::BeginFrame()
     {
-        auto& frame = m_frames[m_frame % m_frames.size()];
+        auto& frame = m_frames[m_frame_number % m_frames.size()];
 
         frame.fence->Wait();
 
@@ -168,14 +168,14 @@ namespace Rc
 
         frame.render_commands->Begin();
 
-        Test();
+        Test(frame);
     }
 
     void Renderer::EndFrame()
     {
-        auto& frame = m_frames[m_frame % m_frames.size()];
+        auto& frame = m_frames[m_frame_number % m_frames.size()];
 
-        frame.render_commands->BarrierPresentFramebuffer(m_swap_chain->GetImage());
+        frame.render_commands->PresentFramebuffer(m_swap_chain->GetImage());
 
         frame.render_commands->End();
 
@@ -183,13 +183,11 @@ namespace Rc
 
         m_render_queue->Present(*m_swap_chain); //--------------------------------- not here
 
-        m_frame += 1;
+        m_frame_number += 1;
     }
 
-    void Renderer::Test()
+    void Renderer::Test(Frame& frame)
     {
-        auto& frame = m_frames[m_frame % m_frames.size()];
-        
         auto back_buffer_index = m_swap_chain->AcquireNextImage();
 
         // Transfer test
@@ -207,7 +205,6 @@ namespace Rc
         frame.render_commands->BeginRendering({0, 0, m_swap_chain->Width(), m_swap_chain->Height()});
         frame.render_commands->BindPipeline(*m_test_vertex_pipeline);
         frame.render_commands->Test({0, 0, m_swap_chain->Width(), m_swap_chain->Height()});
-        //frame.render_commands->Draw(3, 1, 0, 0);
         frame.render_commands->DrawIndexed(6, 1, 0, 0, 0);
         frame.render_commands->EndRendering();
     }

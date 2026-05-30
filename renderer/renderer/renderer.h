@@ -62,8 +62,6 @@ namespace Rc
         // BeginFrame -> render commands -> EndFrame
         void EndFrame();
 
-        void Test();
-
     private:
         // Assign vertex shader to the slot.
         void SetVertexShader(VertexShaderSlot slot, std::unique_ptr<Shader> shader)
@@ -115,7 +113,7 @@ namespace Rc
         // Frames-In-Flight
         std::vector<Frame> m_frames;
 
-        uint64_t m_frame {0}; // ------------------------ rename to frame_number
+        uint64_t m_frame_number {0};
 
         std::vector<std::unique_ptr<TextureView2D>> m_back_buffers; //--------------------------- docasne ?
 
@@ -130,6 +128,8 @@ namespace Rc
         std::unique_ptr<IndexBuffer> m_index_buffer; //------------------------- TEST
 
         Window::EventSize::Handler m_on_window_size {this, &Renderer::OnWindowSize};
+
+        void Test(Frame& frame);
     };
 
 } // Rc

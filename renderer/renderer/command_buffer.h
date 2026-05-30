@@ -48,7 +48,7 @@ namespace Rc
         void BarrierRenderFramebuffer(Texture2D const& image);
 
         // Swap chain present target barrier
-        void BarrierPresentFramebuffer(Texture2D const& image);
+        void PresentFramebuffer(Texture2D const& image);
 
         void TransferBuffer(StagingBuffer& src, Buffer& dst, uint64_t src_offset, uint64_t dst_offset, uint64_t size);
         

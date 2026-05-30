@@ -114,7 +114,7 @@ namespace Rc
         );
     }
 
-    void CommandBuffer::BarrierPresentFramebuffer(Texture2D const& image)
+    void CommandBuffer::PresentFramebuffer(Texture2D const& image)
     {
         VkImageMemoryBarrier const barrier
         {
