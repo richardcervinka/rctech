@@ -1,12 +1,12 @@
 struct Input
 {
-    [[vk::location(0)]] float3 position : POSITION; // POSITION;  SV_Position = clip space
+    [[vk::location(0)]] float3 position : POSITION;
     [[vk::location(1)]] float3 color : COLOR;
 };
 
 struct Output
 {
-    float4 position : SV_Position;
+    float4 position : SV_Position; // clip space
     float3 color : COLOR;
 };
 

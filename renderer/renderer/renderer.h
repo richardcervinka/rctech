@@ -3,7 +3,6 @@
 #include "instance.h"
 #include "platform/window.h"
 #include "texture.h"
-#include "vertex_traits.h"
 #include <array>
 #include "shader.h"
 
@@ -41,15 +40,17 @@ namespace Rc
         Renderer(Renderer&& other) = delete;
         Renderer& operator=(Renderer&& other) = delete;
 
-        void Initialize(Window& wnd);
+        void Initialize(Window& window);
 
         void Resize(int width, int height);
 
+        // Get width of the associated swap chain.
         int Width() const
         {
             return m_swap_chain->Width();
         }
 
+        // Get height of the associated swap chain.
         int Height() const
         {
             return m_swap_chain->Width();
@@ -64,11 +65,13 @@ namespace Rc
         void Test();
 
     private:
+        // Assign vertex shader to the slot.
         void SetVertexShader(VertexShaderSlot slot, std::unique_ptr<Shader> shader)
         {
             m_vertex_shaders[static_cast<std::size_t>(slot)] = std::move(shader);
         }
 
+        // Assign pixel shader to the slot.
         void SetPixelShader(PixelShaderSlot slot, std::unique_ptr<Shader> shader)
         {
             m_pixel_shaders[static_cast<std::size_t>(slot)] = std::move(shader);

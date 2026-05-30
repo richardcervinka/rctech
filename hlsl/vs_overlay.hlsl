@@ -1,12 +1,8 @@
 static const float2 positions[3] = {
-    float2(0.0, -0.7),
-    float2(0.7, 0.7),
-    float2(-0.7, 0.7)
+    float2(-1.0, -3.0),
+    float2(3.0, 1.0),
+    float2(-1.0, 1.0)
 };
-
-// float2(-1.0, -3.0),
-// float2(3.0, 1.0),
-// float2(-1.0, 1.0)
 
 static const float3 colors[3] = {
     float3(1, 0, 0),

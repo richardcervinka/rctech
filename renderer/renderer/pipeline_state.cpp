@@ -126,6 +126,10 @@ namespace Rc
         m_vk_pipeline_rendering.pColorAttachmentFormats = &m_vk_format;
         m_vk_pipeline_rendering.depthAttachmentFormat = VK_FORMAT_UNDEFINED;
         m_vk_pipeline_rendering.stencilAttachmentFormat = VK_FORMAT_UNDEFINED;
+
+        m_vk_vertex_binding_desc.stride = 0;
+        m_vk_vertex_binding_desc.binding = 0;
+        m_vk_vertex_binding_desc.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
     }
 
     std::unique_ptr<Pipeline> PipelineFactory::Create()
@@ -227,7 +231,16 @@ namespace Rc
     {
         m_vk_vertex_binding_desc.binding = 0;
         m_vk_vertex_binding_desc.stride = stride;
+    }
+
+    void PipelineFactory::SetVertexInputVertexRate()
+    {
         m_vk_vertex_binding_desc.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+    }
+
+    void PipelineFactory::SetVertexInputInstanceRate()
+    {
+        m_vk_vertex_binding_desc.inputRate = VK_VERTEX_INPUT_RATE_INSTANCE;
     }
 
 } // Rc

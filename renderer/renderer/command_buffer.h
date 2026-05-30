@@ -9,7 +9,6 @@
 #include <cstdint>
 #include "image.h"
 #include "texture.h"
-#include "swap_chain.h" //----------------------- framebuffer
 #include "staging_buffer.h"
 #include "pipeline_state.h"
 
@@ -51,10 +50,11 @@ namespace Rc
         void BarrierPresentFramebuffer(Texture2D const& image);
 
         void TransferBuffer(StagingBuffer& src, Buffer& dst, uint64_t src_offset, uint64_t dst_offset, uint64_t size);
+        
         // Set vertex buffer read barrier.
         void UseBuffer(VertexBuffer& vb, uint64_t offset, uint64_t size);
 
-        void BindVertexBuffer(VertexBuffer& vb, uint64_t offset); // -------- Zkombinovat s Use?
+        void BindVertexBuffer(VertexBuffer& vb, uint64_t offset);
 
         // void BeginRenderPass()
 
@@ -93,7 +93,7 @@ namespace Rc
         VkCommandPool m_vk_pool {VK_NULL_HANDLE};
 
         // Primary command buffers.
-        VkCommandBuffer m_vk_buffer {VK_NULL_HANDLE}; // --------------------- rename to vk_command_buffer
+        VkCommandBuffer m_vk_command_buffer {VK_NULL_HANDLE};
 
         int m_color_attachments_count {0};
 

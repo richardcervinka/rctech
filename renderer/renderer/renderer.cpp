@@ -3,6 +3,7 @@
 #include <span>
 #include "platform/log.h"
 #include "core/vertex.h" //----------
+#include "vertex_traits.h"
 
 namespace Rc
 {
@@ -49,12 +50,12 @@ namespace Rc
         }
     }
 
-    void Renderer::Initialize(Window& wnd)
+    void Renderer::Initialize(Window& window)
     {
         m_instance = std::make_unique<Instance>();
         m_instance->EnableValidation();
 
-        m_surface = m_instance->CreateSurface(wnd);
+        m_surface = m_instance->CreateSurface(window);
 
         // Get available GPUs
         auto adapters = m_instance->EnumerateAdapters();
@@ -62,7 +63,7 @@ namespace Rc
         PrintAdapters(adapters);
 
         m_device = adapters.back().CreateDevice(*m_surface);
-        m_swap_chain = m_device->CreateSwapChain(*m_surface, wnd);
+        m_swap_chain = m_device->CreateSwapChain(*m_surface, window);
         m_render_queue = m_device->CreateGraphicsQueue();
 
         // Create primary command buffer for each image in the swap chain.
@@ -77,7 +78,7 @@ namespace Rc
             m_back_buffers.emplace_back(m_swap_chain->GetImage(i).CreateView());
         }
 
-        // Create embedded shaders
+        // Create embedded shaders.
         SetVertexShader(VertexShaderSlot::Null, m_device->CreateShader(Res::Vs::Dummy()));
         SetVertexShader(VertexShaderSlot::Test, m_device->CreateShader(Res::Vs::Test()));
         SetVertexShader(VertexShaderSlot::Overlay, m_device->CreateShader(Res::Vs::Overlay()));
@@ -85,7 +86,7 @@ namespace Rc
 
         m_staging_buffer = m_device->AllocateStagingBuffer(1024 * 1024 * 4);
 
-        wnd.OnEventSize(m_on_window_size);
+        window.OnEventSize(m_on_window_size);
 
         // ---------------------------- TEST
 
@@ -109,7 +110,6 @@ namespace Rc
             pv[0].color = Float3(1, 0, 0);
             pv[1].color = Float3(0, 1, 0);
             pv[2].color = Float3(0, 0, 1);
-
         }
 
         m_pipeline_layout = m_device->CreatePipelineLayout();
@@ -119,19 +119,17 @@ namespace Rc
 
         pipeline_factory.SetVertexShader(GetVertexShader(VertexShaderSlot::Overlay));
         pipeline_factory.SetPixelShader(GetPixelShader(PixelShaderSlot::Null));
-        pipeline_factory.SetVertexInputRate(0);
         pipeline_factory.SetVertexInputAttributes({});
         pipeline_factory.SetVertexInputBinding(0);
         m_test_pipeline = pipeline_factory.Create();
 
         pipeline_factory.SetVertexShader(GetVertexShader(VertexShaderSlot::Test));
         pipeline_factory.SetPixelShader(GetPixelShader(PixelShaderSlot::Null));
-        pipeline_factory.SetVertexInputRate(VertexBasic::stride);
-        pipeline_factory.SetVertexInputBinding(sizeof(VertexBasic));
+        pipeline_factory.SetVertexInputBinding(VertexBasic::stride);
         pipeline_factory.SetVertexInputAttributes(Traits<VertexBasic>::attributes);
         m_test_vertex_pipeline = pipeline_factory.Create();
 
-        Log::Debug("Renderer initialized\n");
+        Log::Debug("Renderer initialized");
     }
 
     void Renderer::Resize(int width, int height)
@@ -182,8 +180,8 @@ namespace Rc
         auto back_buffer_index = m_swap_chain->AcquireNextImage();
 
         // Transfer test
-        frame.render_commands->TransferBuffer(*m_staging_buffer, *m_vertex_buffer, 0, 0, 4 * 3 * 2 * 3);
-        frame.render_commands->UseBuffer(*m_vertex_buffer, 0, 4 * 3 * 2 * 3);
+        frame.render_commands->TransferBuffer(*m_staging_buffer, *m_vertex_buffer, 0, 0, VertexBasic::stride * 3ull);
+        frame.render_commands->UseBuffer(*m_vertex_buffer, 0, VertexBasic::stride * 3ull);
         frame.render_commands->BindVertexBuffer(*m_vertex_buffer, 0);
 
         frame.render_commands->BarrierRenderFramebuffer(m_swap_chain->GetImage());

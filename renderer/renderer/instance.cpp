@@ -1,4 +1,5 @@
 #include "instance.h"
+#include "platform/log.h"
 #include <iostream>
 
 namespace Rc
@@ -137,12 +138,12 @@ namespace Rc
     }
 
     VkBool32 Instance::VulkanDebugCallback(
-        VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
-        VkDebugUtilsMessageTypeFlagsEXT message_types,
+        [[maybe_unused]] VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
+        [[maybe_unused]] VkDebugUtilsMessageTypeFlagsEXT message_types,
         VkDebugUtilsMessengerCallbackDataEXT const* callback_data,
-        void* user_data)
+        [[maybe_unused]] void* user_data)
     {
-        std::cerr << "Validation Layer: " << callback_data->pMessage << std::endl;
+        Log::Debug(std::format("Validation Layer: {}", callback_data->pMessage));
         return VK_FALSE;  
     }
 

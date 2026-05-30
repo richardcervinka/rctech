@@ -48,7 +48,6 @@ namespace Rc
     // Setup vertex buffer:
     // 1. SetVertexInputBinding
     // 2. SetVertexInputAttributes
-    // 3. SetVertexInputRate
     //
     class PipelineFactory
     {
@@ -72,10 +71,8 @@ namespace Rc
             m_vk_vertex_input_arrtibutes = {attributes.begin(), attributes.end()};
         }
 
-        void SetVertexInputRate(uint32_t stride)
-        {
-            m_vk_vertex_binding_desc = VkVertexInputBindingDescription(0, stride, VK_VERTEX_INPUT_RATE_VERTEX);
-        }
+        void SetVertexInputVertexRate();
+        void SetVertexInputInstanceRate();
 
         void SetPipelineLayout(std::shared_ptr<PipelineLayout> layout) { m_vk_pipeline_layout = std::move(layout); }
 
