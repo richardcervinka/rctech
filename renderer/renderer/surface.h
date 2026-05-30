@@ -18,7 +18,7 @@ namespace Rc
         Surface& operator=(Surface&& other) = delete;
 
     private:
-        friend class Device; // ------- review
+        friend class Device;
 
         VulkanInstance const* m_vk_instance {nullptr};
         VkSurfaceKHR m_vk_surface {VK_NULL_HANDLE};
