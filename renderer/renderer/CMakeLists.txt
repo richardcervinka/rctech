@@ -33,6 +33,8 @@ add_library(renderer STATIC
     "vertex_buffer.cpp"
     "staging_buffer.h"
     "staging_buffer.cpp"
+    "index_buffer.h"
+    "index_buffer.cpp"
     "surface.h"
     "surface.cpp"
     "semaphore.h"

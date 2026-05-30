@@ -285,6 +285,11 @@ namespace Rc
         return std::make_unique<VertexBuffer>(m_vma_allocator, size);
     }
 
+    std::unique_ptr<IndexBuffer> Device::AllocateIndexBuffer(std::size_t size) const
+    {
+        return std::make_unique<IndexBuffer>(m_vma_allocator, size);
+    }
+
     std::unique_ptr<StagingBuffer> Device::AllocateStagingBuffer(std::size_t size) const
     {
         return std::make_unique<StagingBuffer>(m_vma_allocator, size);

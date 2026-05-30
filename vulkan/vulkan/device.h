@@ -159,11 +159,17 @@ namespace Rc
         // vkCmdDraw
         void CmdDraw(VkCommandBuffer command_buffer, uint32_t vertex_count, uint32_t instance_count, uint32_t first_vertex, uint32_t first_instance) const;
 
+        // vkCmdDrawIndexed
+        void CmdDrawIndexed(VkCommandBuffer command_buffer, uint32_t index_count, uint32_t instance_count, uint32_t first_index, int32_t vertex_offset, uint32_t first_instance) const;
+
         // vkCmdCopyBuffer
         void CmdCopyBuffer(VkCommandBuffer command_buffer, VkBuffer src, VkBuffer dst, std::span<VkBufferCopy const> regions) const;
 
         // vkCmdBindVertexBuffers
         void CmdBindVertexBuffers(VkCommandBuffer command_buffer, uint32_t first_binding, uint32_t binding_count, std::span<VkBuffer const> buffers, std::span<VkDeviceSize const> offsets) const;
+
+        // vkCmdBindIndexBuffer
+        void CmdBindIndexBuffer(VkCommandBuffer command_buffer, VkBuffer buffer, VkDeviceSize offset, VkIndexType index_type) const;
 
     private:
         friend class VulkanContext;
@@ -216,11 +222,13 @@ namespace Rc
         PFN_vkCmdBeginRendering m_vkCmdBeginRendering {nullptr};
         PFN_vkCmdEndRendering m_vkCmdEndRendering {nullptr};
         PFN_vkCmdDraw m_vkCmdDraw {nullptr};
+        PFN_vkCmdDrawIndexed m_vkCmdDrawIndexed {nullptr};
         PFN_vkCmdBindPipeline m_vkCmdBindPipeline {nullptr};
         PFN_vkCmdSetViewport m_vkCmdSetViewport {nullptr};
         PFN_vkCmdSetScissor m_vkCmdSetScissor {nullptr};
         PFN_vkCmdCopyBuffer m_vkCmdCopyBuffer {nullptr};
         PFN_vkCmdBindVertexBuffers m_vkCmdBindVertexBuffers {nullptr};
+        PFN_vkCmdBindIndexBuffer m_vkCmdBindIndexBuffer {nullptr};
     };
 
 } // Rc

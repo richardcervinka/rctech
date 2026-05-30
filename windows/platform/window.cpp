@@ -48,7 +48,12 @@ namespace Rc
             ValidateRect(hwnd, nullptr);
             return 0;
 
-        default:
+        case WM_SETCURSOR:
+            if (LOWORD(lparam) == HTCLIENT)
+            {
+                SetCursor(LoadCursor(NULL, IDC_ARROW));
+                return TRUE;
+            }
             break;
         }
 

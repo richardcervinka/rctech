@@ -1,5 +1,6 @@
 #include "renderer.h"
 #include "resources.h"
+#include <cstdint>
 #include <span>
 #include "platform/log.h"
 #include "core/vertex.h" //----------
@@ -20,6 +21,7 @@ namespace Rc
 
         m_staging_buffer = nullptr;
         m_vertex_buffer = nullptr;
+        m_index_buffer = nullptr;
         m_test_vertex_pipeline = nullptr;
         m_test_pipeline = nullptr;
         m_pipeline_layout = nullptr;
@@ -91,6 +93,7 @@ namespace Rc
         // ---------------------------- TEST
 
         m_vertex_buffer = m_device->AllocateVertexBuffer(256);
+        m_index_buffer = m_device->AllocateIndexBuffer(256);
 
         {
             struct Vert
@@ -103,13 +106,23 @@ namespace Rc
 
             Vert* pv = reinterpret_cast<Vert*>(buffer.data());
 
-            pv[0].position = Float3(0.0, -0.7, 0);
+            pv[0].position = Float3(-0.7, -0.7, 0);
             pv[1].position = Float3(0.7, 0.7, 0);
             pv[2].position = Float3(-0.7, 0.7, 0);
+            pv[3].position = Float3(0.7, -0.7, 0);
 
             pv[0].color = Float3(1, 0, 0);
             pv[1].color = Float3(0, 1, 0);
             pv[2].color = Float3(0, 0, 1);
+            pv[3].color = Float3(1, 1, 1);
+
+            auto* ib = reinterpret_cast<uint32_t*>(buffer.data() + 128);
+            ib[0] = 0;
+            ib[1] = 1;
+            ib[2] = 2;
+            ib[3] = 0;
+            ib[4] = 3;
+            ib[5] = 1;
         }
 
         m_pipeline_layout = m_device->CreatePipelineLayout();
@@ -180,9 +193,12 @@ namespace Rc
         auto back_buffer_index = m_swap_chain->AcquireNextImage();
 
         // Transfer test
-        frame.render_commands->TransferBuffer(*m_staging_buffer, *m_vertex_buffer, 0, 0, VertexBasic::stride * 3ull);
-        frame.render_commands->UseBuffer(*m_vertex_buffer, 0, VertexBasic::stride * 3ull);
+        frame.render_commands->TransferBuffer(*m_staging_buffer, *m_vertex_buffer, 0, 0, VertexBasic::stride * 4ull);
+        frame.render_commands->TransferBuffer(*m_staging_buffer, *m_index_buffer, 128, 0, VertexBasic::stride * 6ull);
+        frame.render_commands->UseBuffer(*m_vertex_buffer, 0, VertexBasic::stride * 4ull);
+        frame.render_commands->UseBuffer(*m_index_buffer, 0, sizeof(uint32_t) * 4);
         frame.render_commands->BindVertexBuffer(*m_vertex_buffer, 0);
+        frame.render_commands->BindIndexBuffer32(*m_index_buffer, 0);
 
         frame.render_commands->BarrierRenderFramebuffer(m_swap_chain->GetImage());
         frame.render_commands->SetRenderTargetsCount(1);
@@ -191,7 +207,8 @@ namespace Rc
         frame.render_commands->BeginRendering({0, 0, m_swap_chain->Width(), m_swap_chain->Height()});
         frame.render_commands->BindPipeline(*m_test_vertex_pipeline);
         frame.render_commands->Test({0, 0, m_swap_chain->Width(), m_swap_chain->Height()});
-        frame.render_commands->Draw(3, 1, 0, 0);
+        //frame.render_commands->Draw(3, 1, 0, 0);
+        frame.render_commands->DrawIndexed(6, 1, 0, 0, 0);
         frame.render_commands->EndRendering();
     }
 

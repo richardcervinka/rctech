@@ -279,18 +279,61 @@ namespace Rc
         vb.m_stage_flags = VK_PIPELINE_STAGE_VERTEX_INPUT_BIT;
     }
 
+    void CommandBuffer::UseBuffer(IndexBuffer& ib, uint64_t offset, uint64_t size)
+    {
+        VkBufferMemoryBarrier const barrier
+        {
+            .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
+            .pNext = nullptr,
+            .srcAccessMask = ib.m_access_flags,
+            .dstAccessMask = VK_ACCESS_INDEX_READ_BIT,
+            .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+            .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+            .buffer = ib.Handle(),
+            .offset = static_cast<VkDeviceSize>(offset),
+            .size = static_cast<VkDeviceSize>(size)
+        };
+
+        m_vk_device->CmdPipelineBarrier(
+            m_vk_command_buffer,
+            ib.m_stage_flags,
+            VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
+            {},
+            {},
+            {&barrier, 1},
+            {}
+        );
+
+        ib.m_access_flags = VK_ACCESS_INDEX_READ_BIT;
+        ib.m_stage_flags = VK_PIPELINE_STAGE_VERTEX_INPUT_BIT;
+    }
+
     void CommandBuffer::BindVertexBuffer(VertexBuffer& vb, uint64_t offset)
     {
         const std::array<VkDeviceSize, 1> vk_offset {offset};
         const std::array<VkBuffer, 1> vk_buffers {vb.Handle()};
 
         m_vk_device->CmdBindVertexBuffers(m_vk_command_buffer, 0, 1, vk_buffers, vk_offset);
+    }
 
+    void CommandBuffer::BindIndexBuffer16(IndexBuffer& ib, uint64_t offset)
+    {
+        m_vk_device->CmdBindIndexBuffer(m_vk_command_buffer, ib.Handle(), offset, VK_INDEX_TYPE_UINT16);
+    }
+
+    void CommandBuffer::BindIndexBuffer32(IndexBuffer& ib, uint64_t offset)
+    {
+        m_vk_device->CmdBindIndexBuffer(m_vk_command_buffer, ib.Handle(), offset, VK_INDEX_TYPE_UINT32);
     }
 
     void CommandBuffer::Draw(uint32_t vertex_count, uint32_t instance_count, uint32_t first_vertex, uint32_t first_instance)
     {
         m_vk_device->CmdDraw(m_vk_command_buffer, vertex_count, instance_count, first_vertex, first_instance);
+    }
+
+    void CommandBuffer::DrawIndexed(uint32_t index_count, uint32_t instance_count, uint32_t first_index, int32_t vertex_offset, uint32_t first_instance)
+    {
+        m_vk_device->CmdDrawIndexed(m_vk_command_buffer, index_count, instance_count, first_index, vertex_offset, first_instance);
     }
 
     void CommandBuffer::Test(Rectangle<int> const& render_area)

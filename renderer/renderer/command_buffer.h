@@ -1,6 +1,7 @@
 #pragma once
 
 #include "vertex_buffer.h"
+#include "index_buffer.h"
 #include "vulkan/device.h"
 #include "buffer.h"
 #include "base/geometry.h"
@@ -54,7 +55,13 @@ namespace Rc
         // Set vertex buffer read barrier.
         void UseBuffer(VertexBuffer& vb, uint64_t offset, uint64_t size);
 
+        // Set index buffer read barrier.
+        void UseBuffer(IndexBuffer& ib, uint64_t offset, uint64_t size);
+
         void BindVertexBuffer(VertexBuffer& vb, uint64_t offset);
+
+        void BindIndexBuffer16(IndexBuffer& ib, uint64_t offset);
+        void BindIndexBuffer32(IndexBuffer& ib, uint64_t offset);
 
         // void BeginRenderPass()
 
@@ -77,6 +84,9 @@ namespace Rc
         void SetViewport(Viewport const& viewport);
 
         void Draw(uint32_t vertex_count, uint32_t instance_count, uint32_t first_vertex, uint32_t first_instance);
+
+        void DrawIndexed(uint32_t index_count, uint32_t instance_count, uint32_t first_index, int32_t vertex_offset, uint32_t first_instance);
+
 
         void Test(
             Rectangle<int> const& render_area

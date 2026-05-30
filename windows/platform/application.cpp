@@ -23,7 +23,7 @@ namespace Rc::Platform
         while (running)
         {
             Input::Read();
-
+            
             // Fetch all windows messages.
             while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
             {
@@ -62,9 +62,6 @@ namespace Rc::Platform
                 {
                     Rc::CharInput::Dispatch(static_cast<char32_t>(msg.wParam));
                 }
-                return;
-
-            default:
                 break;
         }
 
