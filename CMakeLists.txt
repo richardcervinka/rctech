@@ -18,7 +18,7 @@ add_subdirectory("core")
 add_subdirectory("windows")
 add_subdirectory("generic")
 add_subdirectory("vulkan")
-add_subdirectory("renderer")
+add_subdirectory("render")
 
 add_executable(app WIN32
     "main.cpp"
@@ -31,5 +31,5 @@ target_compile_features(app
 target_link_libraries(app
     PRIVATE base
     PRIVATE generic
-    PRIVATE renderer
+    PRIVATE render
 )

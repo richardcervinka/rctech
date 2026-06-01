@@ -24,7 +24,7 @@ target_compile_features(platform
 target_link_libraries(platform
     PUBLIC base
     PUBLIC generic
-    #PRIVATE renderer
+    #PRIVATE render
 )
 
 target_compile_options(platform

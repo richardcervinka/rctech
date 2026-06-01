@@ -4,7 +4,7 @@
 #include <optional>
 #include "platform/application.h"
 #include "platform/window.h"
-#include "renderer/renderer.h"
+#include "render/renderer.h"
 
 namespace Rc::Generic
 {
@@ -48,7 +48,7 @@ namespace Rc::Generic
         // Main window.
         std::unique_ptr<Window> m_window;
 
-        std::unique_ptr<Renderer> m_renderer;
+        std::unique_ptr<Render::Renderer> m_renderer;
 
         // Main loop time point, application time epoch.
         Clock::time_point m_time_run;

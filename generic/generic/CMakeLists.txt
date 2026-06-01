@@ -16,7 +16,7 @@ target_include_directories(generic
 
 target_link_libraries(generic
     PUBLIC platform
-    PRIVATE renderer
+    PRIVATE render
 )
 
 target_compile_options(base
