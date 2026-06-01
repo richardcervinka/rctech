@@ -10,12 +10,12 @@ namespace Rc::Render
     struct Traits;
 
     template<>
-    struct Traits<VertexBasic>
+    struct Traits<Gfx::VertexBasic>
     {
         inline static const std::array<VkVertexInputAttributeDescription, 2> attributes
         {{
-            {0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(VertexBasic, position)},
-            {1, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(VertexBasic, color)}
+            {0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Gfx::VertexBasic, position)},
+            {1, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Gfx::VertexBasic, color)}
         }};
     };
 

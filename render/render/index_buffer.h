@@ -2,6 +2,7 @@
 
 #include "buffer.h"
 #include <cstddef>
+#include <cstdint>
 
 namespace Rc::Render
 {
@@ -23,5 +24,14 @@ namespace Rc::Render
 
         ~IndexBuffer() = default;
     };
+
+    // class IndexBufferView
+    // {
+    // private:
+    //     int m_slot;
+    //     uint64_t m_offset;
+    //     uint64_t m_size;
+    //     IndexType m_type;
+    // };
 
 } // Rc::Render

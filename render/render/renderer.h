@@ -62,6 +62,9 @@ namespace Rc::Render
         // BeginFrame -> render commands -> EndFrame
         void EndFrame();
 
+        // int CreateIndexBuffer(std::span<uint16_t> indices);
+        // Add CreateIndexBuffer(std::span<uint32_t) : slot number
+
     private:
         // Assign vertex shader to the slot.
         void SetVertexShader(VertexShaderSlot slot, std::unique_ptr<Shader> shader)

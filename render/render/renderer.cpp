@@ -95,7 +95,7 @@ namespace Rc::Render
         {
             auto buffer = m_staging_buffer->Data();
 
-            auto* pv = reinterpret_cast<VertexBasic*>(buffer.data());
+            auto* pv = reinterpret_cast<Gfx::VertexBasic*>(buffer.data());
 
             pv[0].position = {-0.7, -0.7, 0};
             pv[1].position = {0.7, 0.7, 0};
@@ -129,8 +129,8 @@ namespace Rc::Render
 
         pipeline_factory.SetVertexShader(GetVertexShader(VertexShaderSlot::Test));
         pipeline_factory.SetPixelShader(GetPixelShader(PixelShaderSlot::Null));
-        pipeline_factory.SetVertexInputBinding(VertexBasic::stride);
-        pipeline_factory.SetVertexInputAttributes(Traits<VertexBasic>::attributes);
+        pipeline_factory.SetVertexInputBinding(Gfx::VertexBasic::stride);
+        pipeline_factory.SetVertexInputAttributes(Traits<Gfx::VertexBasic>::attributes);
         m_test_vertex_pipeline = pipeline_factory.Create();
 
         Log::Debug("Renderer initialized");
@@ -181,9 +181,9 @@ namespace Rc::Render
     {
         auto back_buffer_index = m_swap_chain->AcquireNextImage();
 
-        frame.render_commands->TransferBuffer(*m_staging_buffer, *m_vertex_buffer, 0, 0, VertexBasic::stride * 4ull);
-        frame.render_commands->TransferBuffer(*m_staging_buffer, *m_index_buffer, 128, 0, VertexBasic::stride * 6ull);
-        frame.render_commands->UseBuffer(*m_vertex_buffer, 0, VertexBasic::stride * 4ull);
+        frame.render_commands->TransferBuffer(*m_staging_buffer, *m_vertex_buffer, 0, 0, Gfx::VertexBasic::stride * 4ull);
+        frame.render_commands->TransferBuffer(*m_staging_buffer, *m_index_buffer, 128, 0, Gfx::VertexBasic::stride * 6ull);
+        frame.render_commands->UseBuffer(*m_vertex_buffer, 0, Gfx::VertexBasic::stride * 4ull);
         frame.render_commands->UseBuffer(*m_index_buffer, 0, sizeof(uint16_t) * 4);
         frame.render_commands->BindVertexBuffer(*m_vertex_buffer, 0);
         frame.render_commands->BindIndexBuffer(*m_index_buffer, IndexType::Uint16, 0);

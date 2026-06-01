@@ -2,6 +2,7 @@
 
 // ----------test
 #include "base/color.h"
+#include <utility>
 
 namespace Rc::Render
 {
@@ -327,6 +328,9 @@ namespace Rc::Render
             case IndexType::Uint32:
                 m_vk_device->CmdBindIndexBuffer(m_vk_command_buffer, ib.Handle(), offset, VK_INDEX_TYPE_UINT32);
                 return;
+
+            default:
+                std::unreachable();
         }
     }
 
