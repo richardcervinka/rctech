@@ -177,6 +177,7 @@ namespace Rc::Render
         {
             throw std::logic_error("AllocateVertexBuffer error");
         }
+        m_vertex_buffer = m_device->AllocateVertexBuffer(capacity);
     }
 
     void Renderer::FreeVertexBuffer(Usage usage)
