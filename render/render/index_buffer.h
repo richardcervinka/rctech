@@ -11,27 +11,26 @@ namespace Rc::Render
         Uint16,
         Uint32
     };
+
+    struct IndexBufferView
+    {
+        uint64_t offset;
+        uint64_t size;
+        IndexType type;
+    };
+
+    struct IndexBufferInfo
+    {
+        uint64_t size;
+        IndexType type;
+    };
+
     
+    // Static index buffer
     class IndexBuffer : public Buffer
     {
     public:
-        IndexBuffer(VmaAllocator vma_allocator, std::size_t size);
-
-        IndexBuffer(const IndexBuffer&) = delete;
-        IndexBuffer& operator=(const IndexBuffer&) = delete;
-        IndexBuffer(IndexBuffer&& other) = delete;
-        IndexBuffer& operator=(IndexBuffer&& other) = delete;
-
-        ~IndexBuffer() = default;
+        IndexBuffer(VmaAllocator vma_allocator, uint64_t size);
     };
-
-    // class IndexBufferView
-    // {
-    // private:
-    //     int m_slot;
-    //     uint64_t m_offset;
-    //     uint64_t m_size;
-    //     IndexType m_type;
-    // };
 
 } // Rc::Render

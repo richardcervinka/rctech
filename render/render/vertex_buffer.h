@@ -11,13 +11,6 @@ namespace Rc::Render
     {
     public:
         VertexBuffer(VmaAllocator vma_allocator, std::size_t size);
-
-        VertexBuffer(const VertexBuffer&) = delete;
-        VertexBuffer& operator=(const VertexBuffer&) = delete;
-        VertexBuffer(VertexBuffer&& other) = delete;
-        VertexBuffer& operator=(VertexBuffer&& other) = delete;
-
-        ~VertexBuffer() = default;
     };
 
 } // Rc::Render

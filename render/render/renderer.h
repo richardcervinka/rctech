@@ -1,5 +1,6 @@
 #pragma once
 
+#include "index_buffer.h"
 #include "instance.h"
 #include "platform/window.h"
 #include "texture.h"
@@ -14,7 +15,6 @@ namespace Rc::Render
         Test,
         Overlay,
 
-        // Count iddentifier.
         Count
     };
 
@@ -22,8 +22,15 @@ namespace Rc::Render
     {
         Null,
 
-        // Count iddentifier.
         Count
+    };
+
+    // Resource lifetime.
+    enum class Usage
+    {
+        Permanent,
+        Static,
+        Dynamic
     };
 
     //
@@ -62,8 +69,13 @@ namespace Rc::Render
         // BeginFrame -> render commands -> EndFrame
         void EndFrame();
 
-        // int CreateIndexBuffer(std::span<uint16_t> indices);
-        // Add CreateIndexBuffer(std::span<uint32_t) : slot number
+        void AllocateIndexBuffer(Usage usage, uint64_t capacity);
+        void FreeIndexBuffer(Usage usage);
+
+        void AllocateVertexBuffer(Usage usage, uint64_t capacity);
+        void FreeVertexBuffer(Usage usage);
+
+        //IndexBufferHandle CreateIndexBuffer(IndexType type, uint64_t size);
 
     private:
         // Assign vertex shader to the slot.
@@ -128,7 +140,7 @@ namespace Rc::Render
         std::unique_ptr<StagingBuffer> m_staging_buffer;
 
         std::unique_ptr<VertexBuffer> m_vertex_buffer; //------------------------- TEST
-        std::unique_ptr<IndexBuffer> m_index_buffer; //------------------------- TEST
+        std::unique_ptr<IndexBuffer> m_index_buffer; //------------------------- TEST: Static index buffer
 
         Window::EventSize::Handler m_on_window_size {this, &Renderer::OnWindowSize};
 

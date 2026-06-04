@@ -1,10 +1,11 @@
 #include "index_buffer.h"
+#include <stdexcept>
 
 namespace Rc::Render
 {
     // // VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT |
     // // VMA_ALLOCATION_CREATE_MAPPED_BIT
-    IndexBuffer::IndexBuffer(VmaAllocator vma_allocator, std::size_t size)
+    IndexBuffer::IndexBuffer(VmaAllocator vma_allocator, uint64_t size)
     {
         VmaAllocationCreateInfo alloc_info {};
         alloc_info.usage = VMA_MEMORY_USAGE_AUTO;

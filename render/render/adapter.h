@@ -18,6 +18,7 @@ namespace Rc::Render
     {
     public:
         Adapter() = default;
+        ~Adapter() = default;
 
         Adapter(VulkanContext const& context, VulkanInstance const& instance, VkPhysicalDevice vk_physical_device);
 
@@ -27,13 +28,25 @@ namespace Rc::Render
         Adapter(Adapter&& other) noexcept;
         Adapter& operator=(Adapter&& other) noexcept;
 
-        uint32_t GetDeviceId() const { return m_vk_properties.deviceID; }
+        uint32_t GetDeviceId() const
+        {
+            return m_vk_properties.deviceID;
+        }
 
-        std::string GetName() const { return m_vk_properties.deviceName; }
+        std::string GetName() const
+        {
+            return m_vk_properties.deviceName;
+        }
 
-        bool IsIntegrated() const { return m_vk_properties.deviceType == VkPhysicalDeviceType::VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU; }
+        bool IsIntegrated() const
+        {
+            return m_vk_properties.deviceType == VkPhysicalDeviceType::VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU;
+        }
 
-        bool IsDiscrete() const { return m_vk_properties.deviceType == VkPhysicalDeviceType::VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU; }
+        bool IsDiscrete() const
+        {
+            return m_vk_properties.deviceType == VkPhysicalDeviceType::VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
+        }
 
         std::unique_ptr<Device> CreateDevice(Surface const& surface);
 

@@ -1,4 +1,5 @@
 #include "buffer.h"
+#include <stdexcept>
 
 namespace Rc::Render
 {
@@ -31,6 +32,16 @@ void Buffer::Create(
     }
 
     m_vma_allocator = vma_allocator;
+}
+
+BufferRegion Buffer::GetRegion(uint64_t offset, uint64_t size) const
+{
+    if (offset + size > Size())
+    {
+        throw std::runtime_error("REFACTOR ME"); //--------------------------
+    }
+
+    return {offset, size};
 }
 
 } // Rc::Render

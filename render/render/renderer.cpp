@@ -3,6 +3,7 @@
 #include "resources.h"
 #include <cstdint>
 #include <span>
+#include <stdexcept>
 #include "platform/log.h"
 #include "core/vertex.h" //----------
 #include "vertex_traits.h"
@@ -83,14 +84,15 @@ namespace Rc::Render
         SetVertexShader(VertexShaderSlot::Overlay, m_device->CreateShader(Res::Vs::Overlay()));
         SetPixelShader(PixelShaderSlot::Null, m_device->CreateShader(Res::Ps::Dummy()));
 
-        m_staging_buffer = m_device->AllocateStagingBuffer(1024 * 1024 * 4);
+        m_staging_buffer = m_device->AllocateStagingBuffer(2048 * 2048 * 4 * 8);
+
 
         window.OnEventSize(m_on_window_size);
 
         // ---------------------------- TEST
 
-        m_vertex_buffer = m_device->AllocateVertexBuffer(256);
-        m_index_buffer = m_device->AllocateIndexBuffer(256);
+        AllocateVertexBuffer(Usage::Permanent, 2048);
+        AllocateIndexBuffer(Usage::Permanent, 256);
 
         {
             auto buffer = m_staging_buffer->Data();
@@ -147,6 +149,39 @@ namespace Rc::Render
         {
             m_back_buffers.push_back(m_swap_chain->GetImage(i).CreateView());
         }
+    }
+
+    // IndexBufferHandle Renderer::CreateIndexBuffer(IndexType type, uint64_t size)
+    // {
+    //     // ...
+    //     return {};
+    // }
+
+    void Renderer::AllocateIndexBuffer(Usage usage, uint64_t capacity)
+    {
+        if (m_index_buffer != nullptr)
+        {
+            throw std::logic_error("AllocateIndexBuffer error");
+        }
+        m_index_buffer = m_device->AllocateIndexBuffer(capacity);
+    }
+
+    void Renderer::FreeIndexBuffer(Usage usage)
+    {
+        m_index_buffer = nullptr;
+    }
+
+    void Renderer::AllocateVertexBuffer(Usage usage, uint64_t capacity)
+    {
+        if (m_vertex_buffer != nullptr)
+        {
+            throw std::logic_error("AllocateVertexBuffer error");
+        }
+    }
+
+    void Renderer::FreeVertexBuffer(Usage usage)
+    {
+        m_vertex_buffer = nullptr;
     }
 
     void Renderer::BeginFrame()
