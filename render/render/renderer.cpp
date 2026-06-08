@@ -152,7 +152,7 @@ namespace Rc::Render
 
     void Renderer::ReserveIndexBuffer(Usage usage, uint64_t capacity)
     {
-        m_index_buffer = std::make_unique<LinearBuffer>(m_device->AllocateIndexBuffer(capacity));
+        m_index_buffer = std::make_unique<BufferLinear>(m_device->AllocateIndexBuffer(capacity));
     }
 
     void Renderer::FreeIndexBuffer(Usage usage)
@@ -164,12 +164,12 @@ namespace Rc::Render
     {
         assert(m_index_buffer != nullptr);
 
-        return {m_index_buffer->Pop(size), usage, 0xFFFF};
+        return {m_index_buffer->Allocate(size), usage, 0xFFFF};
     }
 
     void Renderer::ReserveVertexBuffer(Usage usage, uint64_t capacity)
     {
-        m_vertex_buffer = std::make_unique<LinearBuffer>(m_device->AllocateVertexBuffer(capacity));
+        m_vertex_buffer = std::make_unique<BufferLinear>(m_device->AllocateVertexBuffer(capacity));
     }
 
     void Renderer::FreeVertexBuffer(Usage usage)
@@ -181,7 +181,7 @@ namespace Rc::Render
     {
         assert(m_vertex_buffer != nullptr);
 
-        return {m_vertex_buffer->Pop(size), usage, 0xFFFF};
+        return {m_vertex_buffer->Allocate(size), usage, 0xFFFF};
     }
 
     void Renderer::BeginFrame()

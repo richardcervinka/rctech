@@ -5,6 +5,7 @@
 #include "texture.h"
 #include <array>
 #include "shader.h"
+#include "buffer_linear.h"
 
 namespace Rc::Render
 {
@@ -159,8 +160,8 @@ namespace Rc::Render
 
         std::unique_ptr<StagingBuffer> m_staging_buffer;
 
-        std::unique_ptr<LinearBuffer> m_vertex_buffer; //------------------------- TEST
-        std::unique_ptr<LinearBuffer> m_index_buffer; //------------------------- TEST: Static index buffer
+        std::unique_ptr<BufferLinear> m_vertex_buffer; //------------------------- TEST
+        std::unique_ptr<BufferLinear> m_index_buffer; //------------------------- TEST: Static index buffer
 
         Window::EventSize::Handler m_on_window_size {this, &Renderer::OnWindowSize};
 

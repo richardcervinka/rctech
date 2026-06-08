@@ -3,6 +3,7 @@
 add_library(render STATIC
     "buffer.h"
     "buffer.cpp"
+    "buffer_linear.h"
     "instance.h"
     "instance.cpp"
     "device.h"

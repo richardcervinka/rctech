@@ -1,7 +1,6 @@
 #pragma once
 
 #include "vulkan/device.h"
-#include <memory>
 #include <span>
 #include <cstddef>
 #include <cassert>
@@ -106,50 +105,6 @@ namespace Rc::Render
         VmaAllocationInfo m_vma_allocation_info {};
         VkAccessFlags m_access_flags {VK_ACCESS_NONE};
         VkPipelineStageFlags m_stage_flags {VK_PIPELINE_STAGE_NONE};
-    };
-
-    class LinearBuffer
-    {
-    public:
-        LinearBuffer() = default;
-        ~LinearBuffer() = default;
-
-        explicit LinearBuffer(std::unique_ptr<Buffer> buffer) :
-            m_buffer{std::move(buffer)}
-        {}
-
-        LinearBuffer(LinearBuffer const&) = delete;
-        LinearBuffer& operator=(LinearBuffer const&) = delete;
-        LinearBuffer(LinearBuffer&&) = default;
-        LinearBuffer& operator=(LinearBuffer&&) = default;
-
-        BufferRegion Pop(uint64_t size)
-        {
-            auto region = m_buffer->GetRegion(m_offset, size);
-            m_offset += size;
-            return region;
-        }
-
-        void Push(BufferRegion region)
-        {     
-        }
-
-        Buffer& GetBuffer()
-        {
-            assert(m_buffer != nullptr);
-            return *m_buffer;
-        }
-
-    private:
-        std::unique_ptr<Buffer> m_buffer;
-        uint64_t m_offset {0};
-    };
-
-    class BufferPool
-    {
-    public:
-
-    private:
     };
 
 } // Rc::Render
