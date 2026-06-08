@@ -4,12 +4,29 @@
 #include "input.h"
 #include "generic/char_input.h"
 #include "base/utf.h"
+#include "platform/log.h"
+#include "error.h"
 
 namespace Rc::Platform
 {
     void Application::Initialize()
     {
-        Input::Register();
+        try
+        {
+            Input::RegisterKeyboard();
+        }
+        catch (SystemException const& e)
+        {
+            Log::Error(e.what());
+        }
+        try
+        {
+            Input::RegisterMouse();
+        }
+        catch (SystemException const& e)
+        {
+            Log::Error(e.what());
+        }
     }
 
     int Application::StartMessageLoop()

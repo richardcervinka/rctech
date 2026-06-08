@@ -322,18 +322,27 @@ namespace Rc::Input
         }
     }
 
-    void Register()
+    void RegisterKeyboard()
     {
-        std::array<RAWINPUTDEVICE, 2> rid = {
-            // Keyboard
+        std::array<RAWINPUTDEVICE, 1> rid = {
             RAWINPUTDEVICE
             {
                 .usUsagePage = 0x01,
                 .usUsage = HID_USAGE_GENERIC_KEYBOARD,
                 .dwFlags = RIDEV_DEVNOTIFY, //RIDEV_DEVNOTIFY,
                 .hwndTarget = NULL
-            },
-            // Mouse
+            }
+        };
+
+        if (RegisterRawInputDevices(rid.data(), rid.size(), sizeof(RAWINPUTDEVICE)) == FALSE)
+        {
+            throw SystemException(GetLastError());
+        }
+    }
+
+    void RegisterMouse()
+    {
+        std::array<RAWINPUTDEVICE, 2> rid = {
             RAWINPUTDEVICE
             {
                 .usUsagePage = 0x01,
