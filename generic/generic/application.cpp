@@ -25,7 +25,7 @@ namespace Rc::Generic
         m_window = std::make_unique<Window>(info.name.value_or("RcTech"));
         m_window->Show();
 
-        m_renderer = std::make_unique<Renderer>();
+        m_renderer = std::make_unique<Render::Renderer>();
         m_renderer->Initialize(*m_window);
     }
 

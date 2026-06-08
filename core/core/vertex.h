@@ -3,7 +3,7 @@
 #include <cstdint>
 #include "base/float.h"
 
-namespace Rc
+namespace Rc::Gfx
 {
     struct VertexBasic
     {
@@ -17,4 +17,4 @@ namespace Rc
         };
     };
 
-} // Rc
+} // Rc::Gfx
