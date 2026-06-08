@@ -29,8 +29,6 @@ add_library(render STATIC
     "texture.h"
     "texture.cpp"
     "vertex_traits.h"
-    "vertex_buffer.h"
-    "vertex_buffer.cpp"
     "staging_buffer.h"
     "staging_buffer.cpp"
     "index_buffer.h"

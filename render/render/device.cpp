@@ -280,19 +280,19 @@ namespace Rc::Render
         return PipelineFactory(*m_device);
     }
 
-    std::unique_ptr<VertexBuffer> Device::AllocateVertexBuffer(std::size_t size) const
+    std::unique_ptr<Buffer> Device::AllocateVertexBuffer(uint64_t size) const
     {
-        return std::make_unique<VertexBuffer>(m_vma_allocator, size);
+        return std::make_unique<Buffer>(VertexBufferInfo{size}, m_vma_allocator);
     }
 
-    std::unique_ptr<IndexBuffer> Device::AllocateIndexBuffer(std::size_t size) const
+    std::unique_ptr<Buffer> Device::AllocateIndexBuffer(uint64_t size) const
     {
-        return std::make_unique<IndexBuffer>(m_vma_allocator, size);
+        return std::make_unique<Buffer>(IndexBufferInfo{size}, m_vma_allocator);
     }
 
-    std::unique_ptr<StagingBuffer> Device::AllocateStagingBuffer(std::size_t size) const
+    std::unique_ptr<Buffer> Device::AllocateStagingBuffer(uint64_t size) const
     {
-        return std::make_unique<StagingBuffer>(m_vma_allocator, size);
+        return std::make_unique<Buffer>(StagingBufferInfo{size}, m_vma_allocator);
     }
 
 } // Rc::Render

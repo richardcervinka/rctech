@@ -84,15 +84,15 @@ namespace Rc::Render
         SetVertexShader(VertexShaderSlot::Overlay, m_device->CreateShader(Res::Vs::Overlay()));
         SetPixelShader(PixelShaderSlot::Null, m_device->CreateShader(Res::Ps::Dummy()));
 
-        m_staging_buffer = m_device->AllocateStagingBuffer(2048 * 2048 * 4 * 8);
+        m_staging_buffer = std::make_unique<StagingBuffer>(m_device->AllocateStagingBuffer(2048 * 2048 * 4 * 8));
 
 
         window.OnEventSize(m_on_window_size);
 
         // ---------------------------- TEST
 
-        AllocateVertexBuffer(Usage::Permanent, 2048);
-        AllocateIndexBuffer(Usage::Permanent, 256);
+        ReserveVertexBuffer(Usage::Permanent, 2048);
+        ReserveIndexBuffer(Usage::Permanent, 256);
 
         {
             auto buffer = m_staging_buffer->Data();
@@ -151,19 +151,9 @@ namespace Rc::Render
         }
     }
 
-    // IndexBufferHandle Renderer::CreateIndexBuffer(IndexType type, uint64_t size)
-    // {
-    //     // ...
-    //     return {};
-    // }
-
-    void Renderer::AllocateIndexBuffer(Usage usage, uint64_t capacity)
+    void Renderer::ReserveIndexBuffer(Usage usage, uint64_t capacity)
     {
-        if (m_index_buffer != nullptr)
-        {
-            throw std::logic_error("AllocateIndexBuffer error");
-        }
-        m_index_buffer = m_device->AllocateIndexBuffer(capacity);
+        m_index_buffer = std::make_unique<LinearBuffer>(m_device->AllocateIndexBuffer(capacity));
     }
 
     void Renderer::FreeIndexBuffer(Usage usage)
@@ -171,18 +161,28 @@ namespace Rc::Render
         m_index_buffer = nullptr;
     }
 
-    void Renderer::AllocateVertexBuffer(Usage usage, uint64_t capacity)
+    BufferHandle Renderer::AllocateIndexbuffer(Usage usage, uint64_t size)
     {
-        if (m_vertex_buffer != nullptr)
-        {
-            throw std::logic_error("AllocateVertexBuffer error");
-        }
-        m_vertex_buffer = m_device->AllocateVertexBuffer(capacity);
+        assert(m_index_buffer != nullptr);
+
+        return {m_index_buffer->Pop(size), usage, 0xFFFF};
+    }
+
+    void Renderer::ReserveVertexBuffer(Usage usage, uint64_t capacity)
+    {
+        m_vertex_buffer = std::make_unique<LinearBuffer>(m_device->AllocateVertexBuffer(capacity));
     }
 
     void Renderer::FreeVertexBuffer(Usage usage)
     {
         m_vertex_buffer = nullptr;
+    }
+
+    BufferHandle Renderer::AllocateVertexbuffer(Usage usage, uint64_t size)
+    {
+        assert(m_vertex_buffer != nullptr);
+
+        return {m_vertex_buffer->Pop(size), usage, 0xFFFF};
     }
 
     void Renderer::BeginFrame()
@@ -217,12 +217,12 @@ namespace Rc::Render
     {
         auto back_buffer_index = m_swap_chain->AcquireNextImage();
 
-        frame.render_commands->TransferBuffer(*m_staging_buffer, *m_vertex_buffer, 0, 0, Gfx::VertexBasic::stride * 4ull);
-        frame.render_commands->TransferBuffer(*m_staging_buffer, *m_index_buffer, 128, 0, Gfx::VertexBasic::stride * 6ull);
-        frame.render_commands->UseBuffer(*m_vertex_buffer, 0, Gfx::VertexBasic::stride * 4ull);
-        frame.render_commands->UseBuffer(*m_index_buffer, 0, sizeof(uint16_t) * 4);
-        frame.render_commands->BindVertexBuffer(*m_vertex_buffer, 0);
-        frame.render_commands->BindIndexBuffer(*m_index_buffer, IndexType::Uint16, 0);
+        frame.render_commands->TransferBuffer(m_staging_buffer->GetBuffer(), m_vertex_buffer->GetBuffer(), 0, 0, Gfx::VertexBasic::stride * 4ull);
+        frame.render_commands->TransferBuffer(m_staging_buffer->GetBuffer(), m_index_buffer->GetBuffer(), 128, 0, Gfx::VertexBasic::stride * 6ull);
+        frame.render_commands->UseVertexBuffer(m_vertex_buffer->GetBuffer(), 0, Gfx::VertexBasic::stride * 4ull);
+        frame.render_commands->UseIndexBuffer(m_index_buffer->GetBuffer(), 0, sizeof(uint16_t) * 4);
+        frame.render_commands->BindVertexBuffer(m_vertex_buffer->GetBuffer(), 0);
+        frame.render_commands->BindIndexBuffer(m_index_buffer->GetBuffer(), IndexType::Uint16, 0);
         frame.render_commands->BeginRenderingFramebuffer(m_swap_chain->GetImage());
         frame.render_commands->SetRenderTargetsCount(1);
         frame.render_commands->AttachRenderTarget(0, *m_back_buffers.at(back_buffer_index));

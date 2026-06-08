@@ -15,8 +15,7 @@
 #include "platform/window.h"
 #include "shader.h"
 #include "surface.h"
-#include "vertex_buffer.h"
-#include "index_buffer.h"
+#include "buffer.h"
 #include "staging_buffer.h"
 
 namespace Rc::Render
@@ -54,9 +53,9 @@ namespace Rc::Render
 
         PipelineFactory CreatePipelineFactory();
 
-        std::unique_ptr<VertexBuffer> AllocateVertexBuffer(std::size_t size) const;
-        std::unique_ptr<IndexBuffer> AllocateIndexBuffer(std::size_t size) const;
-        std::unique_ptr<StagingBuffer> AllocateStagingBuffer(std::size_t size) const;
+        std::unique_ptr<Buffer> AllocateVertexBuffer(uint64_t size) const;
+        std::unique_ptr<Buffer> AllocateIndexBuffer(uint64_t size) const;
+        std::unique_ptr<Buffer> AllocateStagingBuffer(uint64_t size) const;
 
     private:
         std::map<std::string, VulkanVersion> EnumerateExtensions() const;

@@ -213,7 +213,7 @@ namespace Rc::Render
         m_vk_device->CmdBindPipeline(m_vk_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.Handle());
     }
 
-    void CommandBuffer::TransferBuffer(StagingBuffer& src, Buffer& dst, uint64_t src_offset, uint64_t dst_offset, uint64_t size)
+    void CommandBuffer::TransferBuffer(Buffer& src, Buffer& dst, uint64_t src_offset, uint64_t dst_offset, uint64_t size)
     {
         VkBufferMemoryBarrier const barrier
         {
@@ -251,8 +251,10 @@ namespace Rc::Render
         m_vk_device->CmdCopyBuffer(m_vk_command_buffer, src.Handle(), dst.Handle(), {&region, 1});
     }
 
-    void CommandBuffer::UseBuffer(VertexBuffer& vb, uint64_t offset, uint64_t size)
+    void CommandBuffer::UseVertexBuffer(Buffer& vb, uint64_t offset, uint64_t size)
     {
+        // TODO: Assert Buffer::usage
+
         VkBufferMemoryBarrier const barrier
         {
             .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
@@ -280,8 +282,10 @@ namespace Rc::Render
         vb.m_stage_flags = VK_PIPELINE_STAGE_VERTEX_INPUT_BIT;
     }
 
-    void CommandBuffer::UseBuffer(IndexBuffer& ib, uint64_t offset, uint64_t size)
+    void CommandBuffer::UseIndexBuffer(Buffer& ib, uint64_t offset, uint64_t size)
     {
+        // TODO: Assert Buffer::usage
+
         VkBufferMemoryBarrier const barrier
         {
             .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
@@ -309,16 +313,19 @@ namespace Rc::Render
         ib.m_stage_flags = VK_PIPELINE_STAGE_VERTEX_INPUT_BIT;
     }
 
-    void CommandBuffer::BindVertexBuffer(VertexBuffer& vb, uint64_t offset)
+    void CommandBuffer::BindVertexBuffer(Buffer& vb, uint64_t offset)
     {
+        // TODO: Assert Buffer::usage
         const std::array<VkDeviceSize, 1> vk_offset {offset};
         const std::array<VkBuffer, 1> vk_buffers {vb.Handle()};
 
         m_vk_device->CmdBindVertexBuffers(m_vk_command_buffer, 0, 1, vk_buffers, vk_offset);
     }
 
-    void CommandBuffer::BindIndexBuffer(IndexBuffer& ib, IndexType type, uint64_t offset)
+    void CommandBuffer::BindIndexBuffer(Buffer& ib, IndexType type, uint64_t offset)
     {
+        // TODO: Assert Buffer::usage
+        
         switch (type)
         {
             case IndexType::Uint16:

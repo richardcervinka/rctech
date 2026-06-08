@@ -1,6 +1,5 @@
 #pragma once
 
-#include "vertex_buffer.h"
 #include "index_buffer.h"
 #include "vulkan/device.h"
 #include "buffer.h"
@@ -51,16 +50,16 @@ namespace Rc::Render
         void BeginPresentingFramebuffer(Texture2D const& image);
 
         // Set vertex buffer read barrier.
-        void UseBuffer(VertexBuffer& vb, uint64_t offset, uint64_t size);
+        void UseVertexBuffer(Buffer& vb, uint64_t offset, uint64_t size);
 
         // Set index buffer read barrier.
-        void UseBuffer(IndexBuffer& ib, uint64_t offset, uint64_t size);
+        void UseIndexBuffer(Buffer& vb, uint64_t offset, uint64_t size);
 
-        void TransferBuffer(StagingBuffer& src, Buffer& dst, uint64_t src_offset, uint64_t dst_offset, uint64_t size);
+        void TransferBuffer(Buffer& src, Buffer& dst, uint64_t src_offset, uint64_t dst_offset, uint64_t size);
 
-        void BindVertexBuffer(VertexBuffer& vb, uint64_t offset);
+        void BindVertexBuffer(Buffer& vb, uint64_t offset);
 
-        void BindIndexBuffer(IndexBuffer& ib, IndexType type, uint64_t offset);
+        void BindIndexBuffer(Buffer& ib, IndexType type, uint64_t offset);
 
         // void BeginRenderPass()
 

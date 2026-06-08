@@ -1,6 +1,5 @@
 #pragma once
 
-#include "index_buffer.h"
 #include "instance.h"
 #include "platform/window.h"
 #include "texture.h"
@@ -31,6 +30,25 @@ namespace Rc::Render
         Permanent,
         Static,
         Dynamic
+    };
+
+    class BufferHandle
+    {
+    public:
+        BufferHandle() = default;
+
+    private:
+        friend class Renderer;
+
+        BufferHandle(BufferRegion region, Usage usage, uint64_t uid) :
+            m_region{region},
+            m_usage{usage},
+            m_uid{uid}
+        {}
+
+        BufferRegion m_region;
+        Usage m_usage {};
+        uint64_t m_uid {};
     };
 
     //
@@ -69,11 +87,13 @@ namespace Rc::Render
         // BeginFrame -> render commands -> EndFrame
         void EndFrame();
 
-        void AllocateIndexBuffer(Usage usage, uint64_t capacity);
+        void ReserveIndexBuffer(Usage usage, uint64_t capacity);
         void FreeIndexBuffer(Usage usage);
+        BufferHandle AllocateIndexbuffer(Usage usage, uint64_t size);
 
-        void AllocateVertexBuffer(Usage usage, uint64_t capacity);
+        void ReserveVertexBuffer(Usage usage, uint64_t capacity);
         void FreeVertexBuffer(Usage usage);
+        BufferHandle AllocateVertexbuffer(Usage usage, uint64_t size);
 
         //IndexBufferHandle CreateIndexBuffer(IndexType type, uint64_t size);
 
@@ -139,8 +159,8 @@ namespace Rc::Render
 
         std::unique_ptr<StagingBuffer> m_staging_buffer;
 
-        std::unique_ptr<VertexBuffer> m_vertex_buffer; //------------------------- TEST
-        std::unique_ptr<IndexBuffer> m_index_buffer; //------------------------- TEST: Static index buffer
+        std::unique_ptr<LinearBuffer> m_vertex_buffer; //------------------------- TEST
+        std::unique_ptr<LinearBuffer> m_index_buffer; //------------------------- TEST: Static index buffer
 
         Window::EventSize::Handler m_on_window_size {this, &Renderer::OnWindowSize};
 

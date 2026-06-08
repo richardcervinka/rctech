@@ -19,18 +19,11 @@ namespace Rc::Render
         IndexType type;
     };
 
-    struct IndexBufferInfo
+    struct IndexBufferParams
     {
         uint64_t size;
         IndexType type;
     };
 
-    
-    // Static index buffer
-    class IndexBuffer : public Buffer
-    {
-    public:
-        IndexBuffer(VmaAllocator vma_allocator, uint64_t size);
-    };
 
 } // Rc::Render
