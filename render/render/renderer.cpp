@@ -86,7 +86,6 @@ namespace Rc::Render
 
         m_staging_buffer = std::make_unique<StagingBuffer>(m_device->AllocateStagingBuffer(2048 * 2048 * 4 * 8));
 
-
         window.OnEventSize(m_on_window_size);
 
         // ---------------------------- TEST
