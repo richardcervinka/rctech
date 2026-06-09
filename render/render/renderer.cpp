@@ -21,7 +21,6 @@ namespace Rc::Render
             m_device->WaitIdle();
         }
 
-        m_staging_buffer = nullptr;
         m_vertex_buffer = nullptr;
         m_index_buffer = nullptr;
         m_test_vertex_pipeline = nullptr;
@@ -59,17 +58,20 @@ namespace Rc::Render
         // Print adapters
         for (auto const& adapter : adapters)
         {
-            Log::Debug(std::format("Adapter {}\n", adapter.GetName()));
+            Log::Debug(std::format("Adapter {}\n", adapter.Name()));
         }
 
         m_device = adapters.back().CreateDevice(*m_surface);
         m_swap_chain = m_device->CreateSwapChain(*m_surface, window);
         m_render_queue = m_device->CreateGraphicsQueue();
 
-        // Create primary command buffer for each image in the swap chain.
-        for (int i = 0; i < m_swap_chain->Count(); i++)
+        // Create frames-in-flight
+        m_frames.resize(m_swap_chain->Count());
+        for (auto& frame : m_frames)
         {
-            m_frames.emplace_back(m_device->CreateFence(), m_render_queue->CreateCommandBuffer());
+            frame.fence = m_device->CreateFence();
+            frame.render_commands = m_render_queue->CreateCommandBuffer();
+            frame.staging_buffer = std::make_unique<BufferLinear>(m_device->AllocateStagingBuffer(2048 * 2048 * 4 * 8));
         }
 
         // Create swap chain image views
@@ -84,8 +86,6 @@ namespace Rc::Render
         SetVertexShader(VertexShaderSlot::Overlay, m_device->CreateShader(Res::Vs::Overlay()));
         SetPixelShader(PixelShaderSlot::Null, m_device->CreateShader(Res::Ps::Dummy()));
 
-        m_staging_buffer = std::make_unique<StagingBuffer>(m_device->AllocateStagingBuffer(2048 * 2048 * 4 * 8));
-
         window.OnEventSize(m_on_window_size);
 
         // ---------------------------- TEST
@@ -93,29 +93,6 @@ namespace Rc::Render
         ReserveVertexBuffer(Usage::Permanent, 2048);
         ReserveIndexBuffer(Usage::Permanent, 256);
 
-        {
-            auto buffer = m_staging_buffer->Data();
-
-            auto* pv = reinterpret_cast<Gfx::VertexBasic*>(buffer.data());
-
-            pv[0].position = {-0.7, -0.7, 0};
-            pv[1].position = {0.7, 0.7, 0};
-            pv[2].position = {-0.7, 0.7, 0};
-            pv[3].position = {0.7, -0.7, 0};
-
-            pv[0].color = {1, 0, 0};
-            pv[1].color = {0, 1, 0};
-            pv[2].color = {0, 0, 1};
-            pv[3].color = {1, 1, 1};
-
-            auto* ib = reinterpret_cast<uint16_t*>(buffer.data() + 128);
-            ib[0] = 0;
-            ib[1] = 1;
-            ib[2] = 2;
-            ib[3] = 0;
-            ib[4] = 3;
-            ib[5] = 1;
-        }
 
         m_pipeline_layout = m_device->CreatePipelineLayout();
         
@@ -167,6 +144,24 @@ namespace Rc::Render
         return {m_index_buffer->Allocate(size), usage, 0xFFFF};
     }
 
+    uint64_t Renderer::GetIndexBufferCapacity(Usage usage) const
+    {
+        if (m_index_buffer == nullptr)
+        {
+            return 0;
+        }
+        return m_index_buffer->Capacity();
+    }
+
+    uint64_t Renderer::GetIndexBufferAvailable(Usage usage) const
+    {
+        if (m_index_buffer == nullptr)
+        {
+            return 0;
+        }
+        return m_index_buffer->Available();
+    }
+
     void Renderer::ReserveVertexBuffer(Usage usage, uint64_t capacity)
     {
         m_vertex_buffer = std::make_unique<BufferLinear>(m_device->AllocateVertexBuffer(capacity));
@@ -184,6 +179,24 @@ namespace Rc::Render
         return {m_vertex_buffer->Allocate(size), usage, 0xFFFF};
     }
 
+    uint64_t Renderer::GetVertexBufferCapacity(Usage usage) const
+    {
+        if (m_vertex_buffer == nullptr)
+        {
+            return 0;
+        }
+        return m_vertex_buffer->Capacity();
+    }
+
+    uint64_t Renderer::GetVertexBufferAvailable(Usage usage) const
+    {
+        if (m_vertex_buffer == nullptr)
+        {
+            return 0;
+        }
+        return m_vertex_buffer->Available();
+    }
+
     void Renderer::BeginFrame()
     {
         auto& frame = m_frames[m_frame_number % m_frames.size()];
@@ -191,7 +204,7 @@ namespace Rc::Render
         frame.fence->Wait();
 
         frame.render_commands->Reset();
-
+        frame.staging_buffer->Reset();
         frame.render_commands->Begin();
 
         Test(frame);
@@ -216,10 +229,35 @@ namespace Rc::Render
     {
         auto back_buffer_index = m_swap_chain->AcquireNextImage();
 
-        frame.render_commands->TransferBuffer(m_staging_buffer->GetBuffer(), m_vertex_buffer->GetBuffer(), 0, 0, Gfx::VertexBasic::stride * 4ull);
-        frame.render_commands->TransferBuffer(m_staging_buffer->GetBuffer(), m_index_buffer->GetBuffer(), 128, 0, Gfx::VertexBasic::stride * 6ull);
-        frame.render_commands->UseVertexBuffer(m_vertex_buffer->GetBuffer(), 0, Gfx::VertexBasic::stride * 4ull);
-        frame.render_commands->UseIndexBuffer(m_index_buffer->GetBuffer(), 0, sizeof(uint16_t) * 4);
+        // Fill staging buffer
+        
+        auto vb_region = frame.staging_buffer->Allocate(Gfx::VertexBasic::stride * 4);
+        auto vb_data = frame.staging_buffer->MapAs<Gfx::VertexBasic>(vb_region);
+
+        vb_data[0].position = {-0.7, -0.7, 0};
+        vb_data[1].position = {0.7, 0.7, 0};
+        vb_data[2].position = {-0.7, 0.7, 0};
+        vb_data[3].position = {0.7, -0.7, 0};
+
+        vb_data[0].color = {1, 0, 0};
+        vb_data[1].color = {0, 1, 0};
+        vb_data[2].color = {0, 0, 1};
+        vb_data[3].color = {1, 1, 1};
+
+        auto ib_region = frame.staging_buffer->Allocate(sizeof(uint16_t) * 6);
+        auto ib_data = frame.staging_buffer->MapAs<uint16_t>(ib_region);
+
+        ib_data[0] = 0;
+        ib_data[1] = 1;
+        ib_data[2] = 2;
+        ib_data[3] = 0;
+        ib_data[4] = 3;
+        ib_data[5] = 1;
+        
+        frame.render_commands->TransferBuffer(frame.staging_buffer->GetBuffer(), m_vertex_buffer->GetBuffer(), vb_region.Offset(), 0, vb_region.Size());
+        frame.render_commands->TransferBuffer(frame.staging_buffer->GetBuffer(), m_index_buffer->GetBuffer(), ib_region.Offset(), 0, ib_region.Size());
+        frame.render_commands->UseVertexBuffer(m_vertex_buffer->GetBuffer(), 0, vb_region.Size());
+        frame.render_commands->UseIndexBuffer(m_index_buffer->GetBuffer(), 0, ib_region.Size());
         frame.render_commands->BindVertexBuffer(m_vertex_buffer->GetBuffer(), 0);
         frame.render_commands->BindIndexBuffer(m_index_buffer->GetBuffer(), IndexType::Uint16, 0);
         frame.render_commands->BeginRenderingFramebuffer(m_swap_chain->GetImage());

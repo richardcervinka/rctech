@@ -28,12 +28,12 @@ namespace Rc::Render
         Adapter(Adapter&& other) noexcept;
         Adapter& operator=(Adapter&& other) noexcept;
 
-        uint32_t GetDeviceId() const
+        uint32_t DeviceId() const
         {
             return m_vk_properties.deviceID;
         }
 
-        std::string GetName() const
+        std::string Name() const
         {
             return m_vk_properties.deviceName;
         }

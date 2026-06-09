@@ -5,6 +5,9 @@
 
 namespace Rc::Render
 {
+    //
+    // Linear buffer allocator
+    //
     class BufferLinear
     {
     public:
@@ -44,9 +47,31 @@ namespace Rc::Render
             return *m_buffer;
         }
 
+        void Reset()
+        {
+            m_offset = 0;
+        }
+
+        std::span<std::byte> Map(BufferRegion const& region)
+        {
+            return m_buffer->Map(region);
+        }
+
+        template<typename T>
+        std::span<T> MapAs(BufferRegion const& region)
+        {
+            auto raw = m_buffer->Map(region);
+
+            return {
+                reinterpret_cast<T*>(raw.data()),
+                region.Size() / sizeof(T)
+            };
+        }
+
     private:
         std::unique_ptr<Buffer> m_buffer;
         uint64_t m_offset {0};
+        //uint64_t m_generation {0};
     };
 
 } // Rc::Render

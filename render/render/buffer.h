@@ -7,6 +7,7 @@
 
 namespace Rc::Render
 {
+    // GPU buffer region descriptor
     class BufferRegion
     {
     public:
@@ -17,12 +18,12 @@ namespace Rc::Render
         BufferRegion(BufferRegion&&) = default;
         BufferRegion& operator=(BufferRegion&&) = default;
 
-        uint64_t GetOffset() const
+        uint64_t Offset() const
         {
             return m_offset;
         }
         
-        uint64_t GetSize() const
+        uint64_t Size() const
         {
             return m_size;
         }
@@ -39,6 +40,7 @@ namespace Rc::Render
 
         uint64_t m_offset {0};
         uint64_t m_size {0};
+        //uint64_t m_generation {0};
     };
 
     struct VertexBufferInfo
@@ -86,8 +88,11 @@ namespace Rc::Render
 
         BufferRegion GetRegion(uint64_t offset, uint64_t size) const;
 
-        std::span<std::byte> Buffer::Data();
-        std::span<std::byte const> Buffer::Data() const;
+        // Available only for stagging buffer.
+        std::span<std::byte> Buffer::Map(BufferRegion const& region);
+
+        // Available only for stagging buffer.
+        std::span<std::byte const> Buffer::Map(BufferRegion const& region) const;
 
     private:
         friend class CommandBuffer;

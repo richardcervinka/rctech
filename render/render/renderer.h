@@ -91,12 +91,16 @@ namespace Rc::Render
         void ReserveIndexBuffer(Usage usage, uint64_t capacity);
         void FreeIndexBuffer(Usage usage);
         BufferHandle AllocateIndexbuffer(Usage usage, uint64_t size);
+        uint64_t GetIndexBufferCapacity(Usage usage) const;
+        uint64_t GetIndexBufferAvailable(Usage usage) const;
 
         void ReserveVertexBuffer(Usage usage, uint64_t capacity);
         void FreeVertexBuffer(Usage usage);
         BufferHandle AllocateVertexbuffer(Usage usage, uint64_t size);
+        uint64_t GetVertexBufferCapacity(Usage usage) const;
+        uint64_t GetVertexBufferAvailable(Usage usage) const;
 
-        //IndexBufferHandle CreateIndexBuffer(IndexType type, uint64_t size);
+        //void TransferBuffer(BufferHandle)
 
     private:
         // Assign vertex shader to the slot.
@@ -144,6 +148,8 @@ namespace Rc::Render
             std::unique_ptr<Fence> fence;
             
             std::unique_ptr<CommandBuffer> render_commands;
+
+            std::unique_ptr<BufferLinear> staging_buffer;
         };
 
         // Frames-In-Flight
@@ -157,8 +163,6 @@ namespace Rc::Render
 
         std::unique_ptr<Pipeline> m_test_pipeline;
         std::unique_ptr<Pipeline> m_test_vertex_pipeline;
-
-        std::unique_ptr<StagingBuffer> m_staging_buffer;
 
         std::unique_ptr<BufferLinear> m_vertex_buffer; //------------------------- TEST
         std::unique_ptr<BufferLinear> m_index_buffer; //------------------------- TEST: Static index buffer

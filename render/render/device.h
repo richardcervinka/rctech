@@ -16,7 +16,6 @@
 #include "shader.h"
 #include "surface.h"
 #include "buffer.h"
-#include "staging_buffer.h"
 
 namespace Rc::Render
 {

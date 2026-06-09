@@ -1,5 +1,6 @@
 #include "buffer.h"
 #include <stdexcept>
+#include <cassert>
 
 namespace Rc::Render
 {
@@ -99,19 +100,24 @@ namespace Rc::Render
         return {offset, size};
     }
 
-    std::span<std::byte> Buffer::Data()
+    std::span<std::byte> Buffer::Map(BufferRegion const& region)
     {
+        assert(region.Offset() + region.Size() <= m_vma_allocation_info.size);
+
+
         return {
-            static_cast<std::byte*>(m_vma_allocation_info.pMappedData),
-            static_cast<std::size_t>(m_vma_allocation_info.size)
+            static_cast<std::byte*>(m_vma_allocation_info.pMappedData) + region.Offset(),
+            static_cast<std::size_t>(region.Size())
         };
     }
 
-    std::span<std::byte const> Buffer::Data() const
+    std::span<std::byte const> Buffer::Map(BufferRegion const& region) const
     {
+        assert(region.Offset() + region.Size() <= m_vma_allocation_info.size);
+
         return {
-            static_cast<std::byte const*>(m_vma_allocation_info.pMappedData),
-            static_cast<std::size_t>(m_vma_allocation_info.size)
+            static_cast<std::byte const*>(m_vma_allocation_info.pMappedData) + region.Offset(),
+            static_cast<std::size_t>(region.Size())
         };
     }
 
