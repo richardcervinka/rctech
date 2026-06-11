@@ -5,24 +5,16 @@ namespace Rc::Render
     // Reverse‑Z perspective projection matrix (column-major, column vectors).
     //
     // Parameters:
-    //     fovY   – vertical field of view in radians
-    //     aspect – aspect ratio (width / height)
-    //     zNear  – distance to the near clipping plane (> 0)
-    //     zFar   – distance to the far clipping plane (> zNear)
+    // - fovY   – vertical field of view in radians
+    // - aspect – aspect ratio (width / height)
+    // - zNear  – distance to the near clipping plane (> 0)
+    // - zFar   – distance to the far clipping plane (> zNear)
     //
-    // Reverse‑Z concept:
+    // Reverse‑Z:
     // - Depth range is reversed: near plane maps to depth = 1.0, far plane to depth = 0.0.
     // - Depth test must use GREATER instead of LESS.
     // - Depth buffer should be floating-point (e.g., D32F).
     // - Greatly improves depth precision, especially at large distances.
-    // - Allows extremely large far plane values without Z‑fighting.
-    //
-    // Mathematical form of the reverse‑Z projection matrix:
-    //
-    // 1 / (tan(fovY/2) * aspect)      0                     0                     0
-    // 0                               1 / tan(fovY/2)       0                     0
-    // 0                               0        zNear / (zFar - zNear)      (zFar * zNear) / (zFar - zNear)
-    // 0                               0                    -1                     0
     //
     // Notes:
     // - Designed for column-major storage and column-vector multiplication: v' = P * v.
@@ -38,16 +30,16 @@ namespace Rc::Render
         double z_far)
     {
         double const aspect = static_cast<double>(width) / static_cast<double>(height);
-        double const tan_fov_half = std::tan(vertical_fov / 2.0);
+        double const tanfov = std::tan(vertical_fov / 2.0);
 
         return
         {
-            static_cast<float>(1.0 / (tan_fov_half * aspect)),
+            static_cast<float>(1.0 / (tanfov * aspect)),
             0,
             0,
             0,
             0,
-            static_cast<float>(1.0 / tan_fov_half),
+            static_cast<float>(1.0 / tanfov),
             0,
             0,
             0,

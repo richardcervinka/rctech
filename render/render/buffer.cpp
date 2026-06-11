@@ -104,7 +104,6 @@ namespace Rc::Render
     {
         assert(region.Offset() + region.Size() <= m_vma_allocation_info.size);
 
-
         return {
             static_cast<std::byte*>(m_vma_allocation_info.pMappedData) + region.Offset(),
             static_cast<std::size_t>(region.Size())
