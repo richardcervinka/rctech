@@ -1,5 +1,6 @@
 #include "str.h"
 #include <array>
+#include <charconv>
 
 namespace Rc::Str
 {

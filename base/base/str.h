@@ -3,7 +3,7 @@
 #include <string>
 #include <string_view>
 #include <expected>
-#include <charconv>
+#include <system_error>
 #include <cassert>
 
 namespace Rc::Str

@@ -84,8 +84,7 @@ namespace Rc::Render
                 {
                     m_device = adapter->CreateDevice(*m_surface);
 
-                    Str::From(adapter->ApiVersion());
-                    //Log::Debug(std::format("Adapter {} vk:{}\n", adapter->Name(), Str::From(adapter->ApiVersion())));
+                    Log::Debug(std::format("Adapter {} vulkan {}\n", adapter->Name(), Str::From(adapter->ApiVersion())));
 
                     break;
                 }
