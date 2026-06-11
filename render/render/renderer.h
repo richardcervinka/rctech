@@ -145,7 +145,7 @@ namespace Rc::Render
         {
             std::unique_ptr<Fence> fence;
             
-            std::unique_ptr<CommandBuffer> render_commands;
+            std::unique_ptr<CommandBuffer> commands;
 
             std::unique_ptr<BufferLinear> staging_buffer;
         };

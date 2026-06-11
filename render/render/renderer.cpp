@@ -5,7 +5,7 @@
 #include <span>
 #include <stdexcept>
 #include "platform/log.h"
-#include "core/vertex.h" //----------
+#include "core/vertex.h"
 #include "vertex_traits.h"
 
 namespace Rc::Render
@@ -48,7 +48,7 @@ namespace Rc::Render
     static void SortAdapters(std::span<std::unique_ptr<Adapter>> adapters)
     {
         // Predicate l > r
-        const auto predicate = [](std::unique_ptr<Adapter> const& l, std::unique_ptr<Adapter> const& r)
+        std::ranges::sort(adapters, [](auto const& l, auto const& r)
         {
             if (l->Integrated() && r->Discrete())
             {
@@ -59,9 +59,7 @@ namespace Rc::Render
                 return true;
             }
             return l->DeviceLocalMemory() > r->DeviceLocalMemory();
-        };
-
-        std::ranges::sort(adapters, predicate);
+        });
     }
 
     void Renderer::Initialize(Window& window)
@@ -108,7 +106,7 @@ namespace Rc::Render
         for (auto& frame : m_frames)
         {
             frame.fence = m_device->CreateFence();
-            frame.render_commands = m_render_queue->CreateCommandBuffer();
+            frame.commands = m_render_queue->CreateCommandBuffer();
             frame.staging_buffer = std::make_unique<BufferLinear>(m_device->AllocateStagingBuffer(2048 * 2048 * 4 * 8));
         }
 
@@ -237,9 +235,9 @@ namespace Rc::Render
 
         frame.fence->Wait();
 
-        frame.render_commands->Reset();
+        frame.commands->Reset();
         frame.staging_buffer->Reset();
-        frame.render_commands->Begin();
+        frame.commands->Begin();
 
         Test(frame);
     }
@@ -248,11 +246,11 @@ namespace Rc::Render
     {
         auto& frame = m_frames[m_frame_number % m_frames.size()];
 
-        frame.render_commands->BeginPresentingFramebuffer(m_swap_chain->GetImage());
+        frame.commands->BeginPresentingFramebuffer(m_swap_chain->GetImage());
 
-        frame.render_commands->End();
+        frame.commands->End();
 
-        m_render_queue->Submit(*frame.render_commands, *frame.fence);
+        m_render_queue->Submit(*frame.commands, *frame.fence);
 
         m_render_queue->Present(*m_swap_chain); //--------------------------------- not here
 
@@ -288,21 +286,21 @@ namespace Rc::Render
         ib_data[4] = 3;
         ib_data[5] = 1;
         
-        frame.render_commands->TransferBuffer(frame.staging_buffer->GetBuffer(), m_vertex_buffer->GetBuffer(), vb_region.Offset(), 0, vb_region.Size());
-        frame.render_commands->TransferBuffer(frame.staging_buffer->GetBuffer(), m_index_buffer->GetBuffer(), ib_region.Offset(), 0, ib_region.Size());
-        frame.render_commands->UseVertexBuffer(m_vertex_buffer->GetBuffer(), 0, vb_region.Size());
-        frame.render_commands->UseIndexBuffer(m_index_buffer->GetBuffer(), 0, ib_region.Size());
-        frame.render_commands->BindVertexBuffer(m_vertex_buffer->GetBuffer(), 0);
-        frame.render_commands->BindIndexBuffer(m_index_buffer->GetBuffer(), IndexType::Uint16, 0);
-        frame.render_commands->BeginRenderingFramebuffer(m_swap_chain->GetImage());
-        frame.render_commands->SetRenderTargetsCount(1);
-        frame.render_commands->AttachRenderTarget(0, *m_back_buffers.at(back_buffer_index));
-        frame.render_commands->ClearRenderTarget(0, Color(0, 0, 0, 1));
-        frame.render_commands->BeginRendering({0, 0, m_swap_chain->Width(), m_swap_chain->Height()});
-        frame.render_commands->BindPipeline(*m_test_vertex_pipeline);
-        frame.render_commands->Test({0, 0, m_swap_chain->Width(), m_swap_chain->Height()});
-        frame.render_commands->DrawIndexed(6, 1, 0, 0, 0);
-        frame.render_commands->EndRendering();
+        frame.commands->TransferBuffer(frame.staging_buffer->GetBuffer(), m_vertex_buffer->GetBuffer(), vb_region.Offset(), 0, vb_region.Size());
+        frame.commands->TransferBuffer(frame.staging_buffer->GetBuffer(), m_index_buffer->GetBuffer(), ib_region.Offset(), 0, ib_region.Size());
+        frame.commands->UseVertexBuffer(m_vertex_buffer->GetBuffer(), 0, vb_region.Size());
+        frame.commands->UseIndexBuffer(m_index_buffer->GetBuffer(), 0, ib_region.Size());
+        frame.commands->BindVertexBuffer(m_vertex_buffer->GetBuffer(), 0);
+        frame.commands->BindIndexBuffer(m_index_buffer->GetBuffer(), IndexType::Uint16, 0);
+        frame.commands->BeginRenderingFramebuffer(m_swap_chain->GetImage());
+        frame.commands->SetRenderTargetsCount(1);
+        frame.commands->AttachRenderTarget(0, *m_back_buffers.at(back_buffer_index));
+        frame.commands->ClearRenderTarget(0, Color(0, 0, 0, 1));
+        frame.commands->BeginRendering({0, 0, m_swap_chain->Width(), m_swap_chain->Height()});
+        frame.commands->BindPipeline(*m_test_vertex_pipeline);
+        frame.commands->Test({0, 0, m_swap_chain->Width(), m_swap_chain->Height()});
+        frame.commands->DrawIndexed(6, 1, 0, 0, 0);
+        frame.commands->EndRendering();
     }
 
 } // Rc::Render
