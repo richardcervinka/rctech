@@ -7,6 +7,7 @@
 #include "platform/log.h"
 #include "core/vertex.h"
 #include "vertex_traits.h"
+#include "core/transformations.h"
 
 namespace Rc::Render
 {
@@ -266,10 +267,15 @@ namespace Rc::Render
         auto vb_region = frame.staging_buffer->Allocate(Gfx::VertexBasic::stride * 4);
         auto vb_data = frame.staging_buffer->Map<Gfx::VertexBasic>(vb_region);
 
-        vb_data[0].position = {-0.7, -0.7, 0};
-        vb_data[1].position = {0.7, 0.7, 0};
-        vb_data[2].position = {-0.7, 0.7, 0};
-        vb_data[3].position = {0.7, -0.7, 0};
+        static int t = 0;
+        t = (t + 1) % 1000;
+        auto s = static_cast<float>(std::sin( 2.0 * Math::pi * (t / 999.0)));
+        auto c = static_cast<float>(std::cos( 2.0 * Math::pi * (t / 999.0)));
+
+        vb_data[0].position = {-0.7, -0.7, -2 + s};
+        vb_data[1].position = {0.7, 0.7, -2 + c};
+        vb_data[2].position = {-0.7, 0.7, -2 + s};
+        vb_data[3].position = {0.7, -0.7, -2 + c};
 
         vb_data[0].color = {1, 0, 0};
         vb_data[1].color = {0, 1, 0};

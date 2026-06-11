@@ -38,6 +38,8 @@ add_library(render STATIC
     "semaphore.h"
     "semaphore.cpp"
     "version.h"
+    "projection.h"
+    "projection.cpp"
 )
 
 target_link_libraries(render

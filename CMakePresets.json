@@ -23,7 +23,8 @@
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_C_COMPILER": "clang",
         "CMAKE_CXX_COMPILER": "clang++",
-        "CMAKE_CXX_FLAGS": "-finput-charset=UTF-8 -fexec-charset=UTF-8"
+        "CMAKE_CXX_FLAGS": "-finput-charset=UTF-8 -fexec-charset=UTF-8",
+        "BUILD_TESTING": "ON"
       }
     },
     {
