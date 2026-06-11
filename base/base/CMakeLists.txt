@@ -15,6 +15,7 @@
     "cli.h"
     "cli.cpp"
     "str.h"
+    "str.cpp"
     "jsonstream.h"
     "jsonstream.cpp"
 )

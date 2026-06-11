@@ -3,67 +3,32 @@
 #include <string>
 #include <string_view>
 #include <expected>
-#include <array>
-#include <format>
 #include <charconv>
+#include <cassert>
 
 namespace Rc::Str
 {
-    template<typename T>
-    std::expected<T, std::errc> To(std::string_view str)
-    {
-        T result {};
-        auto [ptr, ec] = std::from_chars(str.data(), str.data() + str.size(), result);
-
-        if (ptr != (str.data() + str.size()))
-        {
-            return std::unexpected{std::errc::invalid_argument};
-        }
-        if (ec == std::errc())
-        {
-            return result;
-        }
-        return std::unexpected{ec};
-    }
+    std::string From(int v);
+    std::string From(unsigned v);
+    std::string From(long v);
+    std::string From(unsigned long v);
+    std::string From(long long v);
+    std::string From(unsigned long long v);
+    std::string From(float v);
+    std::string From(double v);
+    std::string From(bool value);
 
     template<typename T>
-    std::string From(T value)
-    {
-        std::array<char, 64> buffer;
-        const auto result = std::to_chars(buffer.data(), buffer.data() + buffer.size(), value);
+    std::expected<T, std::errc> To(std::string_view str);
 
-        assert(result.ec == std::errc());
-
-        return {buffer.data(), result.ptr};
-    }
-
-    template<>
-    inline std::expected<bool, std::errc> To(std::string_view str)
-    {
-        if (str == "true")
-        {
-            return true;
-        }
-        if (str == "false")
-        {
-            return false;
-        }
-        return std::unexpected{std::errc::invalid_argument};
-    }
-
-    template<>
-    inline std::string From(bool value)
-    {
-        return value ? "true" : "false";
-    }
-
-    template<typename T>
-    struct Formatter : std::formatter<std::string_view>
-    {
-        auto format(T value, std::format_context& ctx) const
-        {
-            return std::formatter<std::string_view>::format(Rc::Str::From(value), ctx);
-        }
-    };
+    template<> std::expected<int, std::errc> To<int>(std::string_view str);
+    template<> std::expected<unsigned, std::errc> To<unsigned>(std::string_view str);
+    template<> std::expected<long, std::errc> To<long>(std::string_view str);
+    template<> std::expected<unsigned long, std::errc> To<unsigned long>(std::string_view str);
+    template<> std::expected<long long, std::errc> To<long long>(std::string_view str);
+    template<> std::expected<unsigned long long, std::errc> To<unsigned long long>(std::string_view str);
+    template<> std::expected<float, std::errc> To<float>(std::string_view str);
+    template<> std::expected<double, std::errc> To<double>(std::string_view str);
+    template<> std::expected<bool, std::errc> To<bool>(std::string_view str);
 
 } // Rc::Str
