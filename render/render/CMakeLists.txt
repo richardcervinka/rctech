@@ -37,6 +37,7 @@ add_library(render STATIC
     "surface.cpp"
     "semaphore.h"
     "semaphore.cpp"
+    "version.h"
 )
 
 target_link_libraries(render

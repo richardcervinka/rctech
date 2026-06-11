@@ -13,6 +13,7 @@ namespace Rc
 
         Load("vkDestroyInstance", m_vkDestroyInstance);
         Load("vkGetPhysicalDeviceProperties", m_vkGetPhysicalDeviceProperties);
+        Load("vkGetPhysicalDeviceMemoryProperties", m_vkGetPhysicalDeviceMemoryProperties);
         Load("vkEnumeratePhysicalDevices", m_vkEnumeratePhysicalDevices);
         Load("vkCreateWin32SurfaceKHR", m_vkCreateWin32SurfaceKHR);
         Load("vkDestroySurfaceKHR", m_vkDestroySurfaceKHR);

@@ -52,13 +52,8 @@ namespace Rc::Render
             m_offset = 0;
         }
 
-        std::span<std::byte> Map(BufferRegion const& region)
-        {
-            return m_buffer->Map(region);
-        }
-
         template<typename T>
-        std::span<T> MapAs(BufferRegion const& region)
+        std::span<T> Map(BufferRegion const& region)
         {
             auto raw = m_buffer->Map(region);
 

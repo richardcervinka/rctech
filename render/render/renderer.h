@@ -89,13 +89,11 @@ namespace Rc::Render
         void EndFrame();
 
         void ReserveIndexBuffer(Usage usage, uint64_t capacity);
-        void FreeIndexBuffer(Usage usage);
         BufferHandle AllocateIndexbuffer(Usage usage, uint64_t size);
-        uint64_t GetIndexBufferCapacity(Usage usage) const;
+        uint64_t GetIndexBufferCapacity(Usage usage) const; // Return BufferInfo {capacity, available...}
         uint64_t GetIndexBufferAvailable(Usage usage) const;
 
         void ReserveVertexBuffer(Usage usage, uint64_t capacity);
-        void FreeVertexBuffer(Usage usage);
         BufferHandle AllocateVertexbuffer(Usage usage, uint64_t size);
         uint64_t GetVertexBufferCapacity(Usage usage) const;
         uint64_t GetVertexBufferAvailable(Usage usage) const;
@@ -168,6 +166,9 @@ namespace Rc::Render
         std::unique_ptr<BufferLinear> m_index_buffer; //------------------------- TEST: Static index buffer
 
         Window::EventSize::Handler m_on_window_size {this, &Renderer::OnWindowSize};
+
+        // Create embedded shaders.
+        void InitializeShaders();
 
         void Test(Frame& frame);
     };

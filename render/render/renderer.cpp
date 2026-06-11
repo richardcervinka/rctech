@@ -45,6 +45,25 @@ namespace Rc::Render
         m_instance = nullptr;
     }
 
+    static void SortAdapters(std::span<std::unique_ptr<Adapter>> adapters)
+    {
+        // Predicate l > r
+        const auto predicate = [](std::unique_ptr<Adapter> const& l, std::unique_ptr<Adapter> const& r)
+        {
+            if (l->Integrated() && r->Discrete())
+            {
+                return false;
+            }
+            if (l->Discrete() && r->Integrated())
+            {
+                return true;
+            }
+            return l->DeviceLocalMemory() > r->DeviceLocalMemory();
+        };
+
+        std::ranges::sort(adapters, predicate);
+    }
+
     void Renderer::Initialize(Window& window)
     {
         m_instance = std::make_unique<Instance>();
@@ -55,13 +74,32 @@ namespace Rc::Render
         // Get available GPUs
         auto adapters = m_instance->EnumerateAdapters();
 
-        // Print adapters
-        for (auto const& adapter : adapters)
+        SortAdapters(adapters);
+
+        for (auto& adapter : adapters)
         {
-            Log::Debug(std::format("Adapter {}\n", adapter.Name()));
+            if (adapter->ApiVersion() >= m_instance->ApiVersion())
+            {
+                try
+                {
+                    m_device = adapter->CreateDevice(*m_surface);
+
+                    Log::Debug(std::format("Adapter {}\n", adapter->Name()));
+
+                    break;
+                }
+                catch (std::exception const& e)
+                {
+                    Log::Error(std::format("Create device error: {}\n", e.what()));
+                }
+            }
         }
 
-        m_device = adapters.back().CreateDevice(*m_surface);
+        if (m_device == nullptr)
+        {
+            throw std::runtime_error("No supported GPU found!");
+        }
+
         m_swap_chain = m_device->CreateSwapChain(*m_surface, window);
         m_render_queue = m_device->CreateGraphicsQueue();
 
@@ -81,11 +119,9 @@ namespace Rc::Render
         }
 
         // Create embedded shaders.
-        SetVertexShader(VertexShaderSlot::Null, m_device->CreateShader(Res::Vs::Dummy()));
-        SetVertexShader(VertexShaderSlot::Test, m_device->CreateShader(Res::Vs::Test()));
-        SetVertexShader(VertexShaderSlot::Overlay, m_device->CreateShader(Res::Vs::Overlay()));
-        SetPixelShader(PixelShaderSlot::Null, m_device->CreateShader(Res::Ps::Dummy()));
+        InitializeShaders();
 
+        // Handle window resizing.
         window.OnEventSize(m_on_window_size);
 
         // ---------------------------- TEST
@@ -114,6 +150,14 @@ namespace Rc::Render
         Log::Debug("Renderer initialized");
     }
 
+    void Renderer::InitializeShaders()
+    {
+        SetVertexShader(VertexShaderSlot::Null, m_device->CreateShader(Res::Vs::Dummy()));
+        SetVertexShader(VertexShaderSlot::Test, m_device->CreateShader(Res::Vs::Test()));
+        SetVertexShader(VertexShaderSlot::Overlay, m_device->CreateShader(Res::Vs::Overlay()));
+        SetPixelShader(PixelShaderSlot::Null, m_device->CreateShader(Res::Ps::Dummy()));
+    }
+
     void Renderer::Resize(int width, int height)
     {
         m_device->WaitIdle();
@@ -130,11 +174,6 @@ namespace Rc::Render
     void Renderer::ReserveIndexBuffer(Usage usage, uint64_t capacity)
     {
         m_index_buffer = std::make_unique<BufferLinear>(m_device->AllocateIndexBuffer(capacity));
-    }
-
-    void Renderer::FreeIndexBuffer(Usage usage)
-    {
-        m_index_buffer = nullptr;
     }
 
     BufferHandle Renderer::AllocateIndexbuffer(Usage usage, uint64_t size)
@@ -165,11 +204,6 @@ namespace Rc::Render
     void Renderer::ReserveVertexBuffer(Usage usage, uint64_t capacity)
     {
         m_vertex_buffer = std::make_unique<BufferLinear>(m_device->AllocateVertexBuffer(capacity));
-    }
-
-    void Renderer::FreeVertexBuffer(Usage usage)
-    {
-        m_vertex_buffer = nullptr;
     }
 
     BufferHandle Renderer::AllocateVertexbuffer(Usage usage, uint64_t size)
@@ -232,7 +266,7 @@ namespace Rc::Render
         // Fill staging buffer
         
         auto vb_region = frame.staging_buffer->Allocate(Gfx::VertexBasic::stride * 4);
-        auto vb_data = frame.staging_buffer->MapAs<Gfx::VertexBasic>(vb_region);
+        auto vb_data = frame.staging_buffer->Map<Gfx::VertexBasic>(vb_region);
 
         vb_data[0].position = {-0.7, -0.7, 0};
         vb_data[1].position = {0.7, 0.7, 0};
@@ -245,7 +279,7 @@ namespace Rc::Render
         vb_data[3].color = {1, 1, 1};
 
         auto ib_region = frame.staging_buffer->Allocate(sizeof(uint16_t) * 6);
-        auto ib_data = frame.staging_buffer->MapAs<uint16_t>(ib_region);
+        auto ib_data = frame.staging_buffer->Map<uint16_t>(ib_region);
 
         ib_data[0] = 0;
         ib_data[1] = 1;
