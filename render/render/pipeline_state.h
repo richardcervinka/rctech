@@ -4,6 +4,8 @@
 #include <memory>
 #include <span>
 #include <vector>
+#include <array>
+#include "core/vertex.h"
 
 namespace Rc::Render
 {
@@ -58,46 +60,43 @@ namespace Rc::Render
 
         void SetVertexShader(VkShaderModule vs)
         {
-            m_vk_vs = vs;
+            m_vs = vs;
         }
 
         void SetPixelShader(VkShaderModule ps)
         {
-            m_vk_ps = ps;
+            m_ps = ps;
         }
 
-        void SetVertexInputAttributes(std::span<VkVertexInputAttributeDescription const> attributes)
+        void SetPipelineLayout(std::shared_ptr<PipelineLayout> layout)
         {
-            m_vk_vertex_input_arrtibutes = {attributes.begin(), attributes.end()};
+            m_pipeline_layout = std::move(layout);
         }
-
-        void SetVertexInputVertexRate();
-        void SetVertexInputInstanceRate();
-
-        void SetPipelineLayout(std::shared_ptr<PipelineLayout> layout) { m_vk_pipeline_layout = std::move(layout); }
 
         // stride = size of vertex
         // 0 to disable vertex input binding
-        void SetVertexInputBinding(std::size_t stride);
+        void SetVertexInput(std::size_t stride, std::span<Gfx::VertexDescription const> attributes);
+        void SetInstanceInput(std::size_t stride, std::span<Gfx::VertexDescription const> attributes);
 
         // TODO: Do not return raw Vk object
         std::unique_ptr<Pipeline> Create();
         
     private:
-        VulkanDevice const* m_vk_device {nullptr};
-        VkShaderModule m_vk_vs {nullptr};
-        VkShaderModule m_vk_ps {nullptr};
-        VkFormat m_vk_format {VK_FORMAT_R8G8B8A8_SRGB}; // ------------------------------ UNDEFINED
-        std::vector<VkVertexInputAttributeDescription> m_vk_vertex_input_arrtibutes;
-        VkVertexInputBindingDescription m_vk_vertex_binding_desc {};
-        VkPipelineInputAssemblyStateCreateInfo m_vk_input_assembly {};
-        VkPipelineViewportStateCreateInfo m_vk_viewport_state {};
-        VkPipelineRasterizationStateCreateInfo m_vk_rasterizer_state {};
-        VkPipelineMultisampleStateCreateInfo m_vk_multisampling {};
-        VkPipelineColorBlendAttachmentState m_vk_color_blend_attachment {};
-        VkPipelineColorBlendStateCreateInfo m_vk_color_blend {};
-        VkPipelineRenderingCreateInfo m_vk_pipeline_rendering {};
-        std::shared_ptr<PipelineLayout> m_vk_pipeline_layout;
+        VulkanDevice const* m_device {nullptr};
+        VkShaderModule m_vs {nullptr};
+        VkShaderModule m_ps {nullptr};
+        VkFormat m_format {VK_FORMAT_R8G8B8A8_SRGB}; // ------------------------------ UNDEFINED
+        std::vector<VkVertexInputAttributeDescription> m_vertex_arrtibutes;
+        std::vector<VkVertexInputAttributeDescription> m_instance_arrtibutes;
+        std::array<VkVertexInputBindingDescription, 2> m_vertex_binding_desc {};
+        VkPipelineInputAssemblyStateCreateInfo m_input_assembly {};
+        VkPipelineViewportStateCreateInfo m_viewport_state {};
+        VkPipelineRasterizationStateCreateInfo m_rasterizer_state {};
+        VkPipelineMultisampleStateCreateInfo m_multisampling {};
+        VkPipelineColorBlendAttachmentState m_color_blend_attachment {};
+        VkPipelineColorBlendStateCreateInfo m_color_blend {};
+        VkPipelineRenderingCreateInfo m_pipeline_rendering {};
+        std::shared_ptr<PipelineLayout> m_pipeline_layout;
     };
 
 } // Rc::Render

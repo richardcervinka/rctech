@@ -51,6 +51,18 @@ namespace Rc::Render
         )
     {}
 
+    Buffer::Buffer(UniformBufferInfo const& info, VmaAllocator vma_allocator) : Buffer(
+            info.size,
+            vma_allocator,
+            VkBufferUsageFlags
+            {
+                VK_BUFFER_USAGE_TRANSFER_DST_BIT |
+                VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT
+            },
+            VmaAllocationCreateFlags{}
+        )
+    {}
+
     Buffer::Buffer(
         uint64_t size,
         VmaAllocator vma_allocator,

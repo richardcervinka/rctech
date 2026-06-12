@@ -128,7 +128,6 @@ namespace Rc::Render
         ReserveVertexBuffer(Usage::Permanent, 2048);
         ReserveIndexBuffer(Usage::Permanent, 256);
 
-
         m_pipeline_layout = m_device->CreatePipelineLayout();
         
         auto pipeline_factory = m_device->CreatePipelineFactory();
@@ -136,14 +135,12 @@ namespace Rc::Render
 
         pipeline_factory.SetVertexShader(GetVertexShader(VertexShaderSlot::Overlay));
         pipeline_factory.SetPixelShader(GetPixelShader(PixelShaderSlot::Null));
-        pipeline_factory.SetVertexInputAttributes({});
-        pipeline_factory.SetVertexInputBinding(0);
+        pipeline_factory.SetVertexInput(0, {});
         m_test_pipeline = pipeline_factory.Create();
 
         pipeline_factory.SetVertexShader(GetVertexShader(VertexShaderSlot::Test));
         pipeline_factory.SetPixelShader(GetPixelShader(PixelShaderSlot::Null));
-        pipeline_factory.SetVertexInputBinding(Gfx::VertexBasic::stride);
-        pipeline_factory.SetVertexInputAttributes(Traits<Gfx::VertexBasic>::attributes);
+        pipeline_factory.SetVertexInput(sizeof(Gfx::VertexBasic), Gfx::VertexBasic::attributes);
         m_test_vertex_pipeline = pipeline_factory.Create();
 
         Log::Debug("Renderer initialized");
@@ -264,7 +261,7 @@ namespace Rc::Render
 
         // Fill staging buffer
         
-        auto vb_region = frame.staging_buffer->Allocate(Gfx::VertexBasic::stride * 4);
+        auto vb_region = frame.staging_buffer->Allocate(sizeof(Gfx::VertexBasic) * 4);
         auto vb_data = frame.staging_buffer->Map<Gfx::VertexBasic>(vb_region);
 
         static int t = 0;

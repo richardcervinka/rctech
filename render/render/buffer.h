@@ -58,6 +58,11 @@ namespace Rc::Render
         uint64_t size;
     };
 
+    struct UniformBufferInfo
+    {
+        uint64_t size;
+    };
+
     //
     // GPU buffer
     //
@@ -68,6 +73,7 @@ namespace Rc::Render
         Buffer(VertexBufferInfo const& info, VmaAllocator vma_allocator);
         Buffer(IndexBufferInfo const& info, VmaAllocator vma_allocator);
         Buffer(StagingBufferInfo const& info, VmaAllocator vma_allocator);
+        Buffer(UniformBufferInfo const& info, VmaAllocator vma_allocator);
 
         ~Buffer();
 
