@@ -24,7 +24,7 @@ namespace Rc::Render
         void Wait();
 
     private:
-        friend class CommandQueue;
+        //friend class CommandQueue;
         
         VulkanDevice const* m_vk_device {nullptr};
         VkFence m_vk_fence {VK_NULL_HANDLE};

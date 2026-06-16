@@ -2,8 +2,8 @@
 
 #include "vulkan/device.h"
 #include "command_buffer.h"
-#include "swap_chain.h"
 #include "fence.h"
+#include "semaphore.h"
 
 namespace Rc::Render
 {
@@ -23,11 +23,23 @@ namespace Rc::Render
 
         void WaitFor();
 
-        void Submit(CommandBuffer const& cb, Fence const& fence);
+        // Submit render commands
+        void Submit(
+            CommandBuffer const& cb,
+            Semaphore const& wait_semaphore,
+            Semaphore const& signal_semaphore,
+            Fence const& fence
+        );
 
-        void Present(SwapChain const& sc) const;
+        uint32_t FamilyIndex() const
+        {
+            return m_vk_family;
+        }
 
-        uint32_t FamilyIndex() const { return m_vk_family; }
+        VkQueue Handle() const
+        {
+            return m_vk_queue;
+        }
 
     private:
         VulkanDevice const* m_vk_device {nullptr};

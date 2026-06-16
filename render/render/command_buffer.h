@@ -9,7 +9,6 @@
 #include <cstdint>
 #include "image.h"
 #include "texture.h"
-#include "staging_buffer.h"
 #include "pipeline_state.h"
 
 namespace Rc::Render

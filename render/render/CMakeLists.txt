@@ -3,6 +3,8 @@
 add_library(render STATIC
     "buffer.h"
     "buffer.cpp"
+    "buffer_linear.h"
+    "buffer_pool.h"
     "instance.h"
     "instance.cpp"
     "device.h"
@@ -29,14 +31,17 @@ add_library(render STATIC
     "texture.h"
     "texture.cpp"
     "vertex_traits.h"
-    "staging_buffer.h"
-    "staging_buffer.cpp"
     "index_buffer.h"
     "index_buffer.cpp"
     "surface.h"
     "surface.cpp"
     "semaphore.h"
     "semaphore.cpp"
+    "version.h"
+    "projection.h"
+    "projection.cpp"
+    "descriptor.h"
+    "descriptor.cpp"
 )
 
 target_link_libraries(render

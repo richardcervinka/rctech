@@ -115,14 +115,14 @@ namespace Rc::Render
         m_vk_debug_msg = m_instance->CreateDebugUtilsMessengerEXT(create_info);
     }
 
-    std::vector<Adapter> Instance::EnumerateAdapters()
+    std::vector<std::unique_ptr<Adapter>> Instance::EnumerateAdapters()
     {
         std::vector<VkPhysicalDevice> devices(m_instance->EnumeratePhysicalDevicesCount());
-        std::vector<Adapter> adapters;
+        std::vector<std::unique_ptr<Adapter>> adapters;
 
         for (auto& device : m_instance->EnumeratePhysicalDevices(devices))
         {
-            adapters.emplace_back(*m_context, *m_instance, device);
+            adapters.push_back(std::make_unique<Adapter>(*m_context, *m_instance, device));
         }
 
         return adapters;
@@ -130,10 +130,8 @@ namespace Rc::Render
 
     std::unique_ptr<Surface> Instance::CreateSurface(Window const& window)
     {
-    #ifdef VK_USE_PLATFORM_WIN32_KHR
-
+        #ifdef VK_USE_PLATFORM_WIN32_KHR
         return std::make_unique<Surface>(*m_instance, window);
-
         #endif
     }
 

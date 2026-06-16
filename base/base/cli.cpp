@@ -1,9 +1,9 @@
 #include "cli.h"
 #include <cctype>
+#include <stdexcept>
 
 namespace Rc::Str
 {
-    template<>
     std::string From(Rc::Cli::Error value)
     {
         switch (value)
@@ -18,8 +18,7 @@ namespace Rc::Str
                 return "BadFormat";
         }
 
-        assert(false && "Unknown Rc::Cli::Error value");
-        throw std::invalid_argument("Unknown Rc::Cli::Error value");
+        std::unreachable();
     }
 
     template<>
@@ -42,8 +41,7 @@ namespace Rc::Str
             return Rc::Cli::Error::BadFormat;
         }
 
-        assert(false && "Unknown Rc::Cli::Error string");
-        throw std::invalid_argument("Unknown Rc::Cli::Error string");
+        std::unreachable();
     }
 
 } // Rc::Str

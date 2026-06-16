@@ -1,10 +1,20 @@
-﻿# vector
+﻿add_library(test_base INTERFACE)
+
+target_link_libraries(test_base
+    INTERFACE base
+    INTERFACE gtest_main
+)
+
+target_compile_features(test_base
+    INTERFACE cxx_std_26
+)
+
+# vector
 
 add_executable(test_vector "test_vector.cpp")
 
 target_link_libraries(test_vector
-    PRIVATE base
-    PRIVATE gtest_main
+    PRIVATE test_base
 )
 
 # matrix
@@ -12,8 +22,7 @@ target_link_libraries(test_vector
 add_executable(test_matrix "test_matrix.cpp")
 
 target_link_libraries(test_matrix
-    PRIVATE base
-    PRIVATE gtest_main
+    PRIVATE test_base
 )
 
 # color
@@ -21,8 +30,7 @@ target_link_libraries(test_matrix
 add_executable(test_color "test_color.cpp")
 
 target_link_libraries(test_color
-    PRIVATE base
-    PRIVATE gtest_main
+    PRIVATE test_base
 )
 
 # quaternion
@@ -30,8 +38,7 @@ target_link_libraries(test_color
 add_executable(test_quaternion "test_quaternion.cpp")
 
 target_link_libraries(test_quaternion
-    PRIVATE base
-    PRIVATE gtest_main
+    PRIVATE test_base
 )
 
 # stopwatch
@@ -39,8 +46,7 @@ target_link_libraries(test_quaternion
 add_executable(test_stopwatch "test_stopwatch.cpp")
 
 target_link_libraries(test_stopwatch
-    PRIVATE base
-    PRIVATE gtest_main
+    PRIVATE test_base
 )
 
 # event
@@ -48,8 +54,7 @@ target_link_libraries(test_stopwatch
 add_executable(test_event "test_event.cpp")
 
 target_link_libraries(test_event
-    PRIVATE base
-    PRIVATE gtest_main
+    PRIVATE test_base
     PRIVATE gmock_main
     PRIVATE gmock
 )
@@ -59,8 +64,7 @@ target_link_libraries(test_event
 add_executable(test_utf "test_utf.cpp")
 
 target_link_libraries(test_utf
-    PRIVATE base
-    PRIVATE gtest_main
+    PRIVATE test_base
 )
 
 # cli
@@ -68,8 +72,7 @@ target_link_libraries(test_utf
 add_executable(test_cli "test_cli.cpp")
 
 target_link_libraries(test_cli
-    PRIVATE base
-    PRIVATE gtest_main
+    PRIVATE test_base
 )
 
 # str
@@ -77,8 +80,7 @@ target_link_libraries(test_cli
 add_executable(test_str "test_str.cpp")
 
 target_link_libraries(test_str
-    PRIVATE base
-    PRIVATE gtest_main
+    PRIVATE test_base
 )
 
 # jsonstream
@@ -86,6 +88,5 @@ target_link_libraries(test_str
 add_executable(test_jsonstream "test_jsonstream.cpp")
 
 target_link_libraries(test_jsonstream
-    PRIVATE base
-    PRIVATE gtest_main
+    PRIVATE test_base
 )

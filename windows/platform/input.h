@@ -4,7 +4,8 @@
 
 namespace Rc::Input
 {
-    void Register();
+    void RegisterKeyboard();
+    void RegisterMouse();
 
     void Read();
 

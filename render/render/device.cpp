@@ -24,10 +24,15 @@ namespace Rc::Render
         {
             throw std::runtime_error("Required VK_KHR_swapchain");
         }
+        if (!extensions.contains(VK_EXT_DESCRIPTOR_HEAP_EXTENSION_NAME))
+        {
+            throw std::runtime_error("Required VK_EXT_descriptor_heap");
+        }
 
         std::vector<char const*> enable_extensions
         {
-            VK_KHR_SWAPCHAIN_EXTENSION_NAME
+            VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+            VK_EXT_DESCRIPTOR_HEAP_EXTENSION_NAME
         };
 
         // Optional extensions...
@@ -150,22 +155,27 @@ namespace Rc::Render
             .pNext = nullptr,
             .bufferDeviceAddress = VK_TRUE
         };
-
         VkPhysicalDeviceDynamicRenderingFeatures dynamic_rendering_features
         {
             .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES,
             .pNext = &device_address_features,
             .dynamicRendering = VK_TRUE
         };
-
         VkPhysicalDeviceSynchronization2Features synchronization2_features
         {
             .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES,
             .pNext = &dynamic_rendering_features,
             .synchronization2 = VK_TRUE
         };
+        VkPhysicalDeviceDescriptorHeapFeaturesEXT descriptor_heap_features_ext
+        {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_HEAP_FEATURES_EXT,
+            .pNext = &synchronization2_features,
+            .descriptorHeap = VK_TRUE,
+            .descriptorHeapCaptureReplay = VK_FALSE
+        };
 
-        void* features = &synchronization2_features;
+        void* features = &descriptor_heap_features_ext;
 
         VkDeviceCreateInfo info
         {
@@ -280,19 +290,34 @@ namespace Rc::Render
         return PipelineFactory(*m_device);
     }
 
+    ResourceDescriptorBuilder Device::CreateResourceDescriptorBuilder()
+    {
+        return {*m_instance, *m_device, m_vk_physical_device};
+    }
+
     std::unique_ptr<Buffer> Device::AllocateVertexBuffer(uint64_t size) const
     {
-        return std::make_unique<Buffer>(VertexBufferInfo{size}, m_vma_allocator);
+        return std::make_unique<Buffer>(*m_device, VertexBufferInfo{size}, m_vma_allocator);
     }
 
     std::unique_ptr<Buffer> Device::AllocateIndexBuffer(uint64_t size) const
     {
-        return std::make_unique<Buffer>(IndexBufferInfo{size}, m_vma_allocator);
+        return std::make_unique<Buffer>(*m_device, IndexBufferInfo{size}, m_vma_allocator);
     }
 
     std::unique_ptr<Buffer> Device::AllocateStagingBuffer(uint64_t size) const
     {
-        return std::make_unique<Buffer>(StagingBufferInfo{size}, m_vma_allocator);
+        return std::make_unique<Buffer>(*m_device, StagingBufferInfo{size}, m_vma_allocator);
+    }
+
+    std::unique_ptr<Buffer> Device::AllocateUniformBuffer(uint64_t size) const
+    {
+        return std::make_unique<Buffer>(*m_device, UniformBufferInfo{size}, m_vma_allocator);
+    }
+
+    std::unique_ptr<Buffer> Device::AllocateDescriptorHeapBuffer(uint64_t size) const
+    {
+        return std::make_unique<Buffer>(*m_device, DescriptorHeapBufferInfo{size}, m_vma_allocator);
     }
 
 } // Rc::Render

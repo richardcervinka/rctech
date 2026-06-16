@@ -171,6 +171,27 @@ namespace Rc
         // vkCmdBindIndexBuffer
         void CmdBindIndexBuffer(VkCommandBuffer command_buffer, VkBuffer buffer, VkDeviceSize offset, VkIndexType index_type) const;
 
+        // vkCreateDescriptorSetLayout
+        VkDescriptorSetLayout CreateDescriptorSetLayout(VkDescriptorSetLayoutCreateInfo const& create_info) const;
+
+        // vkDestroyDescriptorSetLayout
+        void DestroyDescriptorSetLayout(VkDescriptorSetLayout& descriptor_set_layout) const;
+
+        // vkCreateDescriptorPool
+        VkDescriptorPool CreateDescriptorPool(VkDescriptorPoolCreateInfo const& create_info) const;
+
+        // vkDestroyDescriptorPool
+        void DestroyDescriptorPool(VkDescriptorPool& descriptor_pool) const;
+
+        // vkWriteResourceDescriptorsEXT
+        void WriteResourceDescriptors(std::span<VkResourceDescriptorInfoEXT const> resources, std::span<VkHostAddressRangeEXT const> descriptors) const;
+
+        // vkWriteResourceDescriptorsEXT
+        void WriteResourceDescriptor(VkResourceDescriptorInfoEXT const& resource, VkHostAddressRangeEXT const& descriptor) const;
+
+        // vkGetBufferDeviceAddress
+        VkDeviceAddress GetBufferDeviceAddress(VkBufferDeviceAddressInfo const& info) const;
+
     private:
         friend class VulkanContext;
 
@@ -229,6 +250,12 @@ namespace Rc
         PFN_vkCmdCopyBuffer m_vkCmdCopyBuffer {nullptr};
         PFN_vkCmdBindVertexBuffers m_vkCmdBindVertexBuffers {nullptr};
         PFN_vkCmdBindIndexBuffer m_vkCmdBindIndexBuffer {nullptr};
+        PFN_vkCreateDescriptorSetLayout m_vkCreateDescriptorSetLayout {nullptr};
+        PFN_vkDestroyDescriptorSetLayout m_vkDestroyDescriptorSetLayout {nullptr};
+        PFN_vkCreateDescriptorPool m_vkCreateDescriptorPool {nullptr};
+        PFN_vkDestroyDescriptorPool m_vkDestroyDescriptorPool {nullptr};
+        PFN_vkWriteResourceDescriptorsEXT m_vkWriteResourceDescriptorsEXT {nullptr};
+        PFN_vkGetBufferDeviceAddress m_vkGetBufferDeviceAddress {nullptr};
     };
 
 } // Rc

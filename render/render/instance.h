@@ -9,7 +9,7 @@
 #include "surface.h"
 
 namespace Rc::Render
-{
+{   
     // Graphics infrastructure context
     class Instance
     {
@@ -22,13 +22,18 @@ namespace Rc::Render
         Instance(Instance&& other) = delete;
         Instance& operator=(Instance&& other) = delete;
 
-        std::vector<Adapter> EnumerateAdapters();
+        std::vector<std::unique_ptr<Adapter>> EnumerateAdapters();
 
         std::unique_ptr<Surface> CreateSurface(Window const& window);
 
         void EnableValidation();
 
         std::map<std::string, VulkanVersion> EnumerateExtensions() const;
+
+        Version ApiVersion() const
+        {
+            return {1, 4};
+        }
 
     private:
         static VkBool32 VulkanDebugCallback(

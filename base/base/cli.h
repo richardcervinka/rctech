@@ -31,7 +31,6 @@ namespace Rc::Str
     template<>
     std::expected<Rc::Cli::Error, std::errc> To(std::string_view str);
 
-    template<>
     std::string From(Rc::Cli::Error value);
 
 } // Rc::Str

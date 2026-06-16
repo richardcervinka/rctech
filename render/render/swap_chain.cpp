@@ -69,7 +69,6 @@ namespace Rc::Render
 
             m_acquire_semaphores.push_back(std::make_unique<Semaphore>(*m_vk_device));
             m_present_semaphores.push_back(std::make_unique<Semaphore>(*m_vk_device));
-            m_fences.push_back(std::make_unique<Fence>(*m_vk_device));
         }
 
         m_info.oldSwapchain = nullptr;
@@ -79,45 +78,19 @@ namespace Rc::Render
     {
         m_acquire_index = (m_acquire_index + 1) % Count();
 
-        m_fences[m_acquire_index]->Wait();
-
-        m_image_index = m_vk_device->AcquireNextImageKHR(m_vk_swap_chain, UINT64_MAX, GetAcquireSemaphore(), VK_NULL_HANDLE);
-
-        // try {
-        //     result = device.acquireNextImageKHR(swapchain, UINT64_MAX, imageAvailableSemaphore, {}, &imageIndex);
-        // } catch (vk::OutOfDateKHRError&) {
-        //     recreateSwapchain();
-        //     return;
-        // }
+        m_image_index = m_vk_device->AcquireNextImageKHR(
+            m_vk_swap_chain,
+            UINT64_MAX,
+            GetAcquireSemaphore().Handle(),
+            VK_NULL_HANDLE
+        );
 
         return m_image_index;
     }
 
-    void SwapChain::Present(VkQueue const& vk_queue) const
+    void SwapChain::Present(CommandQueue const& queue) const
     {
-        // Sync
-
-        VkPipelineStageFlags stage_flags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-
-        auto const acquire_semaphore = GetAcquireSemaphore();
-        auto const present_semaphore = GetPresentSemaphore();
-
-        VkSubmitInfo const submit_info
-        {
-            .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-            .pNext = nullptr,
-            .waitSemaphoreCount = 1,
-            .pWaitSemaphores = &acquire_semaphore,
-            .pWaitDstStageMask = &stage_flags,
-            .commandBufferCount = 0,
-            .pCommandBuffers = nullptr,
-            .signalSemaphoreCount = 1,
-            .pSignalSemaphores = &present_semaphore
-        };
-
-        m_vk_device->QueueSubmit(vk_queue, submit_info, GetFence());
-
-        // Present
+        auto present_semaphore = GetPresentSemaphore().Handle();
 
         VkPresentInfoKHR const present_info
         {
@@ -131,7 +104,7 @@ namespace Rc::Render
             .pResults = nullptr
         };
 
-        auto const vk_result = m_vk_device->QueuePresentKHR(vk_queue, present_info);
+        auto const vk_result = m_vk_device->QueuePresentKHR(queue.Handle(), present_info);
 
         if ((vk_result == VK_ERROR_OUT_OF_DATE_KHR) ||
             (vk_result == VK_SUBOPTIMAL_KHR))

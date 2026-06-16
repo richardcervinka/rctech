@@ -5,8 +5,9 @@
 #include <span>
 #include <stdexcept>
 #include "platform/log.h"
-#include "core/vertex.h" //----------
+#include "core/vertex.h"
 #include "vertex_traits.h"
+#include "core/transformations.h"
 
 namespace Rc::Render
 {
@@ -21,7 +22,6 @@ namespace Rc::Render
             m_device->WaitIdle();
         }
 
-        m_staging_buffer = nullptr;
         m_vertex_buffer = nullptr;
         m_index_buffer = nullptr;
         m_test_vertex_pipeline = nullptr;
@@ -46,6 +46,53 @@ namespace Rc::Render
         m_instance = nullptr;
     }
 
+    static void SortAdapters(std::span<std::unique_ptr<Adapter>> adapters)
+    {
+        // Predicate l > r
+        std::ranges::sort(adapters, [](auto const& l, auto const& r)
+        {
+            if (l->Integrated() && r->Discrete())
+            {
+                return false;
+            }
+            if (l->Discrete() && r->Integrated())
+            {
+                return true;
+            }
+            return l->DeviceLocalMemory() > r->DeviceLocalMemory();
+        });
+    }
+
+    std::unique_ptr<Device> Renderer::CreateDevice()
+    {
+        // Get available GPUs
+        auto adapters = m_instance->EnumerateAdapters();
+
+        SortAdapters(adapters);
+        
+        for (auto& adapter : adapters)
+        {
+            if (adapter->ApiVersion() < m_instance->ApiVersion())
+            {
+                continue;
+            }
+            try
+            {
+                auto device = adapter->CreateDevice(*m_surface);
+
+                Log::Debug(std::format("Adapter {} vulkan {}\n", adapter->Name(), Str::From(adapter->ApiVersion())));
+
+                return device;
+            }
+            catch (std::exception const& e)
+            {
+                Log::Error(std::format("Create device error: {}\n", e.what()));
+            }
+        }
+
+        return nullptr;
+    }
+
     void Renderer::Initialize(Window& window)
     {
         m_instance = std::make_unique<Instance>();
@@ -53,23 +100,26 @@ namespace Rc::Render
         
         m_surface = m_instance->CreateSurface(window);
 
-        // Get available GPUs
-        auto adapters = m_instance->EnumerateAdapters();
-
-        // Print adapters
-        for (auto const& adapter : adapters)
+        m_device = CreateDevice();
+        if (m_device == nullptr)
         {
-            Log::Debug(std::format("Adapter {}\n", adapter.GetName()));
+            throw std::runtime_error("No supported GPU found!");
         }
 
-        m_device = adapters.back().CreateDevice(*m_surface);
         m_swap_chain = m_device->CreateSwapChain(*m_surface, window);
         m_render_queue = m_device->CreateGraphicsQueue();
 
-        // Create primary command buffer for each image in the swap chain.
-        for (int i = 0; i < m_swap_chain->Count(); i++)
+        //std::shared_ptr<Buffer> transfer_staging = m_device->AllocateStagingBuffer(1024); //----------- TEST
+
+        // Create frames-in-flight
+        m_frames.resize(m_swap_chain->Count());
+        for (auto& frame : m_frames)
         {
-            m_frames.emplace_back(m_device->CreateFence(), m_render_queue->CreateCommandBuffer());
+            frame.fence = m_device->CreateFence();
+            frame.commands = m_render_queue->CreateCommandBuffer();
+            frame.staging_buffer = std::make_unique<BufferLinear>(m_device->AllocateStagingBuffer(2048 * 2048 * 4 * 8));
+            frame.uniform_buffer = m_device->AllocateUniformBuffer(256);
+            frame.resource_descriptor_heap = m_device->AllocateDescriptorHeapBuffer(1024);
         }
 
         // Create swap chain image views
@@ -79,62 +129,64 @@ namespace Rc::Render
         }
 
         // Create embedded shaders.
-        SetVertexShader(VertexShaderSlot::Null, m_device->CreateShader(Res::Vs::Dummy()));
-        SetVertexShader(VertexShaderSlot::Test, m_device->CreateShader(Res::Vs::Test()));
-        SetVertexShader(VertexShaderSlot::Overlay, m_device->CreateShader(Res::Vs::Overlay()));
-        SetPixelShader(PixelShaderSlot::Null, m_device->CreateShader(Res::Ps::Dummy()));
+        InitializeShaders();
 
-        m_staging_buffer = std::make_unique<StagingBuffer>(m_device->AllocateStagingBuffer(2048 * 2048 * 4 * 8));
-
+        // Handle window resizing.
         window.OnEventSize(m_on_window_size);
+
+        m_pipeline_layout = m_device->CreatePipelineLayout();
 
         // ---------------------------- TEST
 
         ReserveVertexBuffer(Usage::Permanent, 2048);
         ReserveIndexBuffer(Usage::Permanent, 256);
 
-        {
-            auto buffer = m_staging_buffer->Data();
-
-            auto* pv = reinterpret_cast<Gfx::VertexBasic*>(buffer.data());
-
-            pv[0].position = {-0.7, -0.7, 0};
-            pv[1].position = {0.7, 0.7, 0};
-            pv[2].position = {-0.7, 0.7, 0};
-            pv[3].position = {0.7, -0.7, 0};
-
-            pv[0].color = {1, 0, 0};
-            pv[1].color = {0, 1, 0};
-            pv[2].color = {0, 0, 1};
-            pv[3].color = {1, 1, 1};
-
-            auto* ib = reinterpret_cast<uint16_t*>(buffer.data() + 128);
-            ib[0] = 0;
-            ib[1] = 1;
-            ib[2] = 2;
-            ib[3] = 0;
-            ib[4] = 3;
-            ib[5] = 1;
-        }
-
-        m_pipeline_layout = m_device->CreatePipelineLayout();
-        
         auto pipeline_factory = m_device->CreatePipelineFactory();
         pipeline_factory.SetPipelineLayout(m_pipeline_layout);
 
         pipeline_factory.SetVertexShader(GetVertexShader(VertexShaderSlot::Overlay));
         pipeline_factory.SetPixelShader(GetPixelShader(PixelShaderSlot::Null));
-        pipeline_factory.SetVertexInputAttributes({});
-        pipeline_factory.SetVertexInputBinding(0);
+        pipeline_factory.SetVertexInput(0, {});
         m_test_pipeline = pipeline_factory.Create();
 
         pipeline_factory.SetVertexShader(GetVertexShader(VertexShaderSlot::Test));
         pipeline_factory.SetPixelShader(GetPixelShader(PixelShaderSlot::Null));
-        pipeline_factory.SetVertexInputBinding(Gfx::VertexBasic::stride);
-        pipeline_factory.SetVertexInputAttributes(Traits<Gfx::VertexBasic>::attributes);
+        pipeline_factory.SetVertexInput(sizeof(Gfx::VertexBasic), Gfx::VertexBasic::attributes);
         m_test_vertex_pipeline = pipeline_factory.Create();
 
+        // Transfer descriptor heaps ...
+
+        auto resource_descriptor_builder = m_device->CreateResourceDescriptorBuilder();
+/*
+        for (auto& frame : m_frames)
+        {
+            auto const region = frame.staging_buffer->Allocate(frame.resource_descriptor_heap->Size());
+            //auto dst = frame.staging_buffer->Map<std::byte>(region);
+
+            resource_descriptor_builder.CreateUniformBuffer(0, *frame.uniform_buffer, frame.staging_buffer->GetBuffer(), region);
+
+            frame.fence->Wait();
+            frame.commands->Reset();
+            frame.commands->Begin();
+            frame.commands->TransferBuffer(frame.staging_buffer->GetBuffer(), *frame.resource_descriptor_heap, region.Offset(), 0, region.Size());
+            frame.commands->End();
+
+            m_render_queue->Submit(*frame.commands, *frame.fence);
+
+            // resource_descriptor_builder.Attach(frame.staging_buffer);
+            // frame.staging_buffer->Allocate(1024);
+            // resource_descriptor_builder.CreateUniformBuffer(0, *frame.uniform_buffer, *frame.staging_buffer);
+        }
+*/
         Log::Debug("Renderer initialized");
+    }
+
+    void Renderer::InitializeShaders()
+    {
+        SetVertexShader(VertexShaderSlot::Null, m_device->CreateShader(Res::Vs::Dummy()));
+        SetVertexShader(VertexShaderSlot::Test, m_device->CreateShader(Res::Vs::Test()));
+        SetVertexShader(VertexShaderSlot::Overlay, m_device->CreateShader(Res::Vs::Overlay()));
+        SetPixelShader(PixelShaderSlot::Null, m_device->CreateShader(Res::Ps::Dummy()));
     }
 
     void Renderer::Resize(int width, int height)
@@ -152,36 +204,62 @@ namespace Rc::Render
 
     void Renderer::ReserveIndexBuffer(Usage usage, uint64_t capacity)
     {
-        m_index_buffer = std::make_unique<LinearBuffer>(m_device->AllocateIndexBuffer(capacity));
-    }
-
-    void Renderer::FreeIndexBuffer(Usage usage)
-    {
-        m_index_buffer = nullptr;
+        m_index_buffer = std::make_unique<BufferLinear>(m_device->AllocateIndexBuffer(capacity));
     }
 
     BufferHandle Renderer::AllocateIndexbuffer(Usage usage, uint64_t size)
     {
         assert(m_index_buffer != nullptr);
 
-        return {m_index_buffer->Pop(size), usage, 0xFFFF};
+        return {m_index_buffer->Allocate(size), usage, 0xFFFF};
+    }
+
+    uint64_t Renderer::GetIndexBufferCapacity(Usage usage) const
+    {
+        if (m_index_buffer == nullptr)
+        {
+            return 0;
+        }
+        return m_index_buffer->Capacity();
+    }
+
+    uint64_t Renderer::GetIndexBufferAvailable(Usage usage) const
+    {
+        if (m_index_buffer == nullptr)
+        {
+            return 0;
+        }
+        return m_index_buffer->Available();
     }
 
     void Renderer::ReserveVertexBuffer(Usage usage, uint64_t capacity)
     {
-        m_vertex_buffer = std::make_unique<LinearBuffer>(m_device->AllocateVertexBuffer(capacity));
-    }
-
-    void Renderer::FreeVertexBuffer(Usage usage)
-    {
-        m_vertex_buffer = nullptr;
+        m_vertex_buffer = std::make_unique<BufferLinear>(m_device->AllocateVertexBuffer(capacity));
     }
 
     BufferHandle Renderer::AllocateVertexbuffer(Usage usage, uint64_t size)
     {
         assert(m_vertex_buffer != nullptr);
 
-        return {m_vertex_buffer->Pop(size), usage, 0xFFFF};
+        return {m_vertex_buffer->Allocate(size), usage, 0xFFFF};
+    }
+
+    uint64_t Renderer::GetVertexBufferCapacity(Usage usage) const
+    {
+        if (m_vertex_buffer == nullptr)
+        {
+            return 0;
+        }
+        return m_vertex_buffer->Capacity();
+    }
+
+    uint64_t Renderer::GetVertexBufferAvailable(Usage usage) const
+    {
+        if (m_vertex_buffer == nullptr)
+        {
+            return 0;
+        }
+        return m_vertex_buffer->Available();
     }
 
     void Renderer::BeginFrame()
@@ -190,9 +268,9 @@ namespace Rc::Render
 
         frame.fence->Wait();
 
-        frame.render_commands->Reset();
-
-        frame.render_commands->Begin();
+        frame.commands->Reset();
+        frame.staging_buffer->Reset();
+        frame.commands->Begin();
 
         Test(frame);
     }
@@ -201,36 +279,75 @@ namespace Rc::Render
     {
         auto& frame = m_frames[m_frame_number % m_frames.size()];
 
-        frame.render_commands->BeginPresentingFramebuffer(m_swap_chain->GetImage());
+        frame.commands->BeginPresentingFramebuffer(m_swap_chain->GetImage());
 
-        frame.render_commands->End();
+        frame.commands->End();
 
-        m_render_queue->Submit(*frame.render_commands, *frame.fence);
+        m_render_queue->Submit(
+            *frame.commands,
+            m_swap_chain->GetAcquireSemaphore(),
+            m_swap_chain->GetPresentSemaphore(),
+            *frame.fence
+        );
 
-        m_render_queue->Present(*m_swap_chain); //--------------------------------- not here
+        m_swap_chain->Present(*m_render_queue);
 
         m_frame_number += 1;
     }
 
     void Renderer::Test(Frame& frame)
     {
-        auto back_buffer_index = m_swap_chain->AcquireNextImage();
+        auto back_buffer_index = m_swap_chain->AcquireNextImage(); //----------------------- presunout
 
-        frame.render_commands->TransferBuffer(m_staging_buffer->GetBuffer(), m_vertex_buffer->GetBuffer(), 0, 0, Gfx::VertexBasic::stride * 4ull);
-        frame.render_commands->TransferBuffer(m_staging_buffer->GetBuffer(), m_index_buffer->GetBuffer(), 128, 0, Gfx::VertexBasic::stride * 6ull);
-        frame.render_commands->UseVertexBuffer(m_vertex_buffer->GetBuffer(), 0, Gfx::VertexBasic::stride * 4ull);
-        frame.render_commands->UseIndexBuffer(m_index_buffer->GetBuffer(), 0, sizeof(uint16_t) * 4);
-        frame.render_commands->BindVertexBuffer(m_vertex_buffer->GetBuffer(), 0);
-        frame.render_commands->BindIndexBuffer(m_index_buffer->GetBuffer(), IndexType::Uint16, 0);
-        frame.render_commands->BeginRenderingFramebuffer(m_swap_chain->GetImage());
-        frame.render_commands->SetRenderTargetsCount(1);
-        frame.render_commands->AttachRenderTarget(0, *m_back_buffers.at(back_buffer_index));
-        frame.render_commands->ClearRenderTarget(0, Color(0, 0, 0, 1));
-        frame.render_commands->BeginRendering({0, 0, m_swap_chain->Width(), m_swap_chain->Height()});
-        frame.render_commands->BindPipeline(*m_test_vertex_pipeline);
-        frame.render_commands->Test({0, 0, m_swap_chain->Width(), m_swap_chain->Height()});
-        frame.render_commands->DrawIndexed(6, 1, 0, 0, 0);
-        frame.render_commands->EndRendering();
+        // Fill staging buffer
+     
+        auto vb_region = frame.staging_buffer->Allocate(sizeof(Gfx::VertexBasic) * 4);
+        auto vb_data = frame.staging_buffer->Map<Gfx::VertexBasic>(vb_region);
+
+        static int t = 0;
+        t = (t + 1) % 1000;
+        auto s = static_cast<float>(std::sin( 2.0 * Math::pi * (t / 999.0)));
+        auto c = static_cast<float>(std::cos( 2.0 * Math::pi * (t / 999.0)));
+
+        vb_data[0].position = {-0.7, -0.7, -2 + s};
+        vb_data[1].position = {0.7, 0.7, -2 + c};
+        vb_data[2].position = {-0.7, 0.7, -2 + s};
+        vb_data[3].position = {0.7, -0.7, -2 + c};
+
+        vb_data[0].color = {1, 0, 0};
+        vb_data[1].color = {0, 1, 0};
+        vb_data[2].color = {0, 0, 1};
+        vb_data[3].color = {1, 1, 1};
+
+        auto ib_region = frame.staging_buffer->Allocate(sizeof(uint16_t) * 6);
+        auto ib_data = frame.staging_buffer->Map<uint16_t>(ib_region);
+
+        ib_data[0] = 0;
+        ib_data[1] = 1;
+        ib_data[2] = 2;
+        ib_data[3] = 0;
+        ib_data[4] = 3;
+        ib_data[5] = 1;
+
+        auto ub_region = frame.staging_buffer->Allocate(4 * 16);
+        auto ub_data = frame.staging_buffer->Map<float>(ub_region);
+        
+        frame.commands->TransferBuffer(frame.staging_buffer->GetBuffer(), *frame.uniform_buffer, ub_region.Offset(), 0, ub_region.Size());
+        frame.commands->TransferBuffer(frame.staging_buffer->GetBuffer(), m_vertex_buffer->GetBuffer(), vb_region.Offset(), 0, vb_region.Size());
+        frame.commands->TransferBuffer(frame.staging_buffer->GetBuffer(), m_index_buffer->GetBuffer(), ib_region.Offset(), 0, ib_region.Size());
+        frame.commands->UseVertexBuffer(m_vertex_buffer->GetBuffer(), 0, vb_region.Size());
+        frame.commands->UseIndexBuffer(m_index_buffer->GetBuffer(), 0, ib_region.Size());
+        frame.commands->BindVertexBuffer(m_vertex_buffer->GetBuffer(), 0);
+        frame.commands->BindIndexBuffer(m_index_buffer->GetBuffer(), IndexType::Uint16, 0);
+        frame.commands->BeginRenderingFramebuffer(m_swap_chain->GetImage());
+        frame.commands->SetRenderTargetsCount(1);
+        frame.commands->AttachRenderTarget(0, *m_back_buffers.at(back_buffer_index));
+        frame.commands->ClearRenderTarget(0, Color(0, 0, 0, 1));
+        frame.commands->BeginRendering({0, 0, m_swap_chain->Width(), m_swap_chain->Height()});
+        frame.commands->BindPipeline(*m_test_vertex_pipeline);
+        frame.commands->Test({0, 0, m_swap_chain->Width(), m_swap_chain->Height()});
+        frame.commands->DrawIndexed(6, 1, 0, 0, 0);
+        frame.commands->EndRendering();
     }
 
 } // Rc::Render

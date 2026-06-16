@@ -2,12 +2,10 @@
 
 #include "vulkan/instance.h"
 #include <string>
-#include <map>
 #include <memory>
-#include <vector>
-#include "swap_chain.h"
 #include "device.h"
 #include "surface.h"
+#include "version.h"
 
 namespace Rc::Render
 {
@@ -17,36 +15,34 @@ namespace Rc::Render
     class Adapter
     {
     public:
+
         Adapter() = default;
-        ~Adapter() = default;
 
         Adapter(VulkanContext const& context, VulkanInstance const& instance, VkPhysicalDevice vk_physical_device);
 
-        // Move-Only --------------------------------------- REVIEW
-        Adapter(Adapter const&) = delete;
-        Adapter& operator=(Adapter const&) = delete;
-        Adapter(Adapter&& other) noexcept;
-        Adapter& operator=(Adapter&& other) noexcept;
-
-        uint32_t GetDeviceId() const
+        uint32_t DeviceId() const
         {
             return m_vk_properties.deviceID;
         }
 
-        std::string GetName() const
+        std::string Name() const
         {
             return m_vk_properties.deviceName;
         }
 
-        bool IsIntegrated() const
+        bool Integrated() const
         {
             return m_vk_properties.deviceType == VkPhysicalDeviceType::VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU;
         }
 
-        bool IsDiscrete() const
+        bool Discrete() const
         {
             return m_vk_properties.deviceType == VkPhysicalDeviceType::VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
         }
+
+        Version ApiVersion() const;
+
+        uint64_t DeviceLocalMemory() const;
 
         std::unique_ptr<Device> CreateDevice(Surface const& surface);
 
@@ -59,8 +55,7 @@ namespace Rc::Render
         VkPhysicalDevice m_vk_physical_device {VK_NULL_HANDLE};
         
         VkPhysicalDeviceProperties m_vk_properties {};
-
-        //vk::PhysicalDeviceMemoryProperties m_vk_memory_properties;
+        VkPhysicalDeviceMemoryProperties m_vk_memory_properties {};
     };
 
 } // Rc::Render

@@ -5,6 +5,8 @@
 #include "texture.h"
 #include <array>
 #include "shader.h"
+#include "buffer_linear.h"
+#include "descriptor.h"
 
 namespace Rc::Render
 {
@@ -88,14 +90,16 @@ namespace Rc::Render
         void EndFrame();
 
         void ReserveIndexBuffer(Usage usage, uint64_t capacity);
-        void FreeIndexBuffer(Usage usage);
         BufferHandle AllocateIndexbuffer(Usage usage, uint64_t size);
+        uint64_t GetIndexBufferCapacity(Usage usage) const; // Return BufferInfo {capacity, available...}
+        uint64_t GetIndexBufferAvailable(Usage usage) const;
 
         void ReserveVertexBuffer(Usage usage, uint64_t capacity);
-        void FreeVertexBuffer(Usage usage);
         BufferHandle AllocateVertexbuffer(Usage usage, uint64_t size);
+        uint64_t GetVertexBufferCapacity(Usage usage) const;
+        uint64_t GetVertexBufferAvailable(Usage usage) const;
 
-        //IndexBufferHandle CreateIndexBuffer(IndexType type, uint64_t size);
+        //void TransferBuffer(BufferHandle)
 
     private:
         // Assign vertex shader to the slot.
@@ -126,7 +130,7 @@ namespace Rc::Render
         }
 
         std::unique_ptr<Instance> m_instance;
-
+        
         std::unique_ptr<Device> m_device;
 
         std::unique_ptr<Surface> m_surface;
@@ -138,11 +142,22 @@ namespace Rc::Render
         std::array<std::unique_ptr<Shader>, static_cast<int>(VertexShaderSlot::Count)> m_vertex_shaders;
         std::array<std::unique_ptr<Shader>, static_cast<int>(PixelShaderSlot::Count)> m_pixel_shaders;
 
+        // std::unique_ptr<Fence> m_transfer_fence;
+        // std::unique_ptr<CommandBuffer> m_transfer_commands;
+        // std::unique_ptr<BufferLinear> m_transfer_buffer;
+        // std::unique_ptr<Buffer> m_descriptor_heap;
+
         struct Frame
         {
             std::unique_ptr<Fence> fence;
             
-            std::unique_ptr<CommandBuffer> render_commands;
+            std::unique_ptr<CommandBuffer> commands;
+
+            std::unique_ptr<BufferLinear> staging_buffer;
+
+            std::unique_ptr<Buffer> uniform_buffer;
+
+            std::unique_ptr<Buffer> resource_descriptor_heap;
         };
 
         // Frames-In-Flight
@@ -157,12 +172,15 @@ namespace Rc::Render
         std::unique_ptr<Pipeline> m_test_pipeline;
         std::unique_ptr<Pipeline> m_test_vertex_pipeline;
 
-        std::unique_ptr<StagingBuffer> m_staging_buffer;
-
-        std::unique_ptr<LinearBuffer> m_vertex_buffer; //------------------------- TEST
-        std::unique_ptr<LinearBuffer> m_index_buffer; //------------------------- TEST: Static index buffer
+        std::unique_ptr<BufferLinear> m_vertex_buffer; //------------------------- TEST
+        std::unique_ptr<BufferLinear> m_index_buffer; //------------------------- TEST: Static index buffer
 
         Window::EventSize::Handler m_on_window_size {this, &Renderer::OnWindowSize};
+
+        // Create embedded shaders.
+        void InitializeShaders();
+
+        std::unique_ptr<Device> CreateDevice();
 
         void Test(Frame& frame);
     };

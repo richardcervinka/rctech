@@ -48,6 +48,12 @@ namespace Rc
         Load("vkCmdCopyBuffer", m_vkCmdCopyBuffer);
         Load("vkCmdBindVertexBuffers", m_vkCmdBindVertexBuffers);
         Load("vkCmdBindIndexBuffer", m_vkCmdBindIndexBuffer);
+        Load("vkCreateDescriptorSetLayout", m_vkCreateDescriptorSetLayout);
+        Load("vkDestroyDescriptorSetLayout", m_vkDestroyDescriptorSetLayout);
+        Load("vkCreateDescriptorPool", m_vkCreateDescriptorPool);
+        Load("vkDestroyDescriptorPool", m_vkDestroyDescriptorPool);
+        Load("vkWriteResourceDescriptorsEXT", m_vkWriteResourceDescriptorsEXT);
+        Load("vkGetBufferDeviceAddress", m_vkGetBufferDeviceAddress);
     }
 
     VulkanDevice::~VulkanDevice()
@@ -405,6 +411,61 @@ namespace Rc
     void VulkanDevice::CmdBindIndexBuffer(VkCommandBuffer command_buffer, VkBuffer buffer, VkDeviceSize offset, VkIndexType index_type) const
     {
         m_vkCmdBindIndexBuffer(command_buffer, buffer, offset, index_type);
+    }
+
+    VkDescriptorSetLayout VulkanDevice::CreateDescriptorSetLayout(VkDescriptorSetLayoutCreateInfo const& create_info) const
+    {
+        VkDescriptorSetLayout result = VK_NULL_HANDLE;
+        if (auto vk_result = m_vkCreateDescriptorSetLayout(m_vk_device, &create_info, nullptr, &result); vk_result != VK_SUCCESS)
+        {
+            throw VulkanException(vk_result);
+        }
+        return result;
+    }
+
+    void VulkanDevice::DestroyDescriptorSetLayout(VkDescriptorSetLayout& descriptor_set_layout) const
+    {
+        m_vkDestroyDescriptorSetLayout(m_vk_device, descriptor_set_layout, nullptr);
+        descriptor_set_layout = VK_NULL_HANDLE;
+    }
+
+    VkDescriptorPool VulkanDevice::CreateDescriptorPool(VkDescriptorPoolCreateInfo const& create_info) const
+    {
+        VkDescriptorPool result = VK_NULL_HANDLE;
+        if (auto vk_result = m_vkCreateDescriptorPool(m_vk_device, &create_info, nullptr, &result); vk_result != VK_SUCCESS)
+        {
+            throw VulkanException(vk_result);
+        }
+        return result;
+    }
+
+    void VulkanDevice::DestroyDescriptorPool(VkDescriptorPool& descriptor_pool) const
+    {
+        m_vkDestroyDescriptorPool(m_vk_device, descriptor_pool, nullptr);
+        descriptor_pool = VK_NULL_HANDLE;
+    }
+
+    void VulkanDevice::WriteResourceDescriptors(std::span<VkResourceDescriptorInfoEXT const> resources, std::span<VkHostAddressRangeEXT const> descriptors) const
+    {
+        assert(resources.size() == descriptors.size());
+
+        if (auto vk_result = m_vkWriteResourceDescriptorsEXT(m_vk_device, resources.size(), resources.data(), descriptors.data()); vk_result != VK_SUCCESS)
+        {
+            throw VulkanException(vk_result);
+        }
+    }
+
+    void VulkanDevice::WriteResourceDescriptor(VkResourceDescriptorInfoEXT const& resource, VkHostAddressRangeEXT const& descriptor) const
+    {
+        if (auto vk_result = m_vkWriteResourceDescriptorsEXT(m_vk_device, 1u, &resource, &descriptor); vk_result != VK_SUCCESS)
+        {
+            throw VulkanException(vk_result);
+        }
+    }
+
+    VkDeviceAddress VulkanDevice::GetBufferDeviceAddress(VkBufferDeviceAddressInfo const& info) const
+    {
+        return m_vkGetBufferDeviceAddress(m_vk_device, &info);
     }
 
 } // Rc
