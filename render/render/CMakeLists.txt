@@ -40,6 +40,8 @@ add_library(render STATIC
     "version.h"
     "projection.h"
     "projection.cpp"
+    "descriptor.h"
+    "descriptor.cpp"
 )
 
 target_link_libraries(render

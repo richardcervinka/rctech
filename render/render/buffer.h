@@ -63,6 +63,11 @@ namespace Rc::Render
         uint64_t size;
     };
 
+    struct DescriptorHeapBufferInfo
+    {
+        uint64_t size;
+    };
+
     //
     // GPU buffer
     //
@@ -70,10 +75,11 @@ namespace Rc::Render
     {
     public:
         
-        Buffer(VertexBufferInfo const& info, VmaAllocator vma_allocator);
-        Buffer(IndexBufferInfo const& info, VmaAllocator vma_allocator);
-        Buffer(StagingBufferInfo const& info, VmaAllocator vma_allocator);
-        Buffer(UniformBufferInfo const& info, VmaAllocator vma_allocator);
+        Buffer(VulkanDevice const& vk_device, VertexBufferInfo const& info, VmaAllocator vma_allocator);
+        Buffer(VulkanDevice const& vk_device, IndexBufferInfo const& info, VmaAllocator vma_allocator);
+        Buffer(VulkanDevice const& vk_device, StagingBufferInfo const& info, VmaAllocator vma_allocator);
+        Buffer(VulkanDevice const& vk_device, UniformBufferInfo const& info, VmaAllocator vma_allocator);
+        Buffer(VulkanDevice const& vk_device, DescriptorHeapBufferInfo const& info, VmaAllocator vma_allocator);
 
         ~Buffer();
 
@@ -87,29 +93,47 @@ namespace Rc::Render
             return m_vk_buffer;
         }
 
+        VkDeviceAddress Address() const;
+
         uint64_t Size() const
         {
             return m_vma_allocation_info.size;
         }
 
+        BufferRegion GetRegion() const;
         BufferRegion GetRegion(uint64_t offset, uint64_t size) const;
 
         // Available only for stagging buffer.
-        std::span<std::byte> Buffer::Map(BufferRegion const& region);
+        std::span<std::byte> Buffer::Map(uint64_t offset, uint64_t size);
+        std::span<std::byte const> Buffer::Map(uint64_t offset, uint64_t size) const;
 
-        // Available only for stagging buffer.
-        std::span<std::byte const> Buffer::Map(BufferRegion const& region) const;
+        std::span<std::byte> Buffer::Map()
+        {
+            return Map({0, Size()});
+        }
+
+        std::span<std::byte> Buffer::Map(BufferRegion const& region)
+        {
+            return Map(region.Offset(), region.Size());
+        }
+
+        std::span<std::byte const> Buffer::Map(BufferRegion const& region) const
+        {
+            return Map(region.Offset(), region.Size());
+        }
 
     private:
         friend class CommandBuffer;
 
         Buffer(
+            VulkanDevice const& vk_device,
             uint64_t size,
             VmaAllocator vma_allocator,
             VkBufferUsageFlags usage,
             VmaAllocationCreateFlags vma_flags
         );
 
+        VulkanDevice const* m_vk_device {nullptr};
         VkBuffer m_vk_buffer {VK_NULL_HANDLE};
         VmaAllocator m_vma_allocator {VK_NULL_HANDLE};
         VmaAllocation m_vma_allocation {nullptr};

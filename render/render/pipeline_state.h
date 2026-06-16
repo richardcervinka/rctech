@@ -44,6 +44,7 @@ namespace Rc::Render
 
     private:
         VulkanDevice const* m_vk_device {nullptr};
+        VkDescriptorSetLayout m_vk_descriptor_set_layout {VK_NULL_HANDLE};
         VkPipelineLayout m_vk_pipeline_layout {VK_NULL_HANDLE};
     };
 

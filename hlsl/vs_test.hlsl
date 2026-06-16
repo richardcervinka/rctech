@@ -1,3 +1,11 @@
+// Binding = 0, set = 0 (VkDescriptorSetLayoutBinding)
+[[vk::binding(0, 0)]]
+cbuffer Constants
+{
+    float4x4 camera;
+    float4x4 projection;
+};
+
 struct Input
 {
     [[vk::location(0)]] float3 position : POSITION;

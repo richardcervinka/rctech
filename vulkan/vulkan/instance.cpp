@@ -24,6 +24,7 @@ namespace Rc
         Load("vkCreateDevice", m_vkCreateDevice);
         Load("vkCreateDebugUtilsMessengerEXT", m_vkCreateDebugUtilsMessengerEXT);
         Load("vkDestroyDebugUtilsMessengerEXT", m_vkDestroyDebugUtilsMessengerEXT);
+        Load("vkGetPhysicalDeviceDescriptorSizeEXT", m_vkGetPhysicalDeviceDescriptorSizeEXT);
     }
 
     VulkanInstance::~VulkanInstance()
@@ -132,6 +133,11 @@ namespace Rc
             throw VulkanException(vk_result);
         }
         return result == VK_TRUE;
+    }
+
+    VkDeviceSize VulkanInstance::GetPhysicalDeviceDescriptorSizeEXT(VkPhysicalDevice physical_device, VkDescriptorType descriptor_type) const
+    {
+        return m_vkGetPhysicalDeviceDescriptorSizeEXT(physical_device, descriptor_type);
     }
 
     std::unique_ptr<VulkanDevice> VulkanInstance::CreateDevice(VkPhysicalDevice physical_device, VkDeviceCreateInfo const& create_info) const

@@ -56,6 +56,9 @@ namespace Rc
         // vkGetPhysicalDeviceSurfaceSupportKHR
         bool GetPhysicalDeviceSurfaceSupportKHR(VkPhysicalDevice physical_device, uint32_t queue_family_index, VkSurfaceKHR surface) const;
 
+        // vkGetPhysicalDeviceDescriptorSizeEXT
+        VkDeviceSize GetPhysicalDeviceDescriptorSizeEXT(VkPhysicalDevice physical_device, VkDescriptorType descriptor_type) const;
+
         // vkCreateDevice
         std::unique_ptr<VulkanDevice> CreateDevice(VkPhysicalDevice physical_device, VkDeviceCreateInfo const& create_info) const;
 
@@ -95,6 +98,7 @@ namespace Rc
         PFN_vkCreateDevice m_vkCreateDevice {nullptr};
         PFN_vkCreateDebugUtilsMessengerEXT m_vkCreateDebugUtilsMessengerEXT {nullptr};
         PFN_vkDestroyDebugUtilsMessengerEXT m_vkDestroyDebugUtilsMessengerEXT {nullptr};
+        PFN_vkGetPhysicalDeviceDescriptorSizeEXT m_vkGetPhysicalDeviceDescriptorSizeEXT {nullptr};
     };
 
 } // Rc

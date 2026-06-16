@@ -15,34 +15,34 @@ namespace Rc::Render
         return std::make_unique<CommandBuffer>(*m_vk_device, m_vk_family);
     }
 
-    void CommandQueue::Submit(CommandBuffer const& cb, Fence const& fence)
+    void CommandQueue::Submit(
+        CommandBuffer const& cb,
+        Semaphore const& wait_semaphore,
+        Semaphore const& signal_semaphore,
+        Fence const& fence)
     {
+        auto vk_wait_semaphore = wait_semaphore.Handle();
+        auto vk_signal_semaphore = signal_semaphore.Handle();
+
+        VkPipelineStageFlags const stage_flags
+        {
+            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
+        };
+
         VkSubmitInfo const submit_info
         {
             .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
             .pNext = nullptr,
-            .waitSemaphoreCount = 0,
-            .pWaitSemaphores = nullptr,
-            .pWaitDstStageMask = nullptr,
+            .waitSemaphoreCount = 1,
+            .pWaitSemaphores = &vk_wait_semaphore,
+            .pWaitDstStageMask = &stage_flags,
             .commandBufferCount = 1,
             .pCommandBuffers = &(cb.m_vk_command_buffer),
-            .signalSemaphoreCount = 0,
-            .pSignalSemaphores = nullptr
+            .signalSemaphoreCount =1,
+            .pSignalSemaphores = &vk_signal_semaphore
         };
         
-        m_vk_device->QueueSubmit(m_vk_queue, submit_info, fence.m_vk_fence);
-
-        // vk::PipelineStageFlags wait_stages = vk::PipelineStageFlagBits::eColorAttachmentOutput;
-        // submit.waitSemaphoreCount = 0;
-        // submit.pWaitSemaphores = //&(*vk_wait_semaphore);
-        // submit.signalSemaphoreCount = 1;
-        // submit.pSignalSemaphores = &(*vk_signal_semaphore);
-        // submit.pWaitDstStageMask = &wait_stages;
-    }
-
-    void CommandQueue::Present(SwapChain const& sc) const
-    {
-        sc.Present(m_vk_queue);
+        m_vk_device->QueueSubmit(m_vk_queue, submit_info, fence.Handle());
     }
 
 } // Rc::Render

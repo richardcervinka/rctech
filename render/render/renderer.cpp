@@ -63,6 +63,36 @@ namespace Rc::Render
         });
     }
 
+    std::unique_ptr<Device> Renderer::CreateDevice()
+    {
+        // Get available GPUs
+        auto adapters = m_instance->EnumerateAdapters();
+
+        SortAdapters(adapters);
+        
+        for (auto& adapter : adapters)
+        {
+            if (adapter->ApiVersion() < m_instance->ApiVersion())
+            {
+                continue;
+            }
+            try
+            {
+                auto device = adapter->CreateDevice(*m_surface);
+
+                Log::Debug(std::format("Adapter {} vulkan {}\n", adapter->Name(), Str::From(adapter->ApiVersion())));
+
+                return device;
+            }
+            catch (std::exception const& e)
+            {
+                Log::Error(std::format("Create device error: {}\n", e.what()));
+            }
+        }
+
+        return nullptr;
+    }
+
     void Renderer::Initialize(Window& window)
     {
         m_instance = std::make_unique<Instance>();
@@ -70,30 +100,7 @@ namespace Rc::Render
         
         m_surface = m_instance->CreateSurface(window);
 
-        // Get available GPUs
-        auto adapters = m_instance->EnumerateAdapters();
-
-        SortAdapters(adapters);
-
-        for (auto& adapter : adapters)
-        {
-            if (adapter->ApiVersion() >= m_instance->ApiVersion())
-            {
-                try
-                {
-                    m_device = adapter->CreateDevice(*m_surface);
-
-                    Log::Debug(std::format("Adapter {} vulkan {}\n", adapter->Name(), Str::From(adapter->ApiVersion())));
-
-                    break;
-                }
-                catch (std::exception const& e)
-                {
-                    Log::Error(std::format("Create device error: {}\n", e.what()));
-                }
-            }
-        }
-
+        m_device = CreateDevice();
         if (m_device == nullptr)
         {
             throw std::runtime_error("No supported GPU found!");
@@ -102,6 +109,8 @@ namespace Rc::Render
         m_swap_chain = m_device->CreateSwapChain(*m_surface, window);
         m_render_queue = m_device->CreateGraphicsQueue();
 
+        //std::shared_ptr<Buffer> transfer_staging = m_device->AllocateStagingBuffer(1024); //----------- TEST
+
         // Create frames-in-flight
         m_frames.resize(m_swap_chain->Count());
         for (auto& frame : m_frames)
@@ -109,6 +118,8 @@ namespace Rc::Render
             frame.fence = m_device->CreateFence();
             frame.commands = m_render_queue->CreateCommandBuffer();
             frame.staging_buffer = std::make_unique<BufferLinear>(m_device->AllocateStagingBuffer(2048 * 2048 * 4 * 8));
+            frame.uniform_buffer = m_device->AllocateUniformBuffer(256);
+            frame.resource_descriptor_heap = m_device->AllocateDescriptorHeapBuffer(1024);
         }
 
         // Create swap chain image views
@@ -123,13 +134,13 @@ namespace Rc::Render
         // Handle window resizing.
         window.OnEventSize(m_on_window_size);
 
+        m_pipeline_layout = m_device->CreatePipelineLayout();
+
         // ---------------------------- TEST
 
         ReserveVertexBuffer(Usage::Permanent, 2048);
         ReserveIndexBuffer(Usage::Permanent, 256);
 
-        m_pipeline_layout = m_device->CreatePipelineLayout();
-        
         auto pipeline_factory = m_device->CreatePipelineFactory();
         pipeline_factory.SetPipelineLayout(m_pipeline_layout);
 
@@ -143,6 +154,30 @@ namespace Rc::Render
         pipeline_factory.SetVertexInput(sizeof(Gfx::VertexBasic), Gfx::VertexBasic::attributes);
         m_test_vertex_pipeline = pipeline_factory.Create();
 
+        // Transfer descriptor heaps ...
+
+        auto resource_descriptor_builder = m_device->CreateResourceDescriptorBuilder();
+/*
+        for (auto& frame : m_frames)
+        {
+            auto const region = frame.staging_buffer->Allocate(frame.resource_descriptor_heap->Size());
+            //auto dst = frame.staging_buffer->Map<std::byte>(region);
+
+            resource_descriptor_builder.CreateUniformBuffer(0, *frame.uniform_buffer, frame.staging_buffer->GetBuffer(), region);
+
+            frame.fence->Wait();
+            frame.commands->Reset();
+            frame.commands->Begin();
+            frame.commands->TransferBuffer(frame.staging_buffer->GetBuffer(), *frame.resource_descriptor_heap, region.Offset(), 0, region.Size());
+            frame.commands->End();
+
+            m_render_queue->Submit(*frame.commands, *frame.fence);
+
+            // resource_descriptor_builder.Attach(frame.staging_buffer);
+            // frame.staging_buffer->Allocate(1024);
+            // resource_descriptor_builder.CreateUniformBuffer(0, *frame.uniform_buffer, *frame.staging_buffer);
+        }
+*/
         Log::Debug("Renderer initialized");
     }
 
@@ -248,19 +283,24 @@ namespace Rc::Render
 
         frame.commands->End();
 
-        m_render_queue->Submit(*frame.commands, *frame.fence);
+        m_render_queue->Submit(
+            *frame.commands,
+            m_swap_chain->GetAcquireSemaphore(),
+            m_swap_chain->GetPresentSemaphore(),
+            *frame.fence
+        );
 
-        m_render_queue->Present(*m_swap_chain); //--------------------------------- not here
+        m_swap_chain->Present(*m_render_queue);
 
         m_frame_number += 1;
     }
 
     void Renderer::Test(Frame& frame)
     {
-        auto back_buffer_index = m_swap_chain->AcquireNextImage();
+        auto back_buffer_index = m_swap_chain->AcquireNextImage(); //----------------------- presunout
 
         // Fill staging buffer
-        
+     
         auto vb_region = frame.staging_buffer->Allocate(sizeof(Gfx::VertexBasic) * 4);
         auto vb_data = frame.staging_buffer->Map<Gfx::VertexBasic>(vb_region);
 
@@ -288,7 +328,11 @@ namespace Rc::Render
         ib_data[3] = 0;
         ib_data[4] = 3;
         ib_data[5] = 1;
+
+        auto ub_region = frame.staging_buffer->Allocate(4 * 16);
+        auto ub_data = frame.staging_buffer->Map<float>(ub_region);
         
+        frame.commands->TransferBuffer(frame.staging_buffer->GetBuffer(), *frame.uniform_buffer, ub_region.Offset(), 0, ub_region.Size());
         frame.commands->TransferBuffer(frame.staging_buffer->GetBuffer(), m_vertex_buffer->GetBuffer(), vb_region.Offset(), 0, vb_region.Size());
         frame.commands->TransferBuffer(frame.staging_buffer->GetBuffer(), m_index_buffer->GetBuffer(), ib_region.Offset(), 0, ib_region.Size());
         frame.commands->UseVertexBuffer(m_vertex_buffer->GetBuffer(), 0, vb_region.Size());

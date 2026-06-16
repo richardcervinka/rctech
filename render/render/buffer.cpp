@@ -12,7 +12,9 @@ namespace Rc::Render
         }
     }
 
-    Buffer::Buffer(VertexBufferInfo const& info, VmaAllocator vma_allocator) : Buffer(
+    Buffer::Buffer(VulkanDevice const& vk_device, VertexBufferInfo const& info, VmaAllocator vma_allocator) :
+        Buffer(
+            vk_device,
             info.size,
             vma_allocator,
             VkBufferUsageFlags
@@ -24,7 +26,9 @@ namespace Rc::Render
         )
     {}
 
-    Buffer::Buffer(IndexBufferInfo const& info, VmaAllocator vma_allocator) : Buffer(
+    Buffer::Buffer(VulkanDevice const& vk_device, IndexBufferInfo const& info, VmaAllocator vma_allocator) :
+        Buffer(
+            vk_device,
             info.size,
             vma_allocator,
             VkBufferUsageFlags
@@ -36,7 +40,9 @@ namespace Rc::Render
         )
     {}
 
-    Buffer::Buffer(StagingBufferInfo const& info, VmaAllocator vma_allocator) : Buffer(
+    Buffer::Buffer(VulkanDevice const& vk_device, StagingBufferInfo const& info, VmaAllocator vma_allocator) :
+        Buffer(
+            vk_device,
             info.size,
             vma_allocator,
             VkBufferUsageFlags
@@ -51,23 +57,43 @@ namespace Rc::Render
         )
     {}
 
-    Buffer::Buffer(UniformBufferInfo const& info, VmaAllocator vma_allocator) : Buffer(
+    Buffer::Buffer(VulkanDevice const& vk_device, UniformBufferInfo const& info, VmaAllocator vma_allocator) :
+        Buffer(
+            vk_device,
             info.size,
             vma_allocator,
             VkBufferUsageFlags
             {
                 VK_BUFFER_USAGE_TRANSFER_DST_BIT |
-                VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT
+                VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT |
+                VK_BUFFER_USAGE_2_SHADER_DEVICE_ADDRESS_BIT
+            },
+            VmaAllocationCreateFlags{}
+        )
+    {}
+
+    Buffer::Buffer(VulkanDevice const& vk_device, DescriptorHeapBufferInfo const& info, VmaAllocator vma_allocator) :
+        Buffer(
+            vk_device,
+            info.size,
+            vma_allocator,
+            VkBufferUsageFlags
+            {
+                VK_BUFFER_USAGE_TRANSFER_DST_BIT |
+                VK_BUFFER_USAGE_DESCRIPTOR_HEAP_BIT_EXT |
+                VK_BUFFER_USAGE_2_SHADER_DEVICE_ADDRESS_BIT
             },
             VmaAllocationCreateFlags{}
         )
     {}
 
     Buffer::Buffer(
+        VulkanDevice const& vk_device,
         uint64_t size,
         VmaAllocator vma_allocator,
         VkBufferUsageFlags usage,
-        VmaAllocationCreateFlags vma_flags)
+        VmaAllocationCreateFlags vma_flags) :
+            m_vk_device{&vk_device}
     {
         VmaAllocationCreateInfo alloc_info {};
         alloc_info.usage = VMA_MEMORY_USAGE_AUTO;
@@ -102,6 +128,11 @@ namespace Rc::Render
         m_vma_allocator = vma_allocator;   
     }
 
+    BufferRegion Buffer::GetRegion() const
+    {
+        return {0, Size()};
+    }
+
     BufferRegion Buffer::GetRegion(uint64_t offset, uint64_t size) const
     {
         if (offset + size > Size())
@@ -112,24 +143,36 @@ namespace Rc::Render
         return {offset, size};
     }
 
-    std::span<std::byte> Buffer::Map(BufferRegion const& region)
+    std::span<std::byte> Buffer::Map(uint64_t offset, uint64_t size)
     {
-        assert(region.Offset() + region.Size() <= m_vma_allocation_info.size);
+        assert(offset + size <= m_vma_allocation_info.size);
 
         return {
-            static_cast<std::byte*>(m_vma_allocation_info.pMappedData) + region.Offset(),
-            static_cast<std::size_t>(region.Size())
+            static_cast<std::byte*>(m_vma_allocation_info.pMappedData) + offset,
+            static_cast<std::size_t>(size)
         };
     }
 
-    std::span<std::byte const> Buffer::Map(BufferRegion const& region) const
+    std::span<std::byte const> Buffer::Map(uint64_t offset, uint64_t size) const
     {
-        assert(region.Offset() + region.Size() <= m_vma_allocation_info.size);
+        assert(offset + size <= m_vma_allocation_info.size);
 
         return {
-            static_cast<std::byte const*>(m_vma_allocation_info.pMappedData) + region.Offset(),
-            static_cast<std::size_t>(region.Size())
+            static_cast<std::byte const*>(m_vma_allocation_info.pMappedData) + offset,
+            static_cast<std::size_t>(size)
         };
+    }
+
+    VkDeviceAddress Buffer::Address() const
+    {
+        VkBufferDeviceAddressInfo const info
+        {
+            .sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO,
+            .pNext = nullptr,
+            .buffer = m_vk_buffer
+        };
+
+        return m_vk_device->GetBufferDeviceAddress(info);
     }
 
 } // Rc::Render

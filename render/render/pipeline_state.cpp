@@ -26,23 +26,50 @@ namespace Rc::Render
     PipelineLayout::PipelineLayout(VulkanDevice const& vk_device) :
         m_vk_device{&vk_device}
     {
-        VkPipelineLayoutCreateInfo const create_info
+        std::array<VkDescriptorSetLayoutBinding, 1> descriptor_set_layout_bindings
+        {
+            VkDescriptorSetLayoutBinding
+            {
+                .binding = 0,
+                .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                .descriptorCount = 1,
+                .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
+                .pImmutableSamplers = nullptr
+            }
+        };
+
+        VkDescriptorSetLayoutCreateInfo descriptor_set_layout_info
+        {
+            .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
+            .pNext = nullptr,
+            .flags = {},
+            .bindingCount = static_cast<uint32_t>(descriptor_set_layout_bindings.size()),
+            .pBindings = descriptor_set_layout_bindings.data()
+        };
+
+        m_vk_descriptor_set_layout = m_vk_device->CreateDescriptorSetLayout(descriptor_set_layout_info);
+
+        VkPipelineLayoutCreateInfo const pipeline_layout_create_info
         {
             .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
             .pNext = nullptr,
             .flags = 0,
-            .setLayoutCount = 0,
-            .pSetLayouts = nullptr,
+            .setLayoutCount = 1,
+            .pSetLayouts = &m_vk_descriptor_set_layout,
             .pushConstantRangeCount = 0,
             .pPushConstantRanges = nullptr
         };
 
-        m_vk_pipeline_layout = m_vk_device->CreatePipelineLayout(create_info);
+        m_vk_pipeline_layout = m_vk_device->CreatePipelineLayout(pipeline_layout_create_info);
     }
 
     PipelineLayout::~PipelineLayout()
     {
-        if (m_vk_device != nullptr)
+        if (m_vk_descriptor_set_layout != VK_NULL_HANDLE)
+        {
+            m_vk_device->DestroyDescriptorSetLayout(m_vk_descriptor_set_layout);
+        }
+        if (m_vk_device != VK_NULL_HANDLE)
         {
             m_vk_device->DestroyPipelineLayout(m_vk_pipeline_layout);
         }

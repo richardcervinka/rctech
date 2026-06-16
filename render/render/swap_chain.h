@@ -4,7 +4,7 @@
 #include "platform/window.h"
 #include "texture.h"
 #include "semaphore.h"
-#include "fence.h"
+#include "command_queue.h"
 
 namespace Rc::Render
 {
@@ -22,11 +22,21 @@ namespace Rc::Render
 
         void Resize(int width, int height); // uint32_t ? Window ?
 
-        int Width() const { return m_info.imageExtent.width; }
-        int Height() const { return m_info.imageExtent.height; }
+        int Width() const
+        {
+            return m_info.imageExtent.width;
+        }
+        
+        int Height() const
+        {
+            return m_info.imageExtent.height;
+        }
 
         // Get number of images.
-        int Count() { return m_images.size(); }
+        int Count()
+        {
+            return m_images.size();
+        }
 
         int AcquireNextImage();
 
@@ -44,25 +54,20 @@ namespace Rc::Render
 
         VkFormat GetFormat() const { return m_vk_format; }
 
-        void Present(VkQueue const& vk_queue) const;
+        void Present(CommandQueue const& queue) const;
+
+        Semaphore const& GetAcquireSemaphore() const
+        {
+            return *m_acquire_semaphores[m_acquire_index];
+        }
+
+        Semaphore const& GetPresentSemaphore() const
+        {
+            return *m_present_semaphores[m_image_index];
+        }
 
     private:
         void Create();
-
-        VkSemaphore GetAcquireSemaphore() const
-        {
-            return m_acquire_semaphores[m_acquire_index]->Handle();
-        }
-
-        VkSemaphore GetPresentSemaphore() const
-        {
-            return m_present_semaphores[m_image_index]->Handle();
-        }
-
-        VkFence GetFence() const
-        {
-            return m_fences[m_acquire_index]->Handle();
-        }
 
         VulkanDevice const* m_vk_device {nullptr};
 
@@ -79,8 +84,6 @@ namespace Rc::Render
 
         // Indexed by the m_index.
         std::vector<std::unique_ptr<Semaphore>> m_present_semaphores;
-
-        std::vector<std::unique_ptr<Fence>> m_fences;
 
         int m_acquire_index {-1};
 
