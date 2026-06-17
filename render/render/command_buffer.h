@@ -60,17 +60,11 @@ namespace Rc::Render
 
         void BindIndexBuffer(Buffer& ib, IndexType type, uint64_t offset);
 
-        // void BeginRenderPass()
-
-        //VkCommandBuffer Buffer() { return m_vk_buffer; } //--------------------- delete?
-
         void SetRenderTargetsCount(int count);
         void AttachRenderTarget(int slot, TextureView2D const& view);
 
         void ClearRenderTarget(int slot, Color const& color);
         // TODO: KeepRenderTarget ro disable clearing...
-
-        //void Transfer(Buffer const& src, Buffer const& dst);
 
         void BeginRendering(Rectangle<int> const& render_area);
         void EndRendering();

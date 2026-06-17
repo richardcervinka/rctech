@@ -138,6 +138,7 @@ namespace Rc::Render
         std::unique_ptr<SwapChain> m_swap_chain;
 
         std::unique_ptr<CommandQueue> m_render_queue;
+        std::unique_ptr<CommandQueue> m_transfer_queue;
 
         std::array<std::unique_ptr<Shader>, static_cast<int>(VertexShaderSlot::Count)> m_vertex_shaders;
         std::array<std::unique_ptr<Shader>, static_cast<int>(PixelShaderSlot::Count)> m_pixel_shaders;

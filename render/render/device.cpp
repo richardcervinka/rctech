@@ -2,9 +2,43 @@
 #include "error.h"
 #include <map>
 #include <array>
+#include <span>
 
 namespace Rc::Render
 {
+    // Find render queue (graphics + transfer + surface + presentation)
+    static std::optional<uint32_t> FindRenderQueueFamilyIndex(std::span<QueueFamilyProperties const> properties)
+    {
+        for (uint32_t family_index = 0; family_index < properties.size(); family_index++)
+        {
+            if (properties[family_index].graphics &&
+                properties[family_index].transfer &&
+                properties[family_index].presentation &&
+                properties[family_index].surface)
+            {
+                return family_index;
+            }
+        }
+
+        return std::nullopt;
+    }
+
+    // Try to find dedicated transfer queue (optional)
+    static std::optional<uint32_t> FindDedicatedTransferQueueFamilyIndex(std::span<QueueFamilyProperties const> properties)
+    {
+        for (uint32_t family_index = 0; family_index < properties.size(); family_index++)
+        {
+            if (!properties[family_index].graphics &&
+                properties[family_index].transfer &&
+                !properties[family_index].compute)
+            {
+                return family_index;
+            }
+        }
+
+        return std::nullopt;
+    }
+
     Device::Device(
         VulkanContext const& context,
         VulkanInstance const& instance,
@@ -85,66 +119,82 @@ namespace Rc::Render
             allocator_ext_flags |= VMA_ALLOCATOR_CREATE_KHR_EXTERNAL_MEMORY_WIN32_BIT;
         }
 
-        // [graphics, transfer]
-        std::array<float, 1> gueue_priorities = {1.0};
+        auto const family_properties = GetQueueFamilyProperties(surface);
 
-        // [graphics, transfer]
-        std::array<VkDeviceQueueCreateInfo, 2> queue_info {};
+        auto const graphics_queue_family_index = FindRenderQueueFamilyIndex(family_properties);
 
-        uint32_t queue_info_count = 0;
-
-        auto const family_properties = GetQueueFamilyProperties();
-
-        // Find render queue (GRAPHICS + TRANSFER + SURFACE)
-        for (uint32_t family = 0; family < family_properties.size(); family++)
-        {
-            auto const& properties = family_properties[family];
-
-            if (((properties.queueFlags & VK_QUEUE_GRAPHICS_BIT) != 0) &&
-                ((properties.queueFlags & VK_QUEUE_TRANSFER_BIT) != 0))
-            {
-                if (!m_instance->GetPhysicalDevicePresentationSupport(vk_physical_device, family))
-                {
-                    continue;
-                }
-
-                if (m_instance->GetPhysicalDeviceSurfaceSupportKHR(vk_physical_device, family, surface.m_vk_surface))
-                {
-                    queue_info[0].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-                    queue_info[0].queueFamilyIndex = family;
-                    queue_info[0].pQueuePriorities = gueue_priorities.data();
-                    queue_info[0].queueCount = 1;
-                    queue_info_count = 1;
-
-                    m_vk_graphics_queue_family = family;
-
-                    break;
-                }
-            }
-        }
-
-        if (queue_info_count == 0)
+        // Graphics queue is required.
+        if (!graphics_queue_family_index)
         {
             throw std::runtime_error("No graphics queue family found!");
         }
 
         // Try to find dedicated transfer queue (optional)
-        for (uint32_t family = 0; family < family_properties.size(); family++)
+        auto const transfer_queue_family_index = FindDedicatedTransferQueueFamilyIndex(family_properties);
+
+        // [graphics, transfer]
+        std::array<float, 2> gueue_priorities = {1.0, 1.0};
+
+        // [graphics, transfer]
+        std::vector<VkDeviceQueueCreateInfo> queue_info;
+
+        if (transfer_queue_family_index)
         {
-            auto const& p = family_properties[family];
+            m_vk_graphics_queue_family = {*graphics_queue_family_index, 0};
+            m_vk_transfer_queue_family = {*transfer_queue_family_index, 0};
 
-            if (p.queueFlags == VK_QUEUE_TRANSFER_BIT)
-            {
-                queue_info[1].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-                queue_info[1].queueFamilyIndex = family;
-                queue_info[1].pQueuePriorities = gueue_priorities.data(); // --------------- review
-                queue_info[1].queueCount = 1;
-                queue_info_count = 2;
+            queue_info = {
+                {
+                    .sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
+                    .pNext = nullptr,
+                    .flags = {},
+                    .queueFamilyIndex = *graphics_queue_family_index,
+                    .queueCount = 1,
+                    .pQueuePriorities = gueue_priorities.data()
+                },
+                {
+                    .sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
+                    .pNext = nullptr,
+                    .flags = {},
+                    .queueFamilyIndex = *transfer_queue_family_index,
+                    .queueCount = 1,
+                    .pQueuePriorities = gueue_priorities.data()
+                }
+            };
+        }
+        else if (family_properties[*graphics_queue_family_index].count > 1)
+        {
+            m_vk_graphics_queue_family = {*graphics_queue_family_index, 0};
+            m_vk_transfer_queue_family = {*graphics_queue_family_index, 1};
 
-                m_vk_graphics_queue_family = family;
+            queue_info = {
+                {
+                    .sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
+                    .pNext = nullptr,
+                    .flags = {},
+                    .queueFamilyIndex = *graphics_queue_family_index,
+                    .queueCount = 2,
+                    .pQueuePriorities = gueue_priorities.data()
+                }
+            };
+        }
+        else
+        {
+            m_vk_graphics_queue_family = {*graphics_queue_family_index, 0};
+            m_vk_transfer_queue_family = {*graphics_queue_family_index, 0};
 
-                break;
-            }
+            queue_info = {
+                {
+                    .sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
+                    .pNext = nullptr,
+                    .flags = {},
+                    .queueFamilyIndex = *graphics_queue_family_index,
+                    .queueCount = 1,
+                    .pQueuePriorities = gueue_priorities.data()
+                }
+            };
+
+            assert(false && "fallback!");
         }
 
         // Device features...
@@ -182,7 +232,7 @@ namespace Rc::Render
             .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
             .pNext = features,
             .flags = {},
-            .queueCreateInfoCount = queue_info_count,
+            .queueCreateInfoCount = static_cast<uint32_t>(queue_info.size()),
             .pQueueCreateInfos = queue_info.data(),
             .enabledLayerCount = 0,
             .ppEnabledLayerNames = nullptr,
@@ -224,15 +274,27 @@ namespace Rc::Render
         return result;
     }
 
-    std::vector<VkQueueFamilyProperties> Device::GetQueueFamilyProperties() const
+    std::vector<QueueFamilyProperties> Device::GetQueueFamilyProperties(Surface const& surface) const
     {
         auto const count = m_instance->GetPhysicalDeviceQueueFamilyPropertiesCount(m_vk_physical_device);
+        std::vector<VkQueueFamilyProperties> properties(count);
+        m_instance->GetPhysicalDeviceQueueFamilyProperties(m_vk_physical_device, properties);
 
-        std::vector<VkQueueFamilyProperties> result(count);
+        std::vector<QueueFamilyProperties> result;
+        result.reserve(count);
 
-        auto const span = m_instance->GetPhysicalDeviceQueueFamilyProperties(m_vk_physical_device, result);
-
-        result.resize(span.size());
+        for (std::size_t index = 0; index < properties.size(); index++)
+        {
+            result.push_back({
+                .index = static_cast<uint32_t>(index),
+                .count = properties[index].queueCount,
+                .graphics = (properties[index].queueFlags & VK_QUEUE_GRAPHICS_BIT) != 0,
+                .transfer = (properties[index].queueFlags & VK_QUEUE_TRANSFER_BIT) != 0,
+                .compute = (properties[index].queueFlags & VK_QUEUE_COMPUTE_BIT) != 0,
+                .presentation = m_instance->GetPhysicalDevicePresentationSupport(m_vk_physical_device, index),
+                .surface = m_instance->GetPhysicalDeviceSurfaceSupportKHR(m_vk_physical_device, index, surface.Handle())
+            });
+        }
 
         return result;
     }
@@ -259,7 +321,12 @@ namespace Rc::Render
 
     std::unique_ptr<CommandQueue> Device::CreateGraphicsQueue()
     {
-        return std::make_unique<CommandQueue>(*m_device, m_vk_graphics_queue_family, 0);
+        return std::make_unique<CommandQueue>(*m_device, m_vk_graphics_queue_family.first, m_vk_graphics_queue_family.second);
+    }
+
+    std::unique_ptr<CommandQueue> Device::CreateTransferQueue()
+    {
+        return std::make_unique<CommandQueue>(*m_device, m_vk_transfer_queue_family.first, m_vk_transfer_queue_family.second);
     }
 
     std::unique_ptr<Fence> Device::CreateFence()

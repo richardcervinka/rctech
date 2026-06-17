@@ -20,6 +20,17 @@
 
 namespace Rc::Render
 {
+    struct QueueFamilyProperties
+    {
+        uint32_t index;
+        uint32_t count;
+        bool graphics;
+        bool transfer;
+        bool compute;
+        bool presentation;
+        bool surface;
+    };
+
     class Device
     {
     public:
@@ -42,6 +53,7 @@ namespace Rc::Render
         std::unique_ptr<Shader> CreateShader(std::span<uint32_t const> spirv);
 
         std::unique_ptr<CommandQueue> CreateGraphicsQueue();
+        std::unique_ptr<CommandQueue> CreateTransferQueue();
 
         std::unique_ptr<Fence> CreateFence();
 
@@ -63,7 +75,7 @@ namespace Rc::Render
 
     private:
         std::map<std::string, VulkanVersion> EnumerateExtensions() const;
-        std::vector<VkQueueFamilyProperties> GetQueueFamilyProperties() const;
+        std::vector<QueueFamilyProperties> GetQueueFamilyProperties(Surface const& surface) const;
 
         VulkanInstance const* m_instance {nullptr}; //------------------------- ref ?
         std::unique_ptr<VulkanDevice> m_device;
@@ -76,9 +88,11 @@ namespace Rc::Render
 
         //Queue m_render_queue;
 
-        // Presentation queue.
-        uint32_t m_vk_graphics_queue_family {};
-        uint32_t m_vk_transfer_queue_family {}; // ----------------------------- optional
+        // Rendering queue info <family index, queue index>
+        std::pair<uint32_t, uint32_t> m_vk_graphics_queue_family;
+
+        // Transfer queue info <family index, queue index>
+        std::pair<uint32_t, uint32_t> m_vk_transfer_queue_family;
     };
 
 } // Rc::Render

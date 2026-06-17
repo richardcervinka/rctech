@@ -6,8 +6,7 @@
 #include <stdexcept>
 #include "platform/log.h"
 #include "core/vertex.h"
-#include "vertex_traits.h"
-#include "core/transformations.h"
+#include "base/math.h"
 
 namespace Rc::Render
 {
@@ -78,9 +77,9 @@ namespace Rc::Render
             }
             try
             {
-                auto device = adapter->CreateDevice(*m_surface);
-
                 Log::Debug(std::format("Adapter {} vulkan {}\n", adapter->Name(), Str::From(adapter->ApiVersion())));
+                
+                auto device = adapter->CreateDevice(*m_surface);
 
                 return device;
             }
@@ -108,6 +107,7 @@ namespace Rc::Render
 
         m_swap_chain = m_device->CreateSwapChain(*m_surface, window);
         m_render_queue = m_device->CreateGraphicsQueue();
+        m_transfer_queue = m_device->CreateTransferQueue();
 
         //std::shared_ptr<Buffer> transfer_staging = m_device->AllocateStagingBuffer(1024); //----------- TEST
 

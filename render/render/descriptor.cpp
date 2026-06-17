@@ -6,8 +6,9 @@ namespace Rc::Render
     ResourceDescriptorBuilder::ResourceDescriptorBuilder(
         VulkanInstance const& instance,
         VulkanDevice const& device,
-        VkPhysicalDevice vk_physical_device)
-        : m_vk_device{&device}
+        VkPhysicalDevice vk_physical_device
+    ) :
+        m_vk_device{&device}
     {
         m_stride = instance.GetPhysicalDeviceDescriptorSizeEXT(vk_physical_device, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
     }
