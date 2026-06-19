@@ -6,8 +6,7 @@
 #include <stdexcept>
 #include "platform/log.h"
 #include "core/vertex.h"
-#include "vertex_traits.h"
-#include "core/transformations.h"
+#include "base/math.h"
 
 namespace Rc::Render
 {
@@ -40,6 +39,10 @@ namespace Rc::Render
         }
 
         m_render_queue = nullptr;
+        m_transfer_buffer = nullptr;
+        m_transfer_semaphore = nullptr;
+        m_transfer_cmmands = nullptr;
+        m_transfer_queue = nullptr;
         m_swap_chain = nullptr;
         m_surface = nullptr;
         m_device = nullptr;
@@ -78,9 +81,9 @@ namespace Rc::Render
             }
             try
             {
-                auto device = adapter->CreateDevice(*m_surface);
-
                 Log::Debug(std::format("Adapter {} vulkan {}\n", adapter->Name(), Str::From(adapter->ApiVersion())));
+                
+                auto device = adapter->CreateDevice(*m_surface);
 
                 return device;
             }
@@ -109,9 +112,13 @@ namespace Rc::Render
         m_swap_chain = m_device->CreateSwapChain(*m_surface, window);
         m_render_queue = m_device->CreateGraphicsQueue();
 
-        //std::shared_ptr<Buffer> transfer_staging = m_device->AllocateStagingBuffer(1024); //----------- TEST
+        // Transfer infrastructure.
+        m_transfer_buffer = std::make_unique<BufferLinear>(m_device->AllocateStagingBuffer(1024));
+        m_transfer_queue = m_device->CreateTransferQueue();
+        m_transfer_cmmands = m_transfer_queue->CreateCommandBuffer();
+        m_transfer_semaphore = m_device->CreateTimelineSemaphore();
 
-        // Create frames-in-flight
+        // Frames-in-flight
         m_frames.resize(m_swap_chain->Count());
         for (auto& frame : m_frames)
         {
@@ -157,27 +164,52 @@ namespace Rc::Render
         // Transfer descriptor heaps ...
 
         auto resource_descriptor_builder = m_device->CreateResourceDescriptorBuilder();
-/*
-        for (auto& frame : m_frames)
+
+        // Test - transfer data do the vertex buffer
         {
-            auto const region = frame.staging_buffer->Allocate(frame.resource_descriptor_heap->Size());
-            //auto dst = frame.staging_buffer->Map<std::byte>(region);
+            m_transfer_cmmands->Reset();
+            m_transfer_cmmands->Begin();
 
-            resource_descriptor_builder.CreateUniformBuffer(0, *frame.uniform_buffer, frame.staging_buffer->GetBuffer(), region);
+            auto vb_region = m_transfer_buffer->Allocate(sizeof(Gfx::VertexBasic) * 4);
+            auto vb_data = m_transfer_buffer->Map<Gfx::VertexBasic>(vb_region);
 
-            frame.fence->Wait();
-            frame.commands->Reset();
-            frame.commands->Begin();
-            frame.commands->TransferBuffer(frame.staging_buffer->GetBuffer(), *frame.resource_descriptor_heap, region.Offset(), 0, region.Size());
-            frame.commands->End();
+            static int t = 0;
+            t = (t + 1) % 1000;
+            auto s = static_cast<float>(std::sin( 2.0 * Math::pi * (t / 999.0)));
+            auto c = static_cast<float>(std::cos( 2.0 * Math::pi * (t / 999.0)));
 
-            m_render_queue->Submit(*frame.commands, *frame.fence);
+            vb_data[0].position = {-0.7, -0.7, -2 + s};
+            vb_data[1].position = {0.7, 0.7, -2 + c};
+            vb_data[2].position = {-0.7, 0.7, -2 + s};
+            vb_data[3].position = {0.7, -0.7, -2 + c};
 
-            // resource_descriptor_builder.Attach(frame.staging_buffer);
-            // frame.staging_buffer->Allocate(1024);
-            // resource_descriptor_builder.CreateUniformBuffer(0, *frame.uniform_buffer, *frame.staging_buffer);
+            vb_data[0].color = {1, 0, 0};
+            vb_data[1].color = {0, 1, 0};
+            vb_data[2].color = {0, 0, 1};
+            vb_data[3].color = {1, 1, 1};
+
+            auto ib_region = m_transfer_buffer->Allocate(sizeof(uint16_t) * 6);
+            auto ib_data = m_transfer_buffer->Map<uint16_t>(ib_region);
+
+            ib_data[0] = 0;
+            ib_data[1] = 1;
+            ib_data[2] = 2;
+            ib_data[3] = 0;
+            ib_data[4] = 3;
+            ib_data[5] = 1;
+
+            auto ub_region = m_transfer_buffer->Allocate(4 * 16);
+            auto ub_data = m_transfer_buffer->Map<float>(ub_region);
+            
+            //m_transfer_cmmands->TransferBuffer(m_transfer_buffer->GetBuffer(), *frame.uniform_buffer, ub_region.Offset(), 0, ub_region.Size());
+            m_transfer_cmmands->TransferBuffer(m_transfer_buffer->GetBuffer(), m_vertex_buffer->GetBuffer(), vb_region.Offset(), 0, vb_region.Size());
+            m_transfer_cmmands->TransferBuffer(m_transfer_buffer->GetBuffer(), m_index_buffer->GetBuffer(), ib_region.Offset(), 0, ib_region.Size());
+        
+            m_transfer_cmmands->End();
+            m_transfer_queue->Submit(*m_transfer_cmmands, *m_transfer_semaphore);
+            m_transfer_semaphore->Wait();
         }
-*/
+
         Log::Debug("Renderer initialized");
     }
 
@@ -282,13 +314,10 @@ namespace Rc::Render
         frame.commands->BeginPresentingFramebuffer(m_swap_chain->GetImage());
 
         frame.commands->End();
-
-        m_render_queue->Submit(
-            *frame.commands,
-            m_swap_chain->GetAcquireSemaphore(),
-            m_swap_chain->GetPresentSemaphore(),
-            *frame.fence
-        );
+        
+        m_render_queue->WaitSemaphore(m_swap_chain->GetAcquireSemaphore());
+        m_render_queue->SignalSemaphore(m_swap_chain->GetPresentSemaphore());
+        m_render_queue->Submit(*frame.commands, *frame.fence);
 
         m_swap_chain->Present(*m_render_queue);
 
@@ -299,44 +328,11 @@ namespace Rc::Render
     {
         auto back_buffer_index = m_swap_chain->AcquireNextImage(); //----------------------- presunout
 
-        // Fill staging buffer
-     
-        auto vb_region = frame.staging_buffer->Allocate(sizeof(Gfx::VertexBasic) * 4);
-        auto vb_data = frame.staging_buffer->Map<Gfx::VertexBasic>(vb_region);
-
-        static int t = 0;
-        t = (t + 1) % 1000;
-        auto s = static_cast<float>(std::sin( 2.0 * Math::pi * (t / 999.0)));
-        auto c = static_cast<float>(std::cos( 2.0 * Math::pi * (t / 999.0)));
-
-        vb_data[0].position = {-0.7, -0.7, -2 + s};
-        vb_data[1].position = {0.7, 0.7, -2 + c};
-        vb_data[2].position = {-0.7, 0.7, -2 + s};
-        vb_data[3].position = {0.7, -0.7, -2 + c};
-
-        vb_data[0].color = {1, 0, 0};
-        vb_data[1].color = {0, 1, 0};
-        vb_data[2].color = {0, 0, 1};
-        vb_data[3].color = {1, 1, 1};
-
-        auto ib_region = frame.staging_buffer->Allocate(sizeof(uint16_t) * 6);
-        auto ib_data = frame.staging_buffer->Map<uint16_t>(ib_region);
-
-        ib_data[0] = 0;
-        ib_data[1] = 1;
-        ib_data[2] = 2;
-        ib_data[3] = 0;
-        ib_data[4] = 3;
-        ib_data[5] = 1;
-
-        auto ub_region = frame.staging_buffer->Allocate(4 * 16);
-        auto ub_data = frame.staging_buffer->Map<float>(ub_region);
-        
-        frame.commands->TransferBuffer(frame.staging_buffer->GetBuffer(), *frame.uniform_buffer, ub_region.Offset(), 0, ub_region.Size());
-        frame.commands->TransferBuffer(frame.staging_buffer->GetBuffer(), m_vertex_buffer->GetBuffer(), vb_region.Offset(), 0, vb_region.Size());
-        frame.commands->TransferBuffer(frame.staging_buffer->GetBuffer(), m_index_buffer->GetBuffer(), ib_region.Offset(), 0, ib_region.Size());
+        auto vb_region = m_vertex_buffer->GetBuffer().GetRegion();
+        auto ib_region = m_index_buffer->GetBuffer().GetRegion();
         frame.commands->UseVertexBuffer(m_vertex_buffer->GetBuffer(), 0, vb_region.Size());
         frame.commands->UseIndexBuffer(m_index_buffer->GetBuffer(), 0, ib_region.Size());
+
         frame.commands->BindVertexBuffer(m_vertex_buffer->GetBuffer(), 0);
         frame.commands->BindIndexBuffer(m_index_buffer->GetBuffer(), IndexType::Uint16, 0);
         frame.commands->BeginRenderingFramebuffer(m_swap_chain->GetImage());

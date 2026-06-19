@@ -1,6 +1,7 @@
 #pragma once
 
 #include "context.h"
+#include <chrono>
 
 namespace Rc
 {
@@ -192,6 +193,9 @@ namespace Rc
         // vkGetBufferDeviceAddress
         VkDeviceAddress GetBufferDeviceAddress(VkBufferDeviceAddressInfo const& info) const;
 
+        // vkWaitSemaphores
+        VkResult WaitSemaphores(VkSemaphoreWaitInfo const& wait_info, std::chrono::nanoseconds timeout) const;
+
     private:
         friend class VulkanContext;
 
@@ -256,6 +260,7 @@ namespace Rc
         PFN_vkDestroyDescriptorPool m_vkDestroyDescriptorPool {nullptr};
         PFN_vkWriteResourceDescriptorsEXT m_vkWriteResourceDescriptorsEXT {nullptr};
         PFN_vkGetBufferDeviceAddress m_vkGetBufferDeviceAddress {nullptr};
+        PFN_vkWaitSemaphores m_vkWaitSemaphores {nullptr};
     };
 
 } // Rc

@@ -54,7 +54,7 @@ namespace Rc::Render
 
         VkFormat GetFormat() const { return m_vk_format; }
 
-        void Present(CommandQueue const& queue) const;
+        void Present(RenderCommandQueue const& queue) const;
 
         Semaphore const& GetAcquireSemaphore() const
         {

@@ -17,6 +17,11 @@ namespace Rc::Render
         Surface(Surface&& other) = delete;
         Surface& operator=(Surface&& other) = delete;
 
+        VkSurfaceKHR Handle() const
+        {
+            return m_vk_surface;
+        }
+
     private:
         friend class Device;
 

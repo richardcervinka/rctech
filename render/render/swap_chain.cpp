@@ -88,7 +88,7 @@ namespace Rc::Render
         return m_image_index;
     }
 
-    void SwapChain::Present(CommandQueue const& queue) const
+    void SwapChain::Present(RenderCommandQueue const& queue) const
     {
         auto present_semaphore = GetPresentSemaphore().Handle();
 

@@ -137,7 +137,12 @@ namespace Rc::Render
 
         std::unique_ptr<SwapChain> m_swap_chain;
 
-        std::unique_ptr<CommandQueue> m_render_queue;
+        std::unique_ptr<RenderCommandQueue> m_render_queue;
+
+        std::unique_ptr<BufferLinear> m_transfer_buffer;
+        std::unique_ptr<TransferCommandQueue> m_transfer_queue;
+        std::unique_ptr<TransferCommandBuffer> m_transfer_cmmands;
+        std::unique_ptr<TimelineSemaphore> m_transfer_semaphore;
 
         std::array<std::unique_ptr<Shader>, static_cast<int>(VertexShaderSlot::Count)> m_vertex_shaders;
         std::array<std::unique_ptr<Shader>, static_cast<int>(PixelShaderSlot::Count)> m_pixel_shaders;
@@ -151,7 +156,7 @@ namespace Rc::Render
         {
             std::unique_ptr<Fence> fence;
             
-            std::unique_ptr<CommandBuffer> commands;
+            std::unique_ptr<RenderCommandBuffer> commands;
 
             std::unique_ptr<BufferLinear> staging_buffer;
 

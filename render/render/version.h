@@ -1,7 +1,7 @@
 #pragma once
 
-#include "base/str.h"
 #include <compare>
+#include <format>
 
 namespace Rc::Render
 {
