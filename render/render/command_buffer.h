@@ -23,17 +23,17 @@ namespace Rc::Render
         float max_depth;
     };
 
-    class CommandBuffer
+    class RenderCommandBuffer
     {
     public:
-        CommandBuffer(VulkanDevice const& vk_device, uint32_t vk_family_index);
+        RenderCommandBuffer(VulkanDevice const& vk_device, uint32_t vk_family_index);
 
-        ~CommandBuffer();
+        ~RenderCommandBuffer();
 
-        CommandBuffer(CommandBuffer const&) = delete;
-        CommandBuffer& operator=(CommandBuffer const&) = delete;
-        CommandBuffer(CommandBuffer&& other) = delete;
-        CommandBuffer& operator=(CommandBuffer&& other) = delete;
+        RenderCommandBuffer(RenderCommandBuffer const&) = delete;
+        RenderCommandBuffer& operator=(RenderCommandBuffer const&) = delete;
+        RenderCommandBuffer(RenderCommandBuffer&& other) = delete;
+        RenderCommandBuffer& operator=(RenderCommandBuffer&& other) = delete;
 
         void Reset();
 
@@ -78,14 +78,16 @@ namespace Rc::Render
 
         void DrawIndexed(uint32_t index_count, uint32_t instance_count, uint32_t first_index, int32_t vertex_offset, uint32_t first_instance);
 
-
         void Test(
             Rectangle<int> const& render_area
         );
 
-    private:
-        friend class CommandQueue;
+        VkCommandBuffer Handle() const
+        {
+            return m_vk_command_buffer;
+        }
 
+    private:
         void ResetColorAttachments();
 
         // Parent device.
@@ -104,4 +106,40 @@ namespace Rc::Render
         // seconday command buffers...
     };
 
+    class TransferCommandBuffer
+    {
+    public:
+        TransferCommandBuffer(VulkanDevice const& vk_device, uint32_t vk_family_index);
+
+        ~TransferCommandBuffer();
+
+        TransferCommandBuffer(TransferCommandBuffer const&) = delete;
+        TransferCommandBuffer& operator=(TransferCommandBuffer const&) = delete;
+        TransferCommandBuffer(TransferCommandBuffer&& other) = delete;
+        TransferCommandBuffer& operator=(TransferCommandBuffer&& other) = delete;
+
+        void Reset();
+
+        // Bedin base render commands.
+        void Begin();
+
+        void End();
+
+        void TransferBuffer(Buffer& src, Buffer& dst, uint64_t src_offset, uint64_t dst_offset, uint64_t size);
+        
+        VkCommandBuffer Handle() const
+        {
+            return m_vk_command_buffer;
+        }
+
+    private:
+        // Parent device.
+        VulkanDevice const* m_vk_device {nullptr};
+
+        VkCommandPool m_vk_pool {VK_NULL_HANDLE};
+
+        // Primary command buffers.
+        VkCommandBuffer m_vk_command_buffer {VK_NULL_HANDLE};
+    };
+    
 } // Rc::Render

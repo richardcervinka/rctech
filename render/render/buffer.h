@@ -123,7 +123,8 @@ namespace Rc::Render
         }
 
     private:
-        friend class CommandBuffer;
+        friend class RenderCommandBuffer;
+        friend class TransferCommandBuffer;
 
         Buffer(
             VulkanDevice const& vk_device,

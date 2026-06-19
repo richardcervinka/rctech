@@ -52,12 +52,12 @@ namespace Rc::Render
 
         std::unique_ptr<Shader> CreateShader(std::span<uint32_t const> spirv);
 
-        std::unique_ptr<CommandQueue> CreateGraphicsQueue();
-        std::unique_ptr<CommandQueue> CreateTransferQueue();
+        std::unique_ptr<RenderCommandQueue> CreateGraphicsQueue();
+        std::unique_ptr<TransferCommandQueue> CreateTransferQueue();
 
         std::unique_ptr<Fence> CreateFence();
-
         std::unique_ptr<Semaphore> CreateSemaphore() const;
+        std::unique_ptr<TimelineSemaphore> CreateTimelineSemaphore() const;
 
         void WaitIdle() const noexcept;
 

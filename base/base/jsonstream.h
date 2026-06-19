@@ -115,9 +115,9 @@ namespace Rc::Json
         std::string& m_dst;
         State m_state {State::Initial};
 
-        #ifndef NDEBUG
+        //#ifndef NDEBUG
         std::vector<Scope> m_scope;
-        #endif
+        //#endif
 
         void AssertInitial() const;
         void AssertState(State first, State second) const;

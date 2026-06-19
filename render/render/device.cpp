@@ -56,17 +56,22 @@ namespace Rc::Render
 
         if (!extensions.contains(VK_KHR_SWAPCHAIN_EXTENSION_NAME))
         {
-            throw std::runtime_error("Required VK_KHR_swapchain");
+            throw std::runtime_error("Required " VK_KHR_SWAPCHAIN_EXTENSION_NAME);
         }
         if (!extensions.contains(VK_EXT_DESCRIPTOR_HEAP_EXTENSION_NAME))
         {
-            throw std::runtime_error("Required VK_EXT_descriptor_heap");
+            throw std::runtime_error("Required " VK_EXT_DESCRIPTOR_HEAP_EXTENSION_NAME);
+        }
+        if (!extensions.contains(VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME))
+        {
+            throw std::runtime_error("Required " VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME);
         }
 
         std::vector<char const*> enable_extensions
         {
             VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-            VK_EXT_DESCRIPTOR_HEAP_EXTENSION_NAME
+            VK_EXT_DESCRIPTOR_HEAP_EXTENSION_NAME,
+            VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME
         };
 
         // Optional extensions...
@@ -224,8 +229,14 @@ namespace Rc::Render
             .descriptorHeap = VK_TRUE,
             .descriptorHeapCaptureReplay = VK_FALSE
         };
+        VkPhysicalDeviceTimelineSemaphoreFeatures timeline_semaphore_features
+        {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES,
+            .pNext = &descriptor_heap_features_ext,
+            .timelineSemaphore = VK_TRUE
+        };
 
-        void* features = &descriptor_heap_features_ext;
+        void* features = &timeline_semaphore_features;
 
         VkDeviceCreateInfo info
         {
@@ -319,14 +330,14 @@ namespace Rc::Render
         return std::make_unique<Shader>(*m_device, spirv);
     }
 
-    std::unique_ptr<CommandQueue> Device::CreateGraphicsQueue()
+    std::unique_ptr<RenderCommandQueue> Device::CreateGraphicsQueue()
     {
-        return std::make_unique<CommandQueue>(*m_device, m_vk_graphics_queue_family.first, m_vk_graphics_queue_family.second);
+        return std::make_unique<RenderCommandQueue>(*m_device, m_vk_graphics_queue_family.first, m_vk_graphics_queue_family.second);
     }
 
-    std::unique_ptr<CommandQueue> Device::CreateTransferQueue()
+    std::unique_ptr<TransferCommandQueue> Device::CreateTransferQueue()
     {
-        return std::make_unique<CommandQueue>(*m_device, m_vk_transfer_queue_family.first, m_vk_transfer_queue_family.second);
+        return std::make_unique<TransferCommandQueue>(*m_device, m_vk_transfer_queue_family.first, m_vk_transfer_queue_family.second);
     }
 
     std::unique_ptr<Fence> Device::CreateFence()
@@ -337,6 +348,11 @@ namespace Rc::Render
     std::unique_ptr<Semaphore> Device::CreateSemaphore() const
     {
         return std::make_unique<Semaphore>(*m_device);
+    }
+
+    std::unique_ptr<TimelineSemaphore> Device::CreateTimelineSemaphore() const
+    {
+        return std::make_unique<TimelineSemaphore>(*m_device);
     }
 
     void Device::WaitIdle() const noexcept

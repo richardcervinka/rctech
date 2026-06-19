@@ -9,6 +9,8 @@ find_program(
     REQUIRED
 )
 
+add_definitions(-DNOMINMAX)
+
 add_subdirectory("res")
 add_subdirectory("ext")
 add_subdirectory("tools")

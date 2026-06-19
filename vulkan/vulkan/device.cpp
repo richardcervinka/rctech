@@ -54,6 +54,7 @@ namespace Rc
         Load("vkDestroyDescriptorPool", m_vkDestroyDescriptorPool);
         Load("vkWriteResourceDescriptorsEXT", m_vkWriteResourceDescriptorsEXT);
         Load("vkGetBufferDeviceAddress", m_vkGetBufferDeviceAddress);
+        Load("vkWaitSemaphores", m_vkWaitSemaphores);
     }
 
     VulkanDevice::~VulkanDevice()
@@ -466,6 +467,11 @@ namespace Rc
     VkDeviceAddress VulkanDevice::GetBufferDeviceAddress(VkBufferDeviceAddressInfo const& info) const
     {
         return m_vkGetBufferDeviceAddress(m_vk_device, &info);
+    }
+
+    VkResult VulkanDevice::WaitSemaphores(VkSemaphoreWaitInfo const& wait_info, std::chrono::nanoseconds timeout) const
+    {
+        return m_vkWaitSemaphores(m_vk_device, &wait_info, static_cast<uint64_t>(timeout.count()));
     }
 
 } // Rc
