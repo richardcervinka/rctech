@@ -16,7 +16,7 @@
 #include "shader.h"
 #include "surface.h"
 #include "buffer.h"
-#include "descriptor.h"
+#include "descriptor_heap.h"
 
 namespace Rc::Render
 {
@@ -65,7 +65,7 @@ namespace Rc::Render
 
         PipelineFactory CreatePipelineFactory();
 
-        std::unique_ptr<ResourceDescriptorHeap> CreateResourceDescriptorHeap();
+        std::unique_ptr<ResourceDescriptorHeap> CreateResourceDescriptorHeap(std::span<ResourceDescriptor const> descriptors);
 
         std::unique_ptr<Buffer> AllocateVertexBuffer(uint64_t size) const;
         std::unique_ptr<Buffer> AllocateIndexBuffer(uint64_t size) const;

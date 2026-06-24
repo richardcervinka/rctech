@@ -6,7 +6,7 @@
 #include <array>
 #include "shader.h"
 #include "buffer_linear.h"
-#include "descriptor.h"
+#include "descriptor_heap.h"
 
 namespace Rc::Render
 {
@@ -102,6 +102,8 @@ namespace Rc::Render
         //void TransferBuffer(BufferHandle)
 
     private:
+        void InitializeFramesInFlight();
+
         // Assign vertex shader to the slot.
         void SetVertexShader(VertexShaderSlot slot, std::unique_ptr<Shader> shader)
         {
@@ -141,7 +143,7 @@ namespace Rc::Render
 
         std::unique_ptr<BufferLinear> m_transfer_buffer;
         std::unique_ptr<TransferCommandQueue> m_transfer_queue;
-        std::unique_ptr<TransferCommandBuffer> m_transfer_cmmands;
+        std::unique_ptr<TransferCommandBuffer> m_transfer_ocmmands;
         std::unique_ptr<TimelineSemaphore> m_transfer_semaphore;
 
         std::array<std::unique_ptr<Shader>, static_cast<int>(VertexShaderSlot::Count)> m_vertex_shaders;

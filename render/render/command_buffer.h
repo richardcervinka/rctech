@@ -10,7 +10,7 @@
 #include "image.h"
 #include "texture.h"
 #include "pipeline_state.h"
-#include "descriptor.h"
+#include "descriptor_heap.h"
 
 namespace Rc::Render
 {

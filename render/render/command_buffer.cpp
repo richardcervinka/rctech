@@ -466,7 +466,7 @@ namespace Rc::Render
             .pNext = nullptr,
             .heapRange.address = heap.Address(),
             .heapRange.size = heap.SizeTotal(),
-            .reservedRangeOffset = heap.Useful(),
+            .reservedRangeOffset = heap.Size(),
             .reservedRangeSize = heap.Reserved()
         };
 

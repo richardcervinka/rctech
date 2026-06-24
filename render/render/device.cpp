@@ -384,9 +384,9 @@ namespace Rc::Render
         return PipelineFactory(*m_device);
     }
 
-    std::unique_ptr<ResourceDescriptorHeap> Device::CreateResourceDescriptorHeap()
+    std::unique_ptr<ResourceDescriptorHeap> Device::CreateResourceDescriptorHeap(std::span<ResourceDescriptor const> descriptors)
     {
-        return std::make_unique<ResourceDescriptorHeap>(*m_instance, *m_device, m_vk_physical_device);
+        return std::make_unique<ResourceDescriptorHeap>(*m_instance, *m_device, m_vk_physical_device, descriptors);
     }
 
     std::unique_ptr<Buffer> Device::AllocateVertexBuffer(uint64_t size) const

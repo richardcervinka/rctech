@@ -24,8 +24,5 @@ void main()
     position = ubo[0].projection * position;
 
     gl_Position = position;
-
-    //gl_Position = ubo[0].projection * (ubo[0].camera * (ubo[0].transformation * vec4(in_position, 1.0)));
-
     out_color = in_color;
 }
