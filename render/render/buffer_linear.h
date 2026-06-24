@@ -42,7 +42,7 @@ namespace Rc::Render
             return m_buffer->Size() - m_offset;
         }
 
-        Buffer& GetBuffer()
+        Buffer& GetBuffer() //------------------------------ potencialni dira!
         {
             return *m_buffer;
         }

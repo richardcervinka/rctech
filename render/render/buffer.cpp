@@ -17,10 +17,10 @@ namespace Rc::Render
             vk_device,
             info.size,
             vma_allocator,
-            VkBufferUsageFlags
+            VkBufferUsageFlags2
             {
-                VK_BUFFER_USAGE_TRANSFER_DST_BIT |
-                VK_BUFFER_USAGE_VERTEX_BUFFER_BIT
+                VK_BUFFER_USAGE_2_TRANSFER_DST_BIT |
+                VK_BUFFER_USAGE_2_VERTEX_BUFFER_BIT
             },
             VmaAllocationCreateFlags{}
         )
@@ -31,10 +31,10 @@ namespace Rc::Render
             vk_device,
             info.size,
             vma_allocator,
-            VkBufferUsageFlags
+            VkBufferUsageFlags2
             {
-                VK_BUFFER_USAGE_TRANSFER_DST_BIT |
-                VK_BUFFER_USAGE_INDEX_BUFFER_BIT
+                VK_BUFFER_USAGE_2_TRANSFER_DST_BIT |
+                VK_BUFFER_USAGE_2_INDEX_BUFFER_BIT
             },
             VmaAllocationCreateFlags{}
         )
@@ -45,7 +45,7 @@ namespace Rc::Render
             vk_device,
             info.size,
             vma_allocator,
-            VkBufferUsageFlags
+            VkBufferUsageFlags2
             {
                 VK_BUFFER_USAGE_TRANSFER_SRC_BIT
             },
@@ -62,10 +62,10 @@ namespace Rc::Render
             vk_device,
             info.size,
             vma_allocator,
-            VkBufferUsageFlags
+            VkBufferUsageFlags2
             {
-                VK_BUFFER_USAGE_TRANSFER_DST_BIT |
-                VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT |
+                VK_BUFFER_USAGE_2_TRANSFER_DST_BIT |
+                VK_BUFFER_USAGE_2_UNIFORM_BUFFER_BIT |
                 VK_BUFFER_USAGE_2_SHADER_DEVICE_ADDRESS_BIT
             },
             VmaAllocationCreateFlags{}
@@ -77,10 +77,10 @@ namespace Rc::Render
             vk_device,
             info.size,
             vma_allocator,
-            VkBufferUsageFlags
+            VkBufferUsageFlags2
             {
-                VK_BUFFER_USAGE_TRANSFER_DST_BIT |
                 VK_BUFFER_USAGE_DESCRIPTOR_HEAP_BIT_EXT |
+                VK_BUFFER_USAGE_2_TRANSFER_DST_BIT |
                 VK_BUFFER_USAGE_2_SHADER_DEVICE_ADDRESS_BIT
             },
             VmaAllocationCreateFlags{}
@@ -91,21 +91,29 @@ namespace Rc::Render
         VulkanDevice const& vk_device,
         uint64_t size,
         VmaAllocator vma_allocator,
-        VkBufferUsageFlags usage,
-        VmaAllocationCreateFlags vma_flags) :
-            m_vk_device{&vk_device}
+        VkBufferUsageFlags2 usage_flags,
+        VmaAllocationCreateFlags vma_flags
+    ) :
+        m_vk_device{&vk_device}
     {
         VmaAllocationCreateInfo alloc_info {};
         alloc_info.usage = VMA_MEMORY_USAGE_AUTO;
         alloc_info.flags = vma_flags;
 
-        VkBufferCreateInfo buffer_info
+        VkBufferUsageFlags2CreateInfo const create_info_2
+        {
+            .sType = VK_STRUCTURE_TYPE_BUFFER_USAGE_FLAGS_2_CREATE_INFO,
+            .pNext = nullptr,
+            .usage = usage_flags
+        };
+
+        VkBufferCreateInfo create_info
         {
             .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-            .pNext = nullptr,
+            .pNext = &create_info_2,
             .flags = 0,
             .size = size,
-            .usage =  usage,
+            .usage =  0,
             .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
             .queueFamilyIndexCount = 0,
             .pQueueFamilyIndices = nullptr
@@ -113,7 +121,7 @@ namespace Rc::Render
 
         auto const vk_result = vmaCreateBuffer(
             vma_allocator,
-            &buffer_info,
+            &create_info,
             &alloc_info,
             &m_vk_buffer,
             &m_vma_allocation,

@@ -21,21 +21,35 @@ namespace Rc::Render
         }
     }
 
-    // PipelineLayout
+    // PipelineLayout --------------------------------------------------------------------------- Odstranit
 
-    PipelineLayout::PipelineLayout(VulkanDevice const& vk_device) :
-        m_vk_device{&vk_device}
+    PipelineLayout::PipelineLayout(VulkanDevice const& vk_device) : m_vk_device{&vk_device}
     {
-        std::array<VkDescriptorSetLayoutBinding, 1> descriptor_set_layout_bindings
+        // std::array<VkDescriptorSetLayoutBinding, 1> descriptor_set_layout_bindings
+        // {
+        //     VkDescriptorSetLayoutBinding
+        //     {
+        //         .binding = 0,
+        //         .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+        //         .descriptorCount = 1000,
+        //         .stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+        //         .pImmutableSamplers = nullptr
+        //     }
+        // };
+        // VkDescriptorBindingFlags binding_flags
+        // {
+        //     VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | 
+        //     VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT |
+        //     VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT // Optional: if size is dynamic
+        // };
+
+        VkDescriptorSetLayoutBinding dummy_binding
         {
-            VkDescriptorSetLayoutBinding
-            {
-                .binding = 0,
-                .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-                .descriptorCount = 1,
-                .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
-                .pImmutableSamplers = nullptr
-            }
+            .binding = 0,
+            .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+            .descriptorCount = 1,
+            .stageFlags = VK_SHADER_STAGE_ALL,
+            .pImmutableSamplers = nullptr
         };
 
         VkDescriptorSetLayoutCreateInfo descriptor_set_layout_info
@@ -43,8 +57,8 @@ namespace Rc::Render
             .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
             .pNext = nullptr,
             .flags = {},
-            .bindingCount = static_cast<uint32_t>(descriptor_set_layout_bindings.size()),
-            .pBindings = descriptor_set_layout_bindings.data()
+            .bindingCount = 1,
+            .pBindings = &dummy_binding
         };
 
         m_vk_descriptor_set_layout = m_vk_device->CreateDescriptorSetLayout(descriptor_set_layout_info);
@@ -246,10 +260,19 @@ namespace Rc::Render
             vertex_input_info.pVertexBindingDescriptions = vk_vertex_binding_desc.data();
         }
 
+        VkPipelineCreateFlags2CreateInfoKHR const flags_2
+        {
+            .sType =  VK_STRUCTURE_TYPE_PIPELINE_CREATE_FLAGS_2_CREATE_INFO,
+            .pNext = &m_pipeline_rendering,
+            .flags = VK_PIPELINE_CREATE_2_DESCRIPTOR_HEAP_BIT_EXT
+        };
+
+        //VK_PIPELINE_CREATE_2_DESCRIPTOR_HEAP_BIT_EXT
+        // If VkPipelineCreateFlags2CreateInfoKHR::flags does not include VK_PIPELINE_CREATE_2_DESCRIPTOR_HEAP_BIT_EXT
         VkGraphicsPipelineCreateInfo const pipeline_info
         {
             .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
-            .pNext = &m_pipeline_rendering,
+            .pNext = &flags_2,
             .flags = 0,
             .stageCount = static_cast<uint32_t>(shader_stages.size()),
             .pStages = shader_stages.data(),
@@ -262,13 +285,14 @@ namespace Rc::Render
             .pDepthStencilState = nullptr,
             .pColorBlendState = &m_color_blend,
             .pDynamicState = &dynamic_state_info,
-            .layout = m_pipeline_layout->Handle(),
+            .layout = VK_NULL_HANDLE, // m_pipeline_layout->Handle(),
             .renderPass = nullptr,
             .subpass = 0,
             .basePipelineHandle = VK_NULL_HANDLE,
             .basePipelineIndex = 0
         };
 
+        
         return std::make_unique<Pipeline>(*m_device, pipeline_info);
     }
 

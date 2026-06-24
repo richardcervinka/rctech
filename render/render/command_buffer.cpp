@@ -217,12 +217,14 @@ namespace Rc::Render
 
     void RenderCommandBuffer::TransferBuffer(Buffer& src, Buffer& dst, uint64_t src_offset, uint64_t dst_offset, uint64_t size)
     {
-        VkBufferMemoryBarrier const barrier
+        VkBufferMemoryBarrier2 const barrier
         {
-            .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
+            .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2,
             .pNext = nullptr,
-            .srcAccessMask = dst.m_access_flags,
-            .dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
+            .srcStageMask = src.m_stage_flags,
+            .srcAccessMask = src.m_access_flags,
+            .dstStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT,
+            .dstAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT,
             .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
             .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
             .buffer = dst.Handle(),
@@ -230,18 +232,21 @@ namespace Rc::Render
             .size = VkDeviceSize{size}
         };
 
-        m_vk_device->CmdPipelineBarrier(
-            m_vk_command_buffer,
-            dst.m_stage_flags,
-            VK_PIPELINE_STAGE_TRANSFER_BIT,
-            {},
-            {},
-            {&barrier, 1},
-            {}
-        );
+        VkDependencyInfo const dependency_info
+        {
+            .sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
+            .pNext = nullptr,
+            .dependencyFlags = {},
+            .memoryBarrierCount = 0,
+            .pMemoryBarriers = nullptr,
+            .bufferMemoryBarrierCount = 1,
+            .pBufferMemoryBarriers = &barrier,
+            .imageMemoryBarrierCount = 0,
+            .pImageMemoryBarriers = nullptr
+        };
 
-        dst.m_access_flags = VK_ACCESS_TRANSFER_WRITE_BIT;
-        dst.m_stage_flags = VK_PIPELINE_STAGE_TRANSFER_BIT;
+        dst.m_access_flags = VK_ACCESS_2_TRANSFER_WRITE_BIT;
+        dst.m_stage_flags = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
 
         struct VkBufferCopy region
         {
@@ -253,66 +258,154 @@ namespace Rc::Render
         m_vk_device->CmdCopyBuffer(m_vk_command_buffer, src.Handle(), dst.Handle(), {&region, 1});
     }
 
-    void RenderCommandBuffer::UseVertexBuffer(Buffer& vb, uint64_t offset, uint64_t size)
+    void RenderCommandBuffer::UseVertexBuffer(Buffer& buffer, BufferRegion const& region)
     {
         // TODO: Assert Buffer::usage
 
-        VkBufferMemoryBarrier const barrier
+        VkBufferMemoryBarrier2 const barrier
         {
-            .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
+            .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2,
             .pNext = nullptr,
-            .srcAccessMask = vb.m_access_flags,
-            .dstAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT,
+            .srcStageMask = buffer.m_stage_flags,
+            .srcAccessMask = buffer.m_access_flags,
+            .dstStageMask = VK_PIPELINE_STAGE_2_VERTEX_INPUT_BIT,
+            .dstAccessMask = VK_ACCESS_2_VERTEX_ATTRIBUTE_READ_BIT,
             .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
             .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-            .buffer = vb.Handle(),
-            .offset = static_cast<VkDeviceSize>(offset),
-            .size = static_cast<VkDeviceSize>(size)
+            .buffer = buffer.Handle(),
+            .offset = region.Offset(),
+            .size = region.Size()
         };
 
-        m_vk_device->CmdPipelineBarrier(
-            m_vk_command_buffer,
-            vb.m_stage_flags,
-            VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
-            {},
-            {},
-            {&barrier, 1},
-            {}
-        );
+        VkDependencyInfo const dependency_info
+        {
+            .sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
+            .pNext = nullptr,
+            .dependencyFlags = {},
+            .memoryBarrierCount = 0,
+            .pMemoryBarriers = nullptr,
+            .bufferMemoryBarrierCount = 1,
+            .pBufferMemoryBarriers = &barrier,
+            .imageMemoryBarrierCount = 0,
+            .pImageMemoryBarriers = nullptr
+        };
 
-        vb.m_access_flags = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
-        vb.m_stage_flags = VK_PIPELINE_STAGE_VERTEX_INPUT_BIT;
+        buffer.m_access_flags = VK_ACCESS_2_VERTEX_ATTRIBUTE_READ_BIT;
+        buffer.m_stage_flags = VK_PIPELINE_STAGE_2_VERTEX_INPUT_BIT;
     }
 
-    void RenderCommandBuffer::UseIndexBuffer(Buffer& ib, uint64_t offset, uint64_t size)
+    void RenderCommandBuffer::UseIndexBuffer(Buffer& buffer, BufferRegion const& region)
     {
         // TODO: Assert Buffer::usage
 
-        VkBufferMemoryBarrier const barrier
+        VkBufferMemoryBarrier2 const barrier
         {
-            .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
+            .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2,
             .pNext = nullptr,
-            .srcAccessMask = ib.m_access_flags,
-            .dstAccessMask = VK_ACCESS_INDEX_READ_BIT,
+            .srcStageMask = buffer.m_stage_flags,
+            .srcAccessMask = buffer.m_access_flags,
+            .dstStageMask = VK_PIPELINE_STAGE_2_VERTEX_INPUT_BIT,
+            .dstAccessMask = VK_ACCESS_2_INDEX_READ_BIT,
             .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
             .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-            .buffer = ib.Handle(),
-            .offset = static_cast<VkDeviceSize>(offset),
-            .size = static_cast<VkDeviceSize>(size)
+            .buffer = buffer.Handle(),
+            .offset = region.Offset(),
+            .size = region.Size()
         };
 
-        m_vk_device->CmdPipelineBarrier(
-            m_vk_command_buffer,
-            ib.m_stage_flags,
-            VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
-            {},
-            {},
-            {&barrier, 1},
-            {}
-        );
+        VkDependencyInfo const dependency_info
+        {
+            .sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
+            .pNext = nullptr,
+            .dependencyFlags = {},
+            .memoryBarrierCount = 0,
+            .pMemoryBarriers = nullptr,
+            .bufferMemoryBarrierCount = 1,
+            .pBufferMemoryBarriers = &barrier,
+            .imageMemoryBarrierCount = 0,
+            .pImageMemoryBarriers = nullptr
+        };
 
-        ib.m_access_flags = VK_ACCESS_INDEX_READ_BIT;
-        ib.m_stage_flags = VK_PIPELINE_STAGE_VERTEX_INPUT_BIT;
+        m_vk_device->CmdPipelineBarrier2(m_vk_command_buffer, dependency_info);
+
+        buffer.m_access_flags = VK_ACCESS_2_INDEX_READ_BIT;
+        buffer.m_stage_flags = VK_PIPELINE_STAGE_2_VERTEX_INPUT_BIT;
+    }
+
+    void RenderCommandBuffer::UseUniformBuffer(Buffer& buffer, BufferRegion const& region)
+    {
+        // TODO: Assert Buffer::usage
+
+        VkBufferMemoryBarrier2 const barrier
+        {
+            .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2,
+            .pNext = nullptr,
+            .srcStageMask = buffer.m_stage_flags,
+            .srcAccessMask = buffer.m_access_flags,
+            .dstStageMask = VK_PIPELINE_STAGE_2_VERTEX_SHADER_BIT,
+            .dstAccessMask = VK_ACCESS_2_UNIFORM_READ_BIT,
+            .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+            .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+            .buffer = buffer.Handle(),
+            .offset = region.Offset(),
+            .size = region.Size()
+        };
+
+        VkDependencyInfo const dependency_info
+        {
+            .sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
+            .pNext = nullptr,
+            .dependencyFlags = {},
+            .memoryBarrierCount = 0,
+            .pMemoryBarriers = nullptr,
+            .bufferMemoryBarrierCount = 1,
+            .pBufferMemoryBarriers = &barrier,
+            .imageMemoryBarrierCount = 0,
+            .pImageMemoryBarriers = nullptr
+        };
+
+        m_vk_device->CmdPipelineBarrier2(m_vk_command_buffer, dependency_info);
+
+        buffer.m_access_flags = VK_ACCESS_2_UNIFORM_READ_BIT;
+        buffer.m_stage_flags = VK_PIPELINE_STAGE_2_VERTEX_INPUT_BIT;
+    }
+
+    void RenderCommandBuffer::UseResourceDescriptorHeapBuffer(Buffer& buffer, BufferRegion const& region)
+    {
+        // TODO: Assert Buffer::usage
+
+        VkBufferMemoryBarrier2 const barrier
+        {
+            .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2,
+            .pNext = nullptr,
+            .srcStageMask = buffer.m_stage_flags,
+            .srcAccessMask = buffer.m_access_flags,
+            .dstStageMask = VK_PIPELINE_STAGE_2_ALL_GRAPHICS_BIT,
+            .dstAccessMask = VK_ACCESS_2_RESOURCE_HEAP_READ_BIT_EXT,
+            .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+            .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+            .buffer = buffer.Handle(),
+            .offset = region.Offset(),
+            .size = region.Size()
+        };
+
+        VkDependencyInfo const dependency_info
+        {
+            .sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
+            .pNext = nullptr,
+            .dependencyFlags = {},
+            .memoryBarrierCount = 0,
+            .pMemoryBarriers = nullptr,
+            .bufferMemoryBarrierCount = 1,
+            .pBufferMemoryBarriers = &barrier,
+            .imageMemoryBarrierCount = 0,
+            .pImageMemoryBarriers = nullptr
+        };
+
+        m_vk_device->CmdPipelineBarrier2(m_vk_command_buffer, dependency_info);
+
+        buffer.m_access_flags = VK_ACCESS_2_RESOURCE_HEAP_READ_BIT_EXT;
+        buffer.m_stage_flags = VK_PIPELINE_STAGE_2_ALL_GRAPHICS_BIT;
     }
 
     void RenderCommandBuffer::BindVertexBuffer(Buffer& vb, uint64_t offset)
@@ -363,6 +456,21 @@ namespace Rc::Render
         SetViewport({0, 0, static_cast<float>(render_area.w), static_cast<float>(render_area.h), 0, 1});
 
         m_vk_device->CmdSetScissor(m_vk_command_buffer, scissors);
+    }
+
+    void RenderCommandBuffer::BindResourceDescriptorHeap(ResourceDescriptorHeap const& heap)
+    {
+        VkBindHeapInfoEXT bind_info
+        {
+            .sType = VK_STRUCTURE_TYPE_BIND_HEAP_INFO_EXT,
+            .pNext = nullptr,
+            .heapRange.address = heap.Address(),
+            .heapRange.size = heap.SizeTotal(),
+            .reservedRangeOffset = heap.Useful(),
+            .reservedRangeSize = heap.Reserved()
+        };
+
+        m_vk_device->CmdBindResourceHeapEXT(m_vk_command_buffer, bind_info);
     }
 
     // TransferCommandBuffer
@@ -427,14 +535,16 @@ namespace Rc::Render
         m_vk_device->EndCommandBuffer(m_vk_command_buffer);
     }
 
-    void TransferCommandBuffer::TransferBuffer(Buffer& src, Buffer& dst, uint64_t src_offset, uint64_t dst_offset, uint64_t size)
+    void TransferCommandBuffer::TransferBuffer(Buffer const& src, Buffer& dst, uint64_t src_offset, uint64_t dst_offset, uint64_t size)
     {
-        VkBufferMemoryBarrier const barrier
+        VkBufferMemoryBarrier2 const barrier
         {
-            .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
+            .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2,
             .pNext = nullptr,
-            .srcAccessMask = dst.m_access_flags,
-            .dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
+            .srcStageMask = src.m_stage_flags,
+            .srcAccessMask = src.m_access_flags,
+            .dstStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT,
+            .dstAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT,
             .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
             .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
             .buffer = dst.Handle(),
@@ -442,18 +552,21 @@ namespace Rc::Render
             .size = VkDeviceSize{size}
         };
 
-        m_vk_device->CmdPipelineBarrier(
-            m_vk_command_buffer,
-            dst.m_stage_flags,
-            VK_PIPELINE_STAGE_TRANSFER_BIT,
-            {},
-            {},
-            {&barrier, 1},
-            {}
-        );
+        VkDependencyInfo const dependency_info
+        {
+            .sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
+            .pNext = nullptr,
+            .dependencyFlags = {},
+            .memoryBarrierCount = 0,
+            .pMemoryBarriers = nullptr,
+            .bufferMemoryBarrierCount = 1,
+            .pBufferMemoryBarriers = &barrier,
+            .imageMemoryBarrierCount = 0,
+            .pImageMemoryBarriers = nullptr
+        };
 
-        dst.m_access_flags = VK_ACCESS_TRANSFER_WRITE_BIT;
-        dst.m_stage_flags = VK_PIPELINE_STAGE_TRANSFER_BIT;
+        dst.m_access_flags = VK_ACCESS_2_TRANSFER_WRITE_BIT;
+        dst.m_stage_flags = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
 
         struct VkBufferCopy region
         {

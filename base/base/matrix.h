@@ -2,6 +2,8 @@
 
 #include <cstring>
 #include <optional>
+#include <span>
+#include <cassert>
 #include "vector.h"
 
 namespace Rc
@@ -384,6 +386,12 @@ namespace Rc
             At(row, 1) *= value;
             At(row, 2) *= value;
             At(row, 3) *= value;
+        }
+
+        void Store(std::span<float> dst) const
+        {
+            assert(dst.size() >= 16);
+            std::memcpy(dst.data(), m, 16 * sizeof(float));
         }
 
     private:

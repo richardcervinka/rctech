@@ -1,10 +1,13 @@
 // Binding = 0, set = 0 (VkDescriptorSetLayoutBinding)
-[[vk::binding(0, 0)]]
-cbuffer Constants
+//[[vk::binding(0, 0)]]
+struct Constants
 {
+    float3 c;
     float4x4 camera;
     float4x4 projection;
 };
+
+static const ConstantBuffer<Constants> constants = ResourceDescriptorHeap[0];
 
 struct Input
 {
@@ -30,6 +33,6 @@ Output main(uint vid : SV_VertexID, Input input)
 {
     Output output;
     output.position = mul(test_projection, float4(input.position, 1.0));
-    output.color = float4(input.color, 1.0);
+    output.color = float4(constants.c.rg, 1.0, 1.0); //float4(input.color, 1.0);
     return output;
 }

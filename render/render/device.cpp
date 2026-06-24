@@ -66,12 +66,17 @@ namespace Rc::Render
         {
             throw std::runtime_error("Required " VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME);
         }
+        if (!extensions.contains(VK_KHR_SHADER_UNTYPED_POINTERS_EXTENSION_NAME))
+        {
+            throw std::runtime_error("Required " VK_KHR_SHADER_UNTYPED_POINTERS_EXTENSION_NAME);
+        }
 
         std::vector<char const*> enable_extensions
         {
             VK_KHR_SWAPCHAIN_EXTENSION_NAME,
             VK_EXT_DESCRIPTOR_HEAP_EXTENSION_NAME,
-            VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME
+            VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME,
+            VK_KHR_SHADER_UNTYPED_POINTERS_EXTENSION_NAME
         };
 
         // Optional extensions...
@@ -235,8 +240,14 @@ namespace Rc::Render
             .pNext = &descriptor_heap_features_ext,
             .timelineSemaphore = VK_TRUE
         };
+        VkPhysicalDeviceShaderUntypedPointersFeaturesKHR shader_untyped_pointers_features
+        {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_UNTYPED_POINTERS_FEATURES_KHR,
+            .pNext = &timeline_semaphore_features,
+            .shaderUntypedPointers = VK_TRUE
+        };
 
-        void* features = &timeline_semaphore_features;
+        void* features = &shader_untyped_pointers_features;
 
         VkDeviceCreateInfo info
         {
@@ -373,9 +384,9 @@ namespace Rc::Render
         return PipelineFactory(*m_device);
     }
 
-    ResourceDescriptorBuilder Device::CreateResourceDescriptorBuilder()
+    std::unique_ptr<ResourceDescriptorHeap> Device::CreateResourceDescriptorHeap()
     {
-        return {*m_instance, *m_device, m_vk_physical_device};
+        return std::make_unique<ResourceDescriptorHeap>(*m_instance, *m_device, m_vk_physical_device);
     }
 
     std::unique_ptr<Buffer> Device::AllocateVertexBuffer(uint64_t size) const

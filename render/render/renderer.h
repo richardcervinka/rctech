@@ -80,7 +80,7 @@ namespace Rc::Render
         // Get height of the associated swap chain.
         int Height() const
         {
-            return m_swap_chain->Width();
+            return m_swap_chain->Height();
         }
 
         // BeginFrame -> render commands -> EndFrame
@@ -147,11 +147,6 @@ namespace Rc::Render
         std::array<std::unique_ptr<Shader>, static_cast<int>(VertexShaderSlot::Count)> m_vertex_shaders;
         std::array<std::unique_ptr<Shader>, static_cast<int>(PixelShaderSlot::Count)> m_pixel_shaders;
 
-        // std::unique_ptr<Fence> m_transfer_fence;
-        // std::unique_ptr<CommandBuffer> m_transfer_commands;
-        // std::unique_ptr<BufferLinear> m_transfer_buffer;
-        // std::unique_ptr<Buffer> m_descriptor_heap;
-
         struct Frame
         {
             std::unique_ptr<Fence> fence;
@@ -162,7 +157,9 @@ namespace Rc::Render
 
             std::unique_ptr<Buffer> uniform_buffer;
 
-            std::unique_ptr<Buffer> resource_descriptor_heap;
+            std::unique_ptr<Buffer> resource_descriptor_heap_buffer;
+
+            std::unique_ptr<ResourceDescriptorHeap> resource_descriptor_heap;
         };
 
         // Frames-In-Flight

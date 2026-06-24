@@ -2,19 +2,12 @@
 
 project(rctech)
 
-find_program(
-    TOOL_DXC dxc
-    PATHS "${CMAKE_CURRENT_SOURCE_DIR}/bin/dxc"
-    NO_DEFAULT_PATH
-    REQUIRED
-)
-
 add_definitions(-DNOMINMAX)
 
 add_subdirectory("res")
 add_subdirectory("ext")
 add_subdirectory("tools")
-add_subdirectory("hlsl")
+add_subdirectory("shaders")
 add_subdirectory("base")
 add_subdirectory("core")
 add_subdirectory("windows")

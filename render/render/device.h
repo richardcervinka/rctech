@@ -65,7 +65,7 @@ namespace Rc::Render
 
         PipelineFactory CreatePipelineFactory();
 
-        ResourceDescriptorBuilder CreateResourceDescriptorBuilder();
+        std::unique_ptr<ResourceDescriptorHeap> CreateResourceDescriptorHeap();
 
         std::unique_ptr<Buffer> AllocateVertexBuffer(uint64_t size) const;
         std::unique_ptr<Buffer> AllocateIndexBuffer(uint64_t size) const;

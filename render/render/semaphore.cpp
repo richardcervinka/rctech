@@ -69,4 +69,9 @@ namespace Rc::Render
         m_vk_device->WaitSemaphores(wait_info, timeout);
     }
 
+    uint64_t TimelineSemaphore::QueryCounter() const
+    {
+        return m_vk_device->GetSemaphoreCounterValue(m_vk_semaphore);
+    }
+
 } // Rc::Render

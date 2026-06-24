@@ -7,7 +7,7 @@ namespace Rc::Res::Vs
     {
         static constexpr uint8_t data[]
         {
-            #embed "${CMAKE_BINARY_DIR}/hlsl/vs_dummy.spv"
+            #embed "${CMAKE_BINARY_DIR}/shaders/vs_dummy.spv"
         };
 
         static_assert(sizeof(data) % sizeof(uint32_t) == 0);
@@ -18,7 +18,7 @@ namespace Rc::Res::Vs
     {
         static constexpr uint8_t data[]
         {
-            #embed "${CMAKE_BINARY_DIR}/hlsl/vs_overlay.spv"
+            #embed "${CMAKE_BINARY_DIR}/shaders/vs_overlay.spv"
         };
         
         static_assert(sizeof(data) % sizeof(uint32_t) == 0);
@@ -29,7 +29,7 @@ namespace Rc::Res::Vs
     {
         static constexpr uint8_t data[]
         {
-            #embed "${CMAKE_BINARY_DIR}/hlsl/vs_test.spv"
+            #embed "${CMAKE_BINARY_DIR}/shaders/vs_test.spv"
         };
 
         static_assert(sizeof(data) % sizeof(uint32_t) == 0);
@@ -44,7 +44,7 @@ namespace Rc::Res::Ps
     {
         static constexpr uint8_t data[]
         {
-            #embed "${CMAKE_BINARY_DIR}/hlsl/ps_dummy.spv"
+            #embed "${CMAKE_BINARY_DIR}/shaders/ps_dummy.spv"
         };
 
         static_assert(sizeof(data) % sizeof(uint32_t) == 0);

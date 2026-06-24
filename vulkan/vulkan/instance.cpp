@@ -13,6 +13,7 @@ namespace Rc
 
         Load("vkDestroyInstance", m_vkDestroyInstance);
         Load("vkGetPhysicalDeviceProperties", m_vkGetPhysicalDeviceProperties);
+        Load("vkGetPhysicalDeviceProperties2", m_vkGetPhysicalDeviceProperties2);
         Load("vkGetPhysicalDeviceMemoryProperties", m_vkGetPhysicalDeviceMemoryProperties);
         Load("vkEnumeratePhysicalDevices", m_vkEnumeratePhysicalDevices);
         Load("vkCreateWin32SurfaceKHR", m_vkCreateWin32SurfaceKHR);
@@ -73,6 +74,31 @@ namespace Rc
         VkPhysicalDeviceProperties result {};
         m_vkGetPhysicalDeviceProperties(physical_device, &result);
         return result;
+    }
+
+    // vkGetPhysicalDeviceProperties2
+    void VulkanInstance::GetPhysicalDeviceProperties2(VkPhysicalDevice physical_device, VkPhysicalDeviceProperties2& result) const
+    {
+        m_vkGetPhysicalDeviceProperties2(physical_device, &result);
+    }
+
+    VkPhysicalDeviceDescriptorHeapPropertiesEXT VulkanInstance::GetPhysicalDeviceDescriptorHeapProperties(VkPhysicalDevice physical_device) const
+    {
+        VkPhysicalDeviceDescriptorHeapPropertiesEXT heap_properties
+        {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_HEAP_PROPERTIES_EXT,
+            .pNext = nullptr
+        };
+
+        VkPhysicalDeviceProperties2 device_properties
+        {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2,
+            .pNext = &heap_properties
+        };
+
+        GetPhysicalDeviceProperties2(physical_device, device_properties);
+
+        return heap_properties;
     }
 
     VkPhysicalDeviceMemoryProperties VulkanInstance::GetPhysicalDeviceMemoryProperties(VkPhysicalDevice physical_device) const

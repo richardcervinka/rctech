@@ -20,7 +20,10 @@ namespace Rc::Render
         Semaphore(Semaphore&& other) = delete;
         Semaphore& operator=(Semaphore&& other) = delete;
 
-        VkSemaphore Handle() const { return m_vk_semaphore; }
+        VkSemaphore Handle() const
+        {
+            return m_vk_semaphore;
+        }
 
     private:
         VulkanDevice const* m_vk_device {nullptr};
@@ -56,7 +59,13 @@ namespace Rc::Render
             return m_value;
         }
 
-        VkSemaphore Handle() const { return m_vk_semaphore; }
+        // Query the current value.
+        uint64_t QueryCounter() const;
+
+        VkSemaphore Handle() const
+        {
+            return m_vk_semaphore;
+        }
 
     private:
         VulkanDevice const* m_vk_device {nullptr};

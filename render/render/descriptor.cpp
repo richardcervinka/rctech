@@ -3,14 +3,20 @@
 
 namespace Rc::Render
 {
-    ResourceDescriptorBuilder::ResourceDescriptorBuilder(
+    ResourceDescriptorHeap::ResourceDescriptorHeap(
         VulkanInstance const& instance,
         VulkanDevice const& device,
         VkPhysicalDevice vk_physical_device
     ) :
         m_vk_device{&device}
     {
-        m_stride = instance.GetPhysicalDeviceDescriptorSizeEXT(vk_physical_device, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+        auto const heap_properties = instance.GetPhysicalDeviceDescriptorHeapProperties(vk_physical_device);
+
+        m_stride = heap_properties.bufferDescriptorSize;
+        m_offset = heap_properties.minResourceHeapReservedRange;
+
+        // heap_properties.minResourceHeapReservedRange
+        m_buffer.resize(8 * m_stride); // ------------------------ 8 == number of slots
     }
 
     // void ResourceDescriptorBuilder::Attach(std::shared_ptr<Buffer> host_buffer)
@@ -18,7 +24,7 @@ namespace Rc::Render
     //     m_buffer = std::move(host_buffer);
     // }
 
-    void ResourceDescriptorBuilder::CreateUniformBuffer(uint32_t slot, Buffer const& buffer, Buffer& host_buffer, BufferRegion host_region)
+    void ResourceDescriptorHeap::CreateUniformBuffer(uint32_t slot, Buffer const& buffer, BufferRegion region)
     {
         VkResourceDescriptorInfoEXT info
         {
@@ -26,19 +32,19 @@ namespace Rc::Render
             .pNext = nullptr,
             .type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
         };
+
         VkDeviceAddressRangeEXT const address_range
         {
             .address = buffer.Address(),
             .size = buffer.Size()
         };
-        info.data.pAddressRange = &address_range;
 
-        auto raw = host_buffer.Map(host_region.Offset() + (m_stride * slot), m_stride);
+        info.data.pAddressRange = &address_range;
 
         VkHostAddressRangeEXT const range
         {
-            .address = raw.data(),
-            .size = static_cast<std::size_t>(m_stride)
+            .address = m_buffer.data() + (m_stride * slot),
+            .size = m_stride
         };
 
         m_vk_device->WriteResourceDescriptor(info, range);

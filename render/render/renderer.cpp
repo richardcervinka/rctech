@@ -7,6 +7,8 @@
 #include "platform/log.h"
 #include "core/vertex.h"
 #include "base/math.h"
+#include "core/transformations.h"
+#include "projection.h"
 
 namespace Rc::Render
 {
@@ -118,16 +120,47 @@ namespace Rc::Render
         m_transfer_cmmands = m_transfer_queue->CreateCommandBuffer();
         m_transfer_semaphore = m_device->CreateTimelineSemaphore();
 
-        // Frames-in-flight
+        // Prepare transfer buffer to transfer per-frame descriptor heaps.
+        m_transfer_buffer->Reset();
+        m_transfer_cmmands->Reset();
+        m_transfer_cmmands->Begin();
+
+        // Create frames-in-flight
         m_frames.resize(m_swap_chain->Count());
         for (auto& frame : m_frames)
         {
             frame.fence = m_device->CreateFence();
             frame.commands = m_render_queue->CreateCommandBuffer();
             frame.staging_buffer = std::make_unique<BufferLinear>(m_device->AllocateStagingBuffer(2048 * 2048 * 4 * 8));
-            frame.uniform_buffer = m_device->AllocateUniformBuffer(256);
-            frame.resource_descriptor_heap = m_device->AllocateDescriptorHeapBuffer(1024);
+            frame.uniform_buffer = m_device->AllocateUniformBuffer(1024);
+
+            //----------------- REVIEW
+            frame.resource_descriptor_heap = m_device->CreateResourceDescriptorHeap();
+            frame.resource_descriptor_heap->CreateUniformBuffer(0, *frame.uniform_buffer, frame.uniform_buffer->GetRegion());
+            frame.resource_descriptor_heap_buffer = m_device->AllocateDescriptorHeapBuffer(frame.resource_descriptor_heap->SizeTotal());
+            frame.resource_descriptor_heap->Attach(*frame.resource_descriptor_heap_buffer);
+
+            // Transfer descriotor heap
+            {
+                auto data = frame.resource_descriptor_heap->Data();
+                auto src_region = m_transfer_buffer->Allocate(data.size());
+                auto src_data = m_transfer_buffer->Map<std::byte>(src_region);
+                std::copy(data.begin(), data.end(), src_data.data());
+
+                m_transfer_cmmands->TransferBuffer(
+                    m_transfer_buffer->GetBuffer(),
+                    *frame.resource_descriptor_heap_buffer,
+                    src_region.Offset(),
+                    0,
+                    src_region.Size()
+                );
+            }
         }
+
+        // Transfer per-frame descriptor heaps.
+        m_transfer_cmmands->End();
+        m_transfer_queue->Submit(*m_transfer_cmmands, *m_transfer_semaphore);
+        m_transfer_semaphore->Wait();
 
         // Create swap chain image views
         for (int i = 0; i < m_swap_chain->Count(); i++)
@@ -161,27 +194,19 @@ namespace Rc::Render
         pipeline_factory.SetVertexInput(sizeof(Gfx::VertexBasic), Gfx::VertexBasic::attributes);
         m_test_vertex_pipeline = pipeline_factory.Create();
 
-        // Transfer descriptor heaps ...
-
-        auto resource_descriptor_builder = m_device->CreateResourceDescriptorBuilder();
-
         // Test - transfer data do the vertex buffer
         {
             m_transfer_cmmands->Reset();
             m_transfer_cmmands->Begin();
 
+            m_transfer_buffer->Reset();
             auto vb_region = m_transfer_buffer->Allocate(sizeof(Gfx::VertexBasic) * 4);
             auto vb_data = m_transfer_buffer->Map<Gfx::VertexBasic>(vb_region);
 
-            static int t = 0;
-            t = (t + 1) % 1000;
-            auto s = static_cast<float>(std::sin( 2.0 * Math::pi * (t / 999.0)));
-            auto c = static_cast<float>(std::cos( 2.0 * Math::pi * (t / 999.0)));
-
-            vb_data[0].position = {-0.7, -0.7, -2 + s};
-            vb_data[1].position = {0.7, 0.7, -2 + c};
-            vb_data[2].position = {-0.7, 0.7, -2 + s};
-            vb_data[3].position = {0.7, -0.7, -2 + c};
+            vb_data[0].position = {-0.7, -0.7, 0};
+            vb_data[1].position = {0.7, 0.7, 0};
+            vb_data[2].position = {-0.7, 0.7, 0};
+            vb_data[3].position = {0.7, -0.7, 0};
 
             vb_data[0].color = {1, 0, 0};
             vb_data[1].color = {0, 1, 0};
@@ -201,7 +226,6 @@ namespace Rc::Render
             auto ub_region = m_transfer_buffer->Allocate(4 * 16);
             auto ub_data = m_transfer_buffer->Map<float>(ub_region);
             
-            //m_transfer_cmmands->TransferBuffer(m_transfer_buffer->GetBuffer(), *frame.uniform_buffer, ub_region.Offset(), 0, ub_region.Size());
             m_transfer_cmmands->TransferBuffer(m_transfer_buffer->GetBuffer(), m_vertex_buffer->GetBuffer(), vb_region.Offset(), 0, vb_region.Size());
             m_transfer_cmmands->TransferBuffer(m_transfer_buffer->GetBuffer(), m_index_buffer->GetBuffer(), ib_region.Offset(), 0, ib_region.Size());
         
@@ -326,15 +350,47 @@ namespace Rc::Render
 
     void Renderer::Test(Frame& frame)
     {
+        static Transformations transformations;
+
         auto back_buffer_index = m_swap_chain->AcquireNextImage(); //----------------------- presunout
 
-        auto vb_region = m_vertex_buffer->GetBuffer().GetRegion();
-        auto ib_region = m_index_buffer->GetBuffer().GetRegion();
-        frame.commands->UseVertexBuffer(m_vertex_buffer->GetBuffer(), 0, vb_region.Size());
-        frame.commands->UseIndexBuffer(m_index_buffer->GetBuffer(), 0, ib_region.Size());
+        // Write uniform buffer
+        {
+            transformations.roll += 0.001;
+            auto tm = transformations.GetTransformations();
 
+            auto ub_region = frame.staging_buffer->Allocate(3 * (sizeof(float) * 16));
+            auto ub_data = frame.staging_buffer->Map<float>(ub_region);
+  
+            auto projection_matrix = CreatePerspectiveProjectionMatrix(
+                Width(),
+                Height(),
+                Math::DegToRad(90.0f),
+                0.01,
+                1000
+            );
+
+            Transformations camera_transformations;
+            camera_transformations.z = -1;
+            auto cm = camera_transformations.GetTransformations();
+
+
+
+            projection_matrix.Store(ub_data);
+            tm.Store(ub_data.subspan(16));
+            cm.Store(ub_data.subspan(2 * 16));
+
+            frame.commands->TransferBuffer(frame.staging_buffer->GetBuffer(), *frame.uniform_buffer, ub_region.Offset(), 0, ub_region.Size());
+            frame.commands->UseUniformBuffer(*frame.uniform_buffer, frame.uniform_buffer->GetRegion());
+        }
+
+
+        frame.commands->UseVertexBuffer(m_vertex_buffer->GetBuffer(), m_vertex_buffer->GetBuffer().GetRegion());
+        frame.commands->UseIndexBuffer(m_index_buffer->GetBuffer(), m_index_buffer->GetBuffer().GetRegion());
+        frame.commands->UseResourceDescriptorHeapBuffer(*frame.resource_descriptor_heap_buffer, frame.resource_descriptor_heap_buffer->GetRegion());
         frame.commands->BindVertexBuffer(m_vertex_buffer->GetBuffer(), 0);
         frame.commands->BindIndexBuffer(m_index_buffer->GetBuffer(), IndexType::Uint16, 0);
+        frame.commands->BindResourceDescriptorHeap(*frame.resource_descriptor_heap);
         frame.commands->BeginRenderingFramebuffer(m_swap_chain->GetImage());
         frame.commands->SetRenderTargetsCount(1);
         frame.commands->AttachRenderTarget(0, *m_back_buffers.at(back_buffer_index));

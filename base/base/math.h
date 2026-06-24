@@ -43,5 +43,15 @@ namespace Rc::Math
     {
         return (value >= min) && (value <= max);
     }
+
+    constexpr double DegToRad(double degrees)
+    {
+        return degrees * (Math::pi / 180.0);
+    }
+
+    constexpr float DegToRad(float degrees)
+    {
+        return degrees * (Math::fpi / 180.0f);
+    }
     
 } // Rc::Math

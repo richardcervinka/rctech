@@ -36,7 +36,10 @@ namespace Rc::Render
     private:
         friend class Buffer;
 
-        BufferRegion(uint64_t offset, uint64_t size) : m_offset{offset}, m_size{size} {}
+        BufferRegion(uint64_t offset, uint64_t size) :
+            m_offset{offset},
+            m_size{size}
+        {}
 
         uint64_t m_offset {0};
         uint64_t m_size {0};
@@ -109,7 +112,7 @@ namespace Rc::Render
 
         std::span<std::byte> Buffer::Map()
         {
-            return Map({0, Size()});
+            return Map(0, Size());
         }
 
         std::span<std::byte> Buffer::Map(BufferRegion const& region)
@@ -130,7 +133,7 @@ namespace Rc::Render
             VulkanDevice const& vk_device,
             uint64_t size,
             VmaAllocator vma_allocator,
-            VkBufferUsageFlags usage,
+            VkBufferUsageFlags2 usage_flags,
             VmaAllocationCreateFlags vma_flags
         );
 
@@ -139,7 +142,7 @@ namespace Rc::Render
         VmaAllocator m_vma_allocator {VK_NULL_HANDLE};
         VmaAllocation m_vma_allocation {nullptr};
         VmaAllocationInfo m_vma_allocation_info {};
-        VkAccessFlags m_access_flags {VK_ACCESS_NONE};
+        VkAccessFlags2 m_access_flags {VK_ACCESS_NONE};
         VkPipelineStageFlags m_stage_flags {VK_PIPELINE_STAGE_NONE};
     };
 

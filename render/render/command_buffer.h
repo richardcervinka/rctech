@@ -10,6 +10,7 @@
 #include "image.h"
 #include "texture.h"
 #include "pipeline_state.h"
+#include "descriptor.h"
 
 namespace Rc::Render
 {
@@ -49,10 +50,14 @@ namespace Rc::Render
         void BeginPresentingFramebuffer(Texture2D const& image);
 
         // Set vertex buffer read barrier.
-        void UseVertexBuffer(Buffer& vb, uint64_t offset, uint64_t size);
+        void UseVertexBuffer(Buffer& buffer, BufferRegion const& region);
 
         // Set index buffer read barrier.
-        void UseIndexBuffer(Buffer& vb, uint64_t offset, uint64_t size);
+        void UseIndexBuffer(Buffer& buffer, BufferRegion const& region);
+
+        void UseUniformBuffer(Buffer& buffer, BufferRegion const& region);
+
+        void UseResourceDescriptorHeapBuffer(Buffer& buffer, BufferRegion const& region);
 
         void TransferBuffer(Buffer& src, Buffer& dst, uint64_t src_offset, uint64_t dst_offset, uint64_t size);
 
@@ -77,6 +82,8 @@ namespace Rc::Render
         void Draw(uint32_t vertex_count, uint32_t instance_count, uint32_t first_vertex, uint32_t first_instance);
 
         void DrawIndexed(uint32_t index_count, uint32_t instance_count, uint32_t first_index, int32_t vertex_offset, uint32_t first_instance);
+
+        void BindResourceDescriptorHeap(ResourceDescriptorHeap const& heap);
 
         void Test(
             Rectangle<int> const& render_area
@@ -125,7 +132,7 @@ namespace Rc::Render
 
         void End();
 
-        void TransferBuffer(Buffer& src, Buffer& dst, uint64_t src_offset, uint64_t dst_offset, uint64_t size);
+        void TransferBuffer(Buffer const& src, Buffer& dst, uint64_t src_offset, uint64_t dst_offset, uint64_t size);
         
         VkCommandBuffer Handle() const
         {

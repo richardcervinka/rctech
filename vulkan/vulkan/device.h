@@ -136,6 +136,9 @@ namespace Rc
             std::span<VkImageMemoryBarrier const> image_memory_barriers
         ) const;
 
+        // vkCmdPipelineBarrier2
+        void CmdPipelineBarrier2(VkCommandBuffer command_buffer, VkDependencyInfo const& dependency_info) const;
+
         // vkCmdBeginRendering
         void CmdBeginRendering(VkCommandBuffer command_buffer, VkRenderingInfo const& rendering_info) const;
 
@@ -196,6 +199,15 @@ namespace Rc
         // vkWaitSemaphores
         VkResult WaitSemaphores(VkSemaphoreWaitInfo const& wait_info, std::chrono::nanoseconds timeout) const;
 
+        // vkGetSemaphoreCounterValue
+        uint64_t GetSemaphoreCounterValue(VkSemaphore semaphore) const;
+
+        // vkCmdBindResourceHeapEXT
+        void CmdBindResourceHeapEXT(VkCommandBuffer command_buffer, VkBindHeapInfoEXT const& bind_info) const;
+
+        // vkCmdBindSamplerHeapEXT
+        void CmdBindSamplerHeapEXT(VkCommandBuffer command_buffer, VkBindHeapInfoEXT const& bind_info) const;
+
     private:
         friend class VulkanContext;
 
@@ -244,6 +256,7 @@ namespace Rc
         PFN_vkBeginCommandBuffer m_vkBeginCommandBuffer {nullptr};
         PFN_vkEndCommandBuffer m_vkEndCommandBuffer {nullptr};
         PFN_vkCmdPipelineBarrier m_vkCmdPipelineBarrier {nullptr};
+        PFN_vkCmdPipelineBarrier2 m_vkCmdPipelineBarrier2 {nullptr};
         PFN_vkCmdBeginRendering m_vkCmdBeginRendering {nullptr};
         PFN_vkCmdEndRendering m_vkCmdEndRendering {nullptr};
         PFN_vkCmdDraw m_vkCmdDraw {nullptr};
@@ -261,6 +274,9 @@ namespace Rc
         PFN_vkWriteResourceDescriptorsEXT m_vkWriteResourceDescriptorsEXT {nullptr};
         PFN_vkGetBufferDeviceAddress m_vkGetBufferDeviceAddress {nullptr};
         PFN_vkWaitSemaphores m_vkWaitSemaphores {nullptr};
+        PFN_vkGetSemaphoreCounterValue m_vkGetSemaphoreCounterValue {nullptr};
+        PFN_vkCmdBindResourceHeapEXT m_vkCmdBindResourceHeapEXT {nullptr};
+        PFN_vkCmdBindSamplerHeapEXT m_vkCmdBindSamplerHeapEXT {nullptr};
     };
 
 } // Rc

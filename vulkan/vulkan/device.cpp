@@ -38,6 +38,7 @@ namespace Rc
         Load("vkBeginCommandBuffer", m_vkBeginCommandBuffer);
         Load("vkEndCommandBuffer", m_vkEndCommandBuffer);
         Load("vkCmdPipelineBarrier", m_vkCmdPipelineBarrier);
+        Load("vkCmdPipelineBarrier2", m_vkCmdPipelineBarrier2);
         Load("vkCmdBeginRendering", m_vkCmdBeginRendering);
         Load("vkCmdEndRendering", m_vkCmdEndRendering);
         Load("vkCmdDraw", m_vkCmdDraw);
@@ -55,6 +56,9 @@ namespace Rc
         Load("vkWriteResourceDescriptorsEXT", m_vkWriteResourceDescriptorsEXT);
         Load("vkGetBufferDeviceAddress", m_vkGetBufferDeviceAddress);
         Load("vkWaitSemaphores", m_vkWaitSemaphores);
+        Load("vkGetSemaphoreCounterValue", m_vkGetSemaphoreCounterValue);
+        Load("vkCmdBindResourceHeapEXT", m_vkCmdBindResourceHeapEXT);
+        Load("vkCmdBindSamplerHeapEXT", m_vkCmdBindSamplerHeapEXT);
     }
 
     VulkanDevice::~VulkanDevice()
@@ -354,6 +358,11 @@ namespace Rc
         );
     }
 
+    void VulkanDevice::CmdPipelineBarrier2(VkCommandBuffer command_buffer, VkDependencyInfo const& dependency_info) const
+    {
+        m_vkCmdPipelineBarrier2(command_buffer, &dependency_info);
+    }
+
     void VulkanDevice::CmdBeginRendering(VkCommandBuffer command_buffer, VkRenderingInfo const& rendering_info) const
     {
         m_vkCmdBeginRendering(command_buffer, &rendering_info);
@@ -472,6 +481,26 @@ namespace Rc
     VkResult VulkanDevice::WaitSemaphores(VkSemaphoreWaitInfo const& wait_info, std::chrono::nanoseconds timeout) const
     {
         return m_vkWaitSemaphores(m_vk_device, &wait_info, static_cast<uint64_t>(timeout.count()));
+    }
+
+    uint64_t VulkanDevice::GetSemaphoreCounterValue(VkSemaphore semaphore) const
+    {
+        uint64_t value {};
+        if (auto vk_result = m_vkGetSemaphoreCounterValue(m_vk_device, semaphore, &value); vk_result != VK_SUCCESS)
+        {
+            throw VulkanException(vk_result);
+        }
+        return value;
+    }
+
+    void VulkanDevice::CmdBindResourceHeapEXT(VkCommandBuffer command_buffer, VkBindHeapInfoEXT const& bind_info) const
+    {
+        m_vkCmdBindResourceHeapEXT(command_buffer, &bind_info);
+    }
+
+    void VulkanDevice::CmdBindSamplerHeapEXT(VkCommandBuffer command_buffer, VkBindHeapInfoEXT const& bind_info) const
+    {
+        m_vkCmdBindSamplerHeapEXT(command_buffer, &bind_info);
     }
 
 } // Rc

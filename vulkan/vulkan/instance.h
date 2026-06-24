@@ -35,6 +35,12 @@ namespace Rc
         // vkGetPhysicalDeviceProperties
         VkPhysicalDeviceProperties GetPhysicalDeviceProperties(VkPhysicalDevice physical_device) const;
 
+        // vkGetPhysicalDeviceProperties2
+        void GetPhysicalDeviceProperties2(VkPhysicalDevice physical_device, VkPhysicalDeviceProperties2& result) const;
+
+        // vkGetPhysicalDeviceProperties2
+        VkPhysicalDeviceDescriptorHeapPropertiesEXT GetPhysicalDeviceDescriptorHeapProperties(VkPhysicalDevice physical_device) const;
+
         // vkGetPhysicalDeviceMemoryProperties
         VkPhysicalDeviceMemoryProperties GetPhysicalDeviceMemoryProperties(VkPhysicalDevice physical_device) const;
 
@@ -87,6 +93,7 @@ namespace Rc
 
         PFN_vkDestroyInstance m_vkDestroyInstance {nullptr};
         PFN_vkGetPhysicalDeviceProperties m_vkGetPhysicalDeviceProperties {nullptr};
+        PFN_vkGetPhysicalDeviceProperties2 m_vkGetPhysicalDeviceProperties2 {nullptr};
         PFN_vkGetPhysicalDeviceMemoryProperties m_vkGetPhysicalDeviceMemoryProperties {nullptr};
         PFN_vkEnumeratePhysicalDevices m_vkEnumeratePhysicalDevices {nullptr};
         PFN_vkCreateWin32SurfaceKHR m_vkCreateWin32SurfaceKHR {nullptr};
