@@ -3,9 +3,8 @@
  
 layout(descriptor_heap) uniform Constants
 {
-    mat4 projection;
     mat4 transformation;
-    mat4 camera;
+    mat4 camera_projection;
 } ubo[];
 
 // Input
@@ -20,8 +19,7 @@ void main()
     vec4 position = vec4(in_position, 1.0);
 
     position = ubo[0].transformation * position;
-    position = ubo[0].camera * position;
-    position = ubo[0].projection * position;
+    position = ubo[0].camera_projection * position;
 
     gl_Position = position;
     out_color = in_color;

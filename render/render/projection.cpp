@@ -22,7 +22,7 @@ namespace Rc::Render
     // - The -1 in the last row (third column) performs the perspective divide.
     // - Reverse‑Z significantly reduces Z‑fighting compared to the classic projection matrix.
     //
-    Matrix4<float> CreatePerspectiveProjectionMatrix(
+    Matrix4<double> CreatePerspectiveProjectionMatrix(
         int width,
         int height,
         double vertical_fov,
@@ -34,18 +34,18 @@ namespace Rc::Render
 
         return
         {
-            static_cast<float>(1.0 / (tanfov * aspect)),
+            1.0 / (tanfov * aspect),
             0,
             0,
             0,
             0,
-            static_cast<float>(1.0 / tanfov),
+            1.0 / tanfov,
             0,
             0,
             0,
             0,
-            static_cast<float>(z_near / (z_far - z_near)),
-            static_cast<float>((z_far * z_near) / (z_far - z_near)),
+            z_near / (z_far - z_near),
+            (z_far * z_near) / (z_far - z_near),
             0,
             0,
             -1,

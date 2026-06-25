@@ -5,7 +5,7 @@
 namespace Rc::Render {
 
     // Create reverse‑Z perspective projection matrix
-    Matrix4<float> CreatePerspectiveProjectionMatrix(
+    Matrix4<double> CreatePerspectiveProjectionMatrix(
         int width,
         int height,
         double vertical_fov,

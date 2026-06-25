@@ -53,5 +53,15 @@ namespace Rc::Math
     {
         return degrees * (Math::fpi / 180.0f);
     }
+
+    constexpr double RadToDeg(double radians)
+    {
+        return radians * (180.0 / Math::pi);
+    }
+
+    constexpr float RadToDeg(float radians)
+    {
+        return radians * (180.0f / Math::fpi);
+    }
     
 } // Rc::Math

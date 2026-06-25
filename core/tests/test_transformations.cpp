@@ -2,6 +2,7 @@
 #include "core/transformations.h"
 
 using namespace Rc;
+using namespace Rc::Gfx;
 
 TEST(Transformations_Translation, TranslatePoint)
 {
@@ -10,7 +11,7 @@ TEST(Transformations_Translation, TranslatePoint)
     t.y = 6;
     t.z = 7;
 
-    const auto p = Vector4<float>{1, 2, 3, 1};
+    const auto p = Vector4<double>{1, 2, 3, 1};
     const auto m = t.GetTransformations();
     const auto q = m.Transform(p);
 
@@ -25,7 +26,7 @@ TEST(Transformations_Scaling, ScalePoint)
     Transformations t;
     t.scale = 3;
 
-    const auto p = Vector4<float>{1, 2, 3, 1};
+    const auto p = Vector4<double>{1, 2, 3, 1};
     const auto m = t.GetTransformations();
     const auto q = m.Transform(p);
 
@@ -43,7 +44,7 @@ TEST(Transformations_ScalingAndTranslation, ScaleAndTranslatePoint)
     t.z = 7;
     t.scale = 3;
 
-    const auto p = Vector4<float>{1, 2, 3, 1};
+    const auto p = Vector4<double>{1, 2, 3, 1};
     const auto m = t.GetTransformations();
     const auto q = m.Transform(p);
 
@@ -58,7 +59,7 @@ TEST(Transformations_Rotation, Yaw_RotateBy720Degrees)
     Transformations t;
     t.yaw = Math::pi * 4.0;
 
-    const auto p = Vector4<float>{1, 2, 3, 1};
+    const auto p = Vector4<double>{1, 2, 3, 1};
     const auto m = t.GetTransformations();
     const auto q = m.Transform(p);
 
@@ -73,7 +74,7 @@ TEST(Transformations_Rotation, Yaw_RotateBy90Degrees)
     Transformations t;
     t.yaw = Math::pi / 2.0;
 
-    const auto p = Vector4<float>{1, 2, 3, 1};
+    const auto p = Vector4<double>{1, 2, 3, 1};
     const auto m = t.GetTransformations();
     const auto q = m.Transform(p);
 
@@ -88,7 +89,7 @@ TEST(Transformations_Rotation, Pitch_RotateBy90Degrees)
     Transformations t;
     t.pitch = Math::pi / 2.0;
 
-    const auto p = Vector4<float>{1, 2, 3, 1};
+    const auto p = Vector4<double>{1, 2, 3, 1};
     const auto m = t.GetTransformations();
     const auto q = m.Transform(p);
 
@@ -103,7 +104,7 @@ TEST(Transformations_Rotation, Roll_RotateBy90Degrees)
     Transformations t;
     t.roll = Math::pi / 2.0;
 
-    const auto p = Vector4<float>{1, 2, 3, 1};
+    const auto p = Vector4<double>{1, 2, 3, 1};
     const auto m = t.GetTransformations();
     const auto q = m.Transform(p);
 
@@ -119,7 +120,7 @@ TEST(Transformations_Rotation, YawAndPitch_RotateBy90Degrees)
     t.yaw = Math::pi / 2.0;
     t.pitch = Math::pi / 2.0;
 
-    const auto p = Vector4<float>{1, 2, 3, 1};
+    const auto p = Vector4<double>{1, 2, 3, 1};
     const auto m = t.GetTransformations();
     const auto q = m.Transform(p);
 
@@ -135,7 +136,7 @@ TEST(Transformations_Rotation, PitchAndRoll_RotateBy90Degrees)
     t.pitch = Math::pi / 2.0;
     t.roll = Math::pi / 2.0;
 
-    const auto p = Vector4<float>{1, 2, 3, 1};
+    const auto p = Vector4<double>{1, 2, 3, 1};
     const auto m = t.GetTransformations();
     const auto q = m.Transform(p);
 

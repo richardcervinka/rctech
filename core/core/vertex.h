@@ -29,16 +29,10 @@ namespace Rc::Gfx
         Float3 position;
         Float3 color;
 
-        // inline static const uint32_t stride
-        // {
-        //     sizeof(VertexBasic::position) +
-        //     sizeof(VertexBasic::color)
-        // };
-
         inline static const std::array<VertexDescription, 2> attributes
         {
-            VertexDescription{VertexAttribute::Position, 0},
-            VertexDescription{VertexAttribute::Color, 12}
+            VertexDescription{.attribute = VertexAttribute::Position, .offset = 0},
+            VertexDescription{.attribute = VertexAttribute::Color, .offset = 12}
         };
     };
 

@@ -8,6 +8,7 @@
 #include "core/vertex.h"
 #include "base/math.h"
 #include "core/transformations.h"
+#include "core/camera.h"
 #include "projection.h"
 
 namespace Rc::Render
@@ -405,33 +406,33 @@ namespace Rc::Render
 
     void Renderer::Test(Frame& frame)
     {
-        static Transformations transformations;
+        static Gfx::Transformations transformations;
+        static Gfx::Camera camera;
 
         auto back_buffer_index = m_swap_chain->AcquireNextImage(); //----------------------- presunout
 
         // Write uniform buffer
         {
-            transformations.yaw += 0.01;
+            transformations.yaw += 0.005;
             auto tm = transformations.GetTransformations();
 
-            auto ub_region = frame.staging_buffer->Allocate(3 * (sizeof(float) * 16));
+            auto ub_region = frame.staging_buffer->Allocate(2 * (sizeof(float) * 16));
             auto ub_data = frame.staging_buffer->Map<float>(ub_region);
   
-            auto projection_matrix = CreatePerspectiveProjectionMatrix(
+            auto pm = CreatePerspectiveProjectionMatrix(
                 Width(),
                 Height(),
-                Math::DegToRad(90.0f),
+                camera.Fov(),
                 0.01,
                 1000
             );
 
-            Transformations camera_transformations;
-            camera_transformations.z = -3;
-            auto cm = camera_transformations.GetTransformations();
+            camera.transformations.z = -3.5;
+            auto cm = camera.GetTransformationMatrix();
+            cm.AppendTransformations(pm);
 
-            projection_matrix.Store(ub_data);
-            tm.Store(ub_data.subspan(16));
-            cm.Store(ub_data.subspan(2 * 16));
+            tm.StoreAs<float>(ub_data);
+            cm.StoreAs<float>(ub_data.subspan(16));
 
             frame.commands->TransferBuffer(frame.staging_buffer->GetBuffer(), *frame.uniform_buffer, ub_region.Offset(), 0, ub_region.Size());
             frame.commands->UseUniformBuffer(*frame.uniform_buffer, frame.uniform_buffer->GetRegion());

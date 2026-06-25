@@ -2,7 +2,7 @@
 
 #include "base/math.h"
 
-namespace Rc
+namespace Rc::Gfx
 {
     class Transformations
     {
@@ -25,13 +25,13 @@ namespace Rc
 
         Quaternion GetRotations() const noexcept;
 
-        Matrix4<float> GetTransformations() const noexcept;
+        Matrix4<double> GetTransformations() const noexcept;
 
-        Matrix4<float> LerpTransformations(Transformations const& to, double ratio) const noexcept;
+        Matrix4<double> LerpTransformations(Transformations const& to, double ratio) const noexcept;
 
         // Lock()
         // Unlock()
         // bool Locked()
     };
 
-} // Rc
+} // Rc::Gfx

@@ -1,7 +1,7 @@
 #include "transformations.h"
 #include <cassert>
 
-namespace Rc
+namespace Rc::Gfx
 {
     Quaternion Transformations::GetRotations() const noexcept
     {
@@ -13,7 +13,7 @@ namespace Rc
         return q;
     }
 
-    Matrix4<float> Transformations::GetTransformations() const noexcept
+    Matrix4<double> Transformations::GetTransformations() const noexcept
     {
         assert(scale > 0);
 
@@ -21,14 +21,14 @@ namespace Rc
         // 2. rotate
         // 3. translate
 
-        auto m = Matrix4<float>::Translation(x, y, z);
-        m.AppendTransformations(GetRotations().ToMatrix<float>());
+        auto m = Matrix4<double>::Translation(x, y, z);
+        m.AppendTransformations(GetRotations().ToMatrix<double>());
         m.AppendScaling(scale, scale, scale);
 
         return m;
     }
 
-    Matrix4<float> Transformations::LerpTransformations(Transformations const& to, double ratio) const noexcept
+    Matrix4<double> Transformations::LerpTransformations(Transformations const& to, double ratio) const noexcept
     {
         assert(scale > 0);
         assert(to.scale > 0);
@@ -39,13 +39,13 @@ namespace Rc
 
         const auto rotations = Quaternion::Slerp(GetRotations(), to.GetRotations(), static_cast<float>(ratio));
 
-        auto m = Matrix4<float>::Translation(
+        auto m = Matrix4<double>::Translation(
             std::lerp(x, to.x, ratio),
             std::lerp(y, to.y, ratio),
             std::lerp(z, to.z, ratio)
         );
 
-        m.AppendTransformations(rotations.ToMatrix<float>());
+        m.AppendTransformations(rotations.ToMatrix<double>());
 
         const auto s = std::lerp(scale, to.scale, ratio);
         m.AppendScaling(s, s, s);
@@ -53,4 +53,4 @@ namespace Rc
         return m;
     }
 
-} // Rc
+} // Rc::Gfx
