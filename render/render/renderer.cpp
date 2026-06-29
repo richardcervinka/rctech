@@ -9,7 +9,6 @@
 #include "base/math.h"
 #include "core/transformations.h"
 #include "core/camera.h"
-#include "projection.h"
 
 namespace Rc::Render
 {
@@ -246,8 +245,6 @@ namespace Rc::Render
 
         // Prepare transfer buffer to transfer per-frame descriptor heaps.
         m_transfer_buffer->Reset();
-        m_transfer_ocmmands->Reset();
-        m_transfer_ocmmands->Begin();
 
         m_frames.resize(m_swap_chain->Count());
 
@@ -273,24 +270,38 @@ namespace Rc::Render
 
             // Transfer descriotor heap
             {
+                frame.commands->Reset();
+                frame.commands->Begin();
+
                 auto region = m_transfer_buffer->Allocate(frame.resource_descriptor_heap->Size());
                 auto memory = m_transfer_buffer->Map<std::byte>(region);
                 frame.resource_descriptor_heap->Write(memory);
 
-                m_transfer_ocmmands->TransferBuffer(
+                frame.commands->TransferBuffer(
                     m_transfer_buffer->GetBuffer(),
                     *frame.resource_descriptor_heap_buffer,
                     region.Offset(),
                     0,
                     region.Size()
                 );
+
+                frame.commands->UseResourceDescriptorHeapBuffer(
+                    *frame.resource_descriptor_heap_buffer,
+                    frame.resource_descriptor_heap_buffer->GetRegion()
+                );
+
+                // Submit transfer commands.
+                frame.commands->End();
+                frame.fence->Reset();
+                m_render_queue->Submit(*frame.commands, *frame.fence);
             }
         }
 
-        // Submit transfer commands.
-        m_transfer_ocmmands->End();
-        m_transfer_queue->Submit(*m_transfer_ocmmands, *m_transfer_semaphore);
-        m_transfer_semaphore->Wait();
+        // Wait for submitting frame commands.
+        for (auto& frame : m_frames)
+        {
+            frame.fence->Wait();
+        }
     }
 
     void Renderer::InitializeShaders()
@@ -376,83 +387,90 @@ namespace Rc::Render
 
     void Renderer::BeginFrame()
     {
-        auto& frame = m_frames[m_frame_number % m_frames.size()];
+        m_frame = &m_frames[m_frame_number % m_frames.size()];
 
-        frame.fence->Wait();
+        m_frame->fence->Wait();
+        m_frame->fence->Reset();
+        
+        // Reset state.
+        m_camera_projection = Matrix4<double>::Identity();
+        m_frame->staging_buffer->Reset();
+        
+        m_frame->commands->Reset();
+        m_frame->commands->Begin();
+        m_frame->commands->BindResourceDescriptorHeap(*m_frame->resource_descriptor_heap);
 
-        frame.commands->Reset();
-        frame.staging_buffer->Reset();
-        frame.commands->Begin();
-
-        Test(frame);
+        Test();
     }
 
     void Renderer::EndFrame()
     {
-        auto& frame = m_frames[m_frame_number % m_frames.size()];
-
-        frame.commands->BeginPresentingFramebuffer(m_swap_chain->GetImage());
-
-        frame.commands->End();
+        m_frame->commands->BeginPresentingFramebuffer(m_swap_chain->GetImage());
+        m_frame->commands->End();
         
         m_render_queue->WaitSemaphore(m_swap_chain->GetAcquireSemaphore());
         m_render_queue->SignalSemaphore(m_swap_chain->GetPresentSemaphore());
-        m_render_queue->Submit(*frame.commands, *frame.fence);
+        m_render_queue->Submit(*m_frame->commands, *m_frame->fence);
 
         m_swap_chain->Present(*m_render_queue);
 
         m_frame_number += 1;
     }
 
-    void Renderer::Test(Frame& frame)
+    void Renderer::SetCamera(Gfx::PerspectiveCamera const& camera)
+    {
+        m_camera_projection = camera.GetProjectionMatrix(Width(), Height());
+    }
+
+    void Renderer::BindBackBuffer(int slot)
+    {
+        auto const back_buffer_index = m_swap_chain->AcquireNextImage();
+
+        m_frame->commands->AttachRenderTarget(slot, *m_back_buffers.at(back_buffer_index));
+        m_frame->commands->ClearRenderTarget(0, Color(0, 0, 0, 1));
+        m_frame->commands->BeginRenderingFramebuffer(m_swap_chain->GetImage());
+    }
+
+    void Renderer::Test()
     {
         static Gfx::Transformations transformations;
-        static Gfx::Camera camera;
-
-        auto back_buffer_index = m_swap_chain->AcquireNextImage(); //----------------------- presunout
 
         // Write uniform buffer
         {
             transformations.yaw += 0.005;
             auto tm = transformations.GetTransformations();
-
-            auto ub_region = frame.staging_buffer->Allocate(2 * (sizeof(float) * 16));
-            auto ub_data = frame.staging_buffer->Map<float>(ub_region);
   
-            auto pm = CreatePerspectiveProjectionMatrix(
-                Width(),
-                Height(),
-                camera.Fov(),
-                0.01,
-                1000
-            );
+            Gfx::PerspectiveCamera camera;
+            camera.transformations.z = -3.0;
+            camera.transformations.y = 1.5;
+            camera.transformations.pitch = -0.5;
+            camera.fov = Math::DegToRad(75.0);
+            SetCamera(camera);
 
-            camera.transformations.z = -3.5;
-            auto cm = camera.GetTransformationMatrix();
-            cm.AppendTransformations(pm);
+            auto ub_region = m_frame->staging_buffer->Allocate(2 * (sizeof(float) * 16));
+            auto ub_data = m_frame->staging_buffer->Map<float>(ub_region);
 
             tm.StoreAs<float>(ub_data);
-            cm.StoreAs<float>(ub_data.subspan(16));
+            m_camera_projection.StoreAs<float>(ub_data.subspan(16));
 
-            frame.commands->TransferBuffer(frame.staging_buffer->GetBuffer(), *frame.uniform_buffer, ub_region.Offset(), 0, ub_region.Size());
-            frame.commands->UseUniformBuffer(*frame.uniform_buffer, frame.uniform_buffer->GetRegion());
+            m_frame->commands->TransferBuffer(m_frame->staging_buffer->GetBuffer(), *m_frame->uniform_buffer, ub_region.Offset(), 0, ub_region.Size());
+            m_frame->commands->UseUniformBuffer(*m_frame->uniform_buffer, m_frame->uniform_buffer->GetRegion());
         }
 
-        frame.commands->UseVertexBuffer(m_vertex_buffer->GetBuffer(), m_vertex_buffer->GetBuffer().GetRegion());
-        frame.commands->UseIndexBuffer(m_index_buffer->GetBuffer(), m_index_buffer->GetBuffer().GetRegion());
-        frame.commands->UseResourceDescriptorHeapBuffer(*frame.resource_descriptor_heap_buffer, frame.resource_descriptor_heap_buffer->GetRegion());
-        frame.commands->BindVertexBuffer(m_vertex_buffer->GetBuffer(), 0);
-        frame.commands->BindIndexBuffer(m_index_buffer->GetBuffer(), IndexType::Uint16, 0);
-        frame.commands->BindResourceDescriptorHeap(*frame.resource_descriptor_heap);
-        frame.commands->BeginRenderingFramebuffer(m_swap_chain->GetImage());
-        frame.commands->SetRenderTargetsCount(1);
-        frame.commands->AttachRenderTarget(0, *m_back_buffers.at(back_buffer_index));
-        frame.commands->ClearRenderTarget(0, Color(0, 0, 0, 1));
-        frame.commands->BeginRendering({0, 0, m_swap_chain->Width(), m_swap_chain->Height()});
-        frame.commands->BindPipeline(*m_test_vertex_pipeline);
-        frame.commands->Test({0, 0, m_swap_chain->Width(), m_swap_chain->Height()});
-        frame.commands->DrawIndexed(36, 1, 0, 0, 0);
-        frame.commands->EndRendering();
+        m_frame->commands->UseVertexBuffer(m_vertex_buffer->GetBuffer(), m_vertex_buffer->GetBuffer().GetRegion());
+        m_frame->commands->UseIndexBuffer(m_index_buffer->GetBuffer(), m_index_buffer->GetBuffer().GetRegion());
+        m_frame->commands->BindVertexBuffer(m_vertex_buffer->GetBuffer(), 0);
+        m_frame->commands->BindIndexBuffer(m_index_buffer->GetBuffer(), IndexType::Uint16, 0);
+        
+        m_frame->commands->SetRenderTargetsCount(1);
+
+        BindBackBuffer(0);
+
+        m_frame->commands->BeginRendering({0, 0, m_swap_chain->Width(), m_swap_chain->Height()});
+        m_frame->commands->BindPipeline(*m_test_vertex_pipeline);
+        m_frame->commands->Test({0, 0, m_swap_chain->Width(), m_swap_chain->Height()});
+        m_frame->commands->DrawIndexed(36, 1, 0, 0, 0);
+        m_frame->commands->EndRendering();
     }
 
 } // Rc::Render

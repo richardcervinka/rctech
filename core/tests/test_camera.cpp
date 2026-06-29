@@ -1,12 +1,17 @@
 #include "gtest/gtest.h"
-#include "render/projection.h"
-#include "base/math.h"
+#include "core/camera.h"
 
 using namespace Rc;
+using namespace Rc::Gfx;
 
-TEST(Projection_Perspective, Create)
+TEST(PerspectiveCamera, Projection_Perspective)
 {
-    auto const m = Render::CreatePerspectiveProjectionMatrix(800, 800, Math::pi / 2.0, 0.1, 10.0);
+    PerspectiveCamera camera;
+    camera.fov = Math::pi / 2.0;
+    camera.z_near = 0.1;
+    camera.z_far = 10.0;
+
+    auto const m = camera.GetProjectionMatrix(800, 800);
 
     EXPECT_NEAR(m.At(0, 0), 1.0, 0.00001);
     EXPECT_NEAR(m.At(0, 1), 0.0, 0.00001);

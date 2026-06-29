@@ -7,6 +7,7 @@
 #include "shader.h"
 #include "buffer_linear.h"
 #include "descriptor_heap.h"
+#include "core/camera.h"
 
 namespace Rc::Render
 {
@@ -101,6 +102,12 @@ namespace Rc::Render
 
         //void TransferBuffer(BufferHandle)
 
+        // Test interace
+
+        void SetCamera(Gfx::PerspectiveCamera const& camera);
+
+        void BindBackBuffer(int slot);
+
     private:
         void InitializeFramesInFlight();
 
@@ -167,6 +174,8 @@ namespace Rc::Render
         // Frames-In-Flight
         std::vector<Frame> m_frames;
 
+        Frame* m_frame {nullptr};
+
         uint64_t m_frame_number {0};
 
         std::vector<std::unique_ptr<TextureView2D>> m_back_buffers; //--------------------------- docasne ?
@@ -186,7 +195,11 @@ namespace Rc::Render
 
         std::unique_ptr<Device> CreateDevice();
 
-        void Test(Frame& frame);
+        // TEST rendering -----------------------
+
+        Matrix4<double> m_camera_projection {Matrix4<double>::Identity()}; // -------------- TODO: Reset each frame
+
+        void Test();
     };
 
 } // Rc::Render

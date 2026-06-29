@@ -3,6 +3,8 @@ add_library(core STATIC
     "vertex.cpp"
     "transformations.h"
     "transformations.cpp"
+    "camera.h"
+    "camera.cpp"
 )
 
 target_compile_features(core

@@ -5,35 +5,24 @@
 
 namespace Rc::Gfx
 {
-    class Camera
+    class PerspectiveCamera
     {
     public:
-        //Camera() = default;
+        static constexpr double min_fov = 0;
+        static constexpr double max_fov = Math::pi;
+        
+        Matrix4<double> GetProjectionMatrix(int viewport_width, int viewport_height) const;
 
-        Matrix4<double> GetTransformationMatrix() const
-        {
-            auto t = transformations;
-            t.scale = 1.0;
-            return t.GetTransformations();
-        }
-
-        void SetFov(double rad)
-        {
-            assert((rad > 0) && (rad < Math::pi));
-
-            m_fov = rad;
-        }
-
-        double Fov() const
-        {
-            return m_fov;
-        }
-
+        // The scale is ignored.
         Transformations transformations;
 
-    private:
         // Horizontal FOV in radians
-        double m_fov {Math::pi / 2.0};
+        // Must be > min_fov
+        // Must be < max_fov
+        double fov {Math::pi / 2.0};
+
+        double z_near {0.01};
+        double z_far {1000};
     };
 
 } // Rc::Gfx

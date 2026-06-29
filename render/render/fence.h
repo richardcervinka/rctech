@@ -23,6 +23,8 @@ namespace Rc::Render
 
         void Wait();
 
+        void Reset();
+
     private:
         //friend class CommandQueue;
         

@@ -25,6 +25,11 @@ namespace Rc::Render
     void Fence::Wait()
     {
         m_vk_device->WaitForFence(m_vk_fence);
+        //m_vk_device->ResetFence(m_vk_fence);
+    }
+
+    void Fence::Reset()
+    {
         m_vk_device->ResetFence(m_vk_fence);
     }
 

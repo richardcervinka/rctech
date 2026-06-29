@@ -1,6 +1,7 @@
-#include "projection.h"
+#include "camera.h"
+#include <cassert>
 
-namespace Rc::Render
+namespace Rc::Gfx
 {
     // Reverse‑Z perspective projection matrix (column-major, column vectors).
     //
@@ -22,7 +23,7 @@ namespace Rc::Render
     // - The -1 in the last row (third column) performs the perspective divide.
     // - Reverse‑Z significantly reduces Z‑fighting compared to the classic projection matrix.
     //
-    Matrix4<double> CreatePerspectiveProjectionMatrix(
+    static Matrix4<double> CreatePerspectiveProjectionMatrix(
         int width,
         int height,
         double vertical_fov,
@@ -52,8 +53,31 @@ namespace Rc::Render
             0
         };
     }
+    
+    Matrix4<double> PerspectiveCamera::GetProjectionMatrix(int viewport_width, int viewport_height) const
+    {
+        assert(fov > min_fov);
+        assert(fov < max_fov);
 
-} // Rc::Render
+        auto const projection_matrix = CreatePerspectiveProjectionMatrix(
+            viewport_width,
+            viewport_height,
+            fov,
+            z_near,
+            z_far
+        );
+
+        auto transformations_norm = transformations;
+        transformations_norm.scale = 1.0;
+
+        auto result = transformations_norm.GetTransformations();
+        result.AppendTransformations(projection_matrix);
+
+        return result;
+    }
+
+} // Rc::Gfx
+
 
 /*
     Perspective projection matrix (column-major, column vectors).
