@@ -32,23 +32,28 @@ namespace Rc::Render
             return m_info.imageExtent.height;
         }
 
+        Rectangle<int> RenderArea() const
+        {
+            return {0, 0, Width(), Height()};
+        }
+
         // Get number of images.
         int Count()
         {
             return m_images.size();
         }
 
-        int AcquireNextImage();
+        void AcquireNextImage();
 
-        Texture2D const& GetImage() const // ------------------------ rename to framebuffer
+        RenderTargetView const& GetRenderTargetView() const
         {
-            return m_images.at(m_image_index);
+            return *m_views.at(m_image_index);
         }
 
-        Texture2D const& GetImage(int n) const // ------------------------ rename to framebuffer
-        {
-            return m_images.at(n);
-        }
+        // Texture2D const& GetTexture() const // ------------------------ rename to framebuffer
+        // {
+        //     return m_images.at(m_image_index);
+        // }
 
         uint32_t Index() const { return m_image_index; }
 
@@ -79,6 +84,9 @@ namespace Rc::Render
 
         // Indexed by the m_index.
         std::vector<Texture2D> m_images;
+
+        // Indexed by the m_index.
+        std::vector<std::unique_ptr<RenderTargetView>> m_views;
 
         std::vector<std::unique_ptr<Semaphore>> m_acquire_semaphores;
 

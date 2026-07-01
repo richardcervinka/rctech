@@ -6,26 +6,46 @@ namespace Rc::Render
 {    
     class Texture2D;
 
-    class TextureView2D
+
+    class RenderTargetView
     {
     public:
-        TextureView2D() = default;
-        ~TextureView2D();
+        RenderTargetView() = default;
+        ~RenderTargetView();
 
-        TextureView2D(VulkanDevice const& vk_device, VkImage vk_image, VkFormat vk_format);
+        RenderTargetView(VulkanDevice const& vk_device, VkImage vk_image, VkFormat vk_format);
 
-        TextureView2D(TextureView2D const&) = delete;
-        TextureView2D& operator=(TextureView2D const&) = delete;
-        TextureView2D(TextureView2D&& other) = delete;
-        TextureView2D& operator=(TextureView2D&& other) = delete;
+        RenderTargetView(RenderTargetView const&) = delete;
+        RenderTargetView& operator=(RenderTargetView const&) = delete;
+        RenderTargetView(RenderTargetView&& other) = delete;
+        RenderTargetView& operator=(RenderTargetView&& other) = delete;
 
-        VkImageView GetView() const { return m_view; }
+        VkImageView View() const
+        {
+            return m_view;
+        }
+
+        VkImage Image() const
+        {
+            return m_image;
+        }
+
+        VkImageLayout Layout() const
+        {
+            return m_layout;
+        }
 
     private:
-        VulkanDevice const* m_vk_device {nullptr};
-        //Texture2D* m_texture {nullptr};
+        friend class RenderCommandBuffer;
 
+        VulkanDevice const* m_vk_device {nullptr};
+
+        // Non-owned vk image.
+        VkImage m_image {VK_NULL_HANDLE};
+        
         VkImageView m_view {VK_NULL_HANDLE};
+
+        mutable VkImageLayout m_layout {VK_IMAGE_LAYOUT_UNDEFINED};
     };
 
 
@@ -51,10 +71,10 @@ namespace Rc::Render
 
         VkFormat const& GetFormat() const { return m_vk_format; }
 
-        std::unique_ptr<TextureView2D> CreateView() const;
+        std::unique_ptr<RenderTargetView> CreateView() const;
 
     private:
-        friend class TextureView2D;
+        friend class RenderTargetView;
 
         VulkanDevice const* m_vk_device {nullptr};
 

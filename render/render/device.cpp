@@ -70,6 +70,10 @@ namespace Rc::Render
         {
             throw std::runtime_error("Required " VK_KHR_SHADER_UNTYPED_POINTERS_EXTENSION_NAME);
         }
+        if (!extensions.contains(VK_EXT_DYNAMIC_RENDERING_UNUSED_ATTACHMENTS_EXTENSION_NAME))
+        {
+            throw std::runtime_error("Required " VK_EXT_DYNAMIC_RENDERING_UNUSED_ATTACHMENTS_EXTENSION_NAME);
+        }
 
         std::vector<char const*> enable_extensions
         {
@@ -240,10 +244,21 @@ namespace Rc::Render
             .pNext = &descriptor_heap_features_ext,
             .timelineSemaphore = VK_TRUE
         };
+        VkPhysicalDeviceDynamicRenderingUnusedAttachmentsFeaturesEXT unused_attachments_features
+        {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_UNUSED_ATTACHMENTS_FEATURES_EXT,
+            .pNext = &timeline_semaphore_features,
+            .dynamicRenderingUnusedAttachments = VK_TRUE
+        };
+        VkPhysicalDeviceVulkan13Features features_1_4
+        {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_4_FEATURES,
+            .pNext = &unused_attachments_features,
+        };
         VkPhysicalDeviceShaderUntypedPointersFeaturesKHR shader_untyped_pointers_features
         {
             .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_UNTYPED_POINTERS_FEATURES_KHR,
-            .pNext = &timeline_semaphore_features,
+            .pNext = &features_1_4,
             .shaderUntypedPointers = VK_TRUE
         };
 

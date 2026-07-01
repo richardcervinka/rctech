@@ -49,6 +49,7 @@ namespace Rc::Render
     void SwapChain::Create()
     {
         m_images.clear();
+        m_views.clear();
         m_acquire_semaphores.clear();
 
         m_vk_swap_chain = m_vk_device->CreateSwapchainKHR(m_info);
@@ -67,6 +68,8 @@ namespace Rc::Render
                 m_info.imageExtent.height
             );
 
+            m_views.push_back( m_images.back().CreateView());
+
             m_acquire_semaphores.push_back(std::make_unique<Semaphore>(*m_vk_device));
             m_present_semaphores.push_back(std::make_unique<Semaphore>(*m_vk_device));
         }
@@ -74,7 +77,7 @@ namespace Rc::Render
         m_info.oldSwapchain = nullptr;
     }
 
-    int SwapChain::AcquireNextImage()
+    void SwapChain::AcquireNextImage()
     {
         m_acquire_index = (m_acquire_index + 1) % Count();
 
@@ -84,8 +87,6 @@ namespace Rc::Render
             GetAcquireSemaphore().Handle(),
             VK_NULL_HANDLE
         );
-
-        return m_image_index;
     }
 
     void SwapChain::Present(RenderCommandQueue const& queue) const

@@ -3,7 +3,7 @@
 
 namespace Rc::Render
 {
-    TextureView2D::TextureView2D(VulkanDevice const& vk_device, VkImage vk_image, VkFormat vk_format) :
+    RenderTargetView::RenderTargetView(VulkanDevice const& vk_device, VkImage vk_image, VkFormat vk_format) :
         m_vk_device{&vk_device}
     {
         VkImageViewCreateInfo const create_info
@@ -30,9 +30,10 @@ namespace Rc::Render
         };
 
         m_view = m_vk_device->CreateImageView(create_info);
+        m_image = vk_image;
     }
 
-    TextureView2D::~TextureView2D()
+    RenderTargetView::~RenderTargetView()
     {
         if (m_vk_device)
         {
@@ -40,7 +41,7 @@ namespace Rc::Render
         }
     }
 
-    // TextureView2D::TextureView2D(TextureView2D&& other) noexcept :
+    // RenderTargetView::RenderTargetView(RenderTargetView&& other) noexcept :
     //     m_vk_device{other.m_vk_device},
     //     m_view{other.m_view}
     // {
@@ -48,16 +49,16 @@ namespace Rc::Render
     //     other.m_view = VK_NULL_HANDLE;
     // }
 
-    // TextureView2D& TextureView2D::operator=(TextureView2D&& other) noexcept
+    // RenderTargetView& RenderTargetView::operator=(RenderTargetView&& other) noexcept
     // {
     //     std::swap(m_vk_device, other.m_vk_device);
     //     std::swap(m_view, other.m_view);
     //     return *this;
     // }
 
-    std::unique_ptr<TextureView2D> Texture2D::CreateView() const
+    std::unique_ptr<RenderTargetView> Texture2D::CreateView() const
     {
-        return std::make_unique<TextureView2D>(*m_vk_device, m_vk_image, m_vk_format);
+        return std::make_unique<RenderTargetView>(*m_vk_device, m_vk_image, m_vk_format);
     }
 
 } // Rc::Render

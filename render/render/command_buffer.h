@@ -7,10 +7,10 @@
 #include "base/color.h"
 #include <array>
 #include <cstdint>
-#include "image.h"
 #include "texture.h"
 #include "pipeline_state.h"
 #include "descriptor_heap.h"
+#include "attachment.h"
 
 namespace Rc::Render
 {
@@ -44,10 +44,10 @@ namespace Rc::Render
         void End();
 
         // Swap chain render target barrier
-        void BeginRenderingFramebuffer(Texture2D const& image);
+        void UseRenderingFramebuffer(RenderTargetView const& render_target);
 
         // Swap chain present target barrier
-        void BeginPresentingFramebuffer(Texture2D const& image);
+        void UsePresentingFramebuffer(RenderTargetView const& render_target);
 
         // Set vertex buffer read barrier.
         void UseVertexBuffer(Buffer& buffer, BufferRegion const& region);
@@ -65,13 +65,12 @@ namespace Rc::Render
 
         void BindIndexBuffer(Buffer& ib, IndexType type, uint64_t offset);
 
-        void SetRenderTargetsCount(int count);
-        void AttachRenderTarget(int slot, TextureView2D const& view);
+        // void SetRenderTargetsCount(int count);
+        // void AttachRenderTarget(int slot, RenderTargetView const& render_target_view);
+        // void DetachRenderTarget(int slot);
+        // void ClearRenderTarget(int slot, Color const& color);
 
-        void ClearRenderTarget(int slot, Color const& color);
-        // TODO: KeepRenderTarget ro disable clearing...
-
-        void BeginRendering(Rectangle<int> const& render_area);
+        void BeginRendering(Rectangle<int> const& render_area, RenderTargetAttachments const& attachments);
         void EndRendering();
 
         // No pipeline, no draws — clear done by loadOp
@@ -95,8 +94,6 @@ namespace Rc::Render
         }
 
     private:
-        void ResetColorAttachments();
-
         // Parent device.
         VulkanDevice const* m_vk_device {nullptr};
 
@@ -105,10 +102,10 @@ namespace Rc::Render
         // Primary command buffers.
         VkCommandBuffer m_vk_command_buffer {VK_NULL_HANDLE};
 
-        int m_color_attachments_count {0};
+        //int m_color_attachments_count {0};
 
         // Dynamic rendering color attachments (outputs)
-        std::array<VkRenderingAttachmentInfo, 4> m_color_attachments {};
+        //std::array<VkRenderingAttachmentInfo, 4> m_color_attachments {}; //----------------------- Presunout
 
         // seconday command buffers...
     };

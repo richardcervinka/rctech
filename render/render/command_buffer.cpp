@@ -11,8 +11,6 @@ namespace Rc::Render
     RenderCommandBuffer::RenderCommandBuffer(VulkanDevice const& vk_device, uint32_t vk_family_index) :
         m_vk_device{&vk_device}
     {
-        ResetColorAttachments();
-
         VkCommandPoolCreateInfo const command_pool_info
         {
             .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
@@ -47,27 +45,6 @@ namespace Rc::Render
     void RenderCommandBuffer::Reset()
     {
         m_vk_device->ResetCommandPool(m_vk_pool, VK_COMMAND_POOL_RESET_RELEASE_RESOURCES_BIT);
-
-        ResetColorAttachments();
-    }
-
-    void RenderCommandBuffer::ResetColorAttachments()
-    {
-        m_color_attachments_count = 0;
-
-        for (auto& attachment : m_color_attachments)
-        {
-            attachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
-            attachment.pNext = nullptr;
-            attachment.imageView = VK_NULL_HANDLE;
-            attachment.imageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-            attachment.resolveMode = VK_RESOLVE_MODE_NONE;
-            attachment.resolveImageView = VK_NULL_HANDLE;
-            attachment.resolveImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-            attachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-            attachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-            attachment.clearValue = {};
-        }
     }
 
     void RenderCommandBuffer::Begin()
@@ -90,7 +67,7 @@ namespace Rc::Render
         m_vk_device->EndCommandBuffer(m_vk_command_buffer);
     }
 
-    void RenderCommandBuffer::BeginRenderingFramebuffer(Texture2D const& image)
+    void RenderCommandBuffer::UseRenderingFramebuffer(RenderTargetView const& render_target)
     {
         VkImageMemoryBarrier const barrier
         {
@@ -98,11 +75,11 @@ namespace Rc::Render
             .pNext = nullptr,
             .srcAccessMask = VK_ACCESS_NONE,
             .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-            .oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+            .oldLayout = render_target.m_layout,
             .newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
             .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
             .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-            .image = image.GetImage(),
+            .image = render_target.Image(),
             .subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}
         };
 
@@ -115,9 +92,11 @@ namespace Rc::Render
             {},
             {&barrier, 1}
         );
+
+        render_target.m_layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
     }
 
-    void RenderCommandBuffer::BeginPresentingFramebuffer(Texture2D const& image)
+    void RenderCommandBuffer::UsePresentingFramebuffer(RenderTargetView const& render_target)
     {
         VkImageMemoryBarrier const barrier
         {
@@ -125,11 +104,11 @@ namespace Rc::Render
             .pNext = nullptr,
             .srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
             .dstAccessMask = VK_ACCESS_NONE,
-            .oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+            .oldLayout = render_target.m_layout,
             .newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
             .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
             .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-            .image = image.GetImage(),
+            .image = render_target.Image(),
             .subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}
         };
 
@@ -142,34 +121,8 @@ namespace Rc::Render
             {},
             {&barrier, 1}
         );
-    }
 
-    void RenderCommandBuffer::SetRenderTargetsCount(int count)
-    {
-        m_color_attachments_count = count;
-    }
-
-    void RenderCommandBuffer::AttachRenderTarget(int slot, TextureView2D const& view)
-    {
-        // ------------------------------- BeginRenderingFramebuffer()
-
-        auto& dst = m_color_attachments[slot];
-
-        dst.imageView = view.GetView();
-        dst.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-        dst.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
-        dst.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-    }
-
-    void RenderCommandBuffer::ClearRenderTarget(int slot, Color const& color)
-    {
-        auto& dst = m_color_attachments[slot];
-
-        dst.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-        dst.clearValue.color.float32[0] = color.r;
-        dst.clearValue.color.float32[1] = color.g;
-        dst.clearValue.color.float32[2] = color.b;
-        dst.clearValue.color.float32[3] = color.a;
+        render_target.m_layout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
     }
 
     void RenderCommandBuffer::SetViewport(Viewport const& viewport)
@@ -186,18 +139,20 @@ namespace Rc::Render
         m_vk_device->CmdSetViewport(m_vk_command_buffer, vp);  
     }
 
-    void RenderCommandBuffer::BeginRendering(Rectangle<int> const& render_area)
+    void RenderCommandBuffer::BeginRendering(Rectangle<int> const& render_area, RenderTargetAttachments const& attachments)
     {
+        auto const& color_attachments = attachments.ColorAttachmentsInfo();
+
         VkRenderingInfo const rendering_info
         {
             .sType = VK_STRUCTURE_TYPE_RENDERING_INFO,
             .pNext = nullptr,
             .flags = 0,
-            .renderArea = {{0, 0}, {(uint32_t)render_area.w, (uint32_t)render_area.h}},
+            .renderArea = {{0, 0}, {static_cast<uint32_t>(render_area.w), static_cast<uint32_t>(render_area.h)}},
             .layerCount = 1,
             .viewMask = 0,
-            .colorAttachmentCount = static_cast<uint32_t>(m_color_attachments_count),
-            .pColorAttachments = m_color_attachments.data(),
+            .colorAttachmentCount = static_cast<uint32_t>(color_attachments.size()),
+            .pColorAttachments = color_attachments.data(),
             .pDepthAttachment = nullptr,
             .pStencilAttachment = nullptr
         };

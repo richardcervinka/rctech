@@ -6,6 +6,7 @@
 #include <vector>
 #include <array>
 #include "core/vertex.h"
+#include "attachment.h"
 
 namespace Rc::Render
 {
@@ -86,7 +87,6 @@ namespace Rc::Render
         VulkanDevice const* m_device {nullptr};
         VkShaderModule m_vs {nullptr};
         VkShaderModule m_ps {nullptr};
-        VkFormat m_format {VK_FORMAT_R8G8B8A8_SRGB}; // ------------------------------ UNDEFINED
         std::vector<VkVertexInputAttributeDescription> m_vertex_arrtibutes;
         std::vector<VkVertexInputAttributeDescription> m_instance_arrtibutes;
         std::array<VkVertexInputBindingDescription, 2> m_vertex_binding_desc {};
@@ -94,7 +94,7 @@ namespace Rc::Render
         VkPipelineViewportStateCreateInfo m_viewport_state {};
         VkPipelineRasterizationStateCreateInfo m_rasterizer_state {};
         VkPipelineMultisampleStateCreateInfo m_multisampling {};
-        VkPipelineColorBlendAttachmentState m_color_blend_attachment {};
+        std::array<VkPipelineColorBlendAttachmentState, RenderTargetAttachments::slots_count> m_color_blend_attachments {};
         VkPipelineColorBlendStateCreateInfo m_color_blend {};
         VkPipelineRenderingCreateInfo m_pipeline_rendering {};
         std::shared_ptr<PipelineLayout> m_pipeline_layout;

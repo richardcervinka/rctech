@@ -2,6 +2,7 @@
 #include "index_buffer.h"
 #include "resources.h"
 #include <cstdint>
+#include <algorithm>
 #include <span>
 #include <stdexcept>
 #include "platform/log.h"
@@ -28,7 +29,6 @@ namespace Rc::Render
         m_test_vertex_pipeline = nullptr;
         m_test_pipeline = nullptr;
         m_pipeline_layout = nullptr;
-        m_back_buffers.clear();
         m_frames.clear();
 
         for (auto& shader : m_pixel_shaders)
@@ -115,12 +115,6 @@ namespace Rc::Render
         m_transfer_queue = m_device->CreateTransferQueue();
         m_transfer_ocmmands = m_transfer_queue->CreateCommandBuffer();
         m_transfer_semaphore = m_device->CreateTimelineSemaphore();
-
-        // Create swap chain image views
-        for (int i = 0; i < m_swap_chain->Count(); i++)
-        {
-            m_back_buffers.emplace_back(m_swap_chain->GetImage(i).CreateView());
-        }
 
         InitializeFramesInFlight();
 
@@ -270,13 +264,16 @@ namespace Rc::Render
 
             // Transfer descriotor heap
             {
+                const auto region = m_transfer_buffer->Allocate(frame.resource_descriptor_heap->Size());
+                const auto memory = m_transfer_buffer->Map<std::byte>(region);
+                
+                // Write descriotor heap to staging buffer.
+                frame.resource_descriptor_heap->Write(memory);
+
                 frame.commands->Reset();
                 frame.commands->Begin();
 
-                auto region = m_transfer_buffer->Allocate(frame.resource_descriptor_heap->Size());
-                auto memory = m_transfer_buffer->Map<std::byte>(region);
-                frame.resource_descriptor_heap->Write(memory);
-
+                // Transfer the staging buffer.
                 frame.commands->TransferBuffer(
                     m_transfer_buffer->GetBuffer(),
                     *frame.resource_descriptor_heap_buffer,
@@ -285,12 +282,13 @@ namespace Rc::Render
                     region.Size()
                 );
 
+                // Memory Barrier
                 frame.commands->UseResourceDescriptorHeapBuffer(
                     *frame.resource_descriptor_heap_buffer,
                     frame.resource_descriptor_heap_buffer->GetRegion()
                 );
 
-                // Submit transfer commands.
+                // Submit commands.
                 frame.commands->End();
                 frame.fence->Reset();
                 m_render_queue->Submit(*frame.commands, *frame.fence);
@@ -315,14 +313,7 @@ namespace Rc::Render
     void Renderer::Resize(int width, int height)
     {
         m_device->WaitIdle();
-        m_back_buffers.clear();
         m_swap_chain->Resize(width, height);
-
-        // Create swap chain image views
-        for (int i = 0; i < m_swap_chain->Count(); i++)
-        {
-            m_back_buffers.push_back(m_swap_chain->GetImage(i).CreateView());
-        }
     }
 
     void Renderer::ReserveIndexBuffer(Usage usage, uint64_t capacity)
@@ -389,23 +380,17 @@ namespace Rc::Render
     {
         m_frame = &m_frames[m_frame_number % m_frames.size()];
 
-        m_frame->fence->Wait();
-        m_frame->fence->Reset();
-        
         // Reset state.
         m_camera_projection = Matrix4<double>::Identity();
-        m_frame->staging_buffer->Reset();
-        
-        m_frame->commands->Reset();
-        m_frame->commands->Begin();
-        m_frame->commands->BindResourceDescriptorHeap(*m_frame->resource_descriptor_heap);
+
+        m_frame->Begin();
 
         Test();
     }
 
     void Renderer::EndFrame()
     {
-        m_frame->commands->BeginPresentingFramebuffer(m_swap_chain->GetImage());
+        m_frame->commands->UsePresentingFramebuffer(m_swap_chain->GetRenderTargetView());
         m_frame->commands->End();
         
         m_render_queue->WaitSemaphore(m_swap_chain->GetAcquireSemaphore());
@@ -420,15 +405,6 @@ namespace Rc::Render
     void Renderer::SetCamera(Gfx::PerspectiveCamera const& camera)
     {
         m_camera_projection = camera.GetProjectionMatrix(Width(), Height());
-    }
-
-    void Renderer::BindBackBuffer(int slot)
-    {
-        auto const back_buffer_index = m_swap_chain->AcquireNextImage();
-
-        m_frame->commands->AttachRenderTarget(slot, *m_back_buffers.at(back_buffer_index));
-        m_frame->commands->ClearRenderTarget(0, Color(0, 0, 0, 1));
-        m_frame->commands->BeginRenderingFramebuffer(m_swap_chain->GetImage());
     }
 
     void Renderer::Test()
@@ -461,16 +437,13 @@ namespace Rc::Render
         m_frame->commands->UseIndexBuffer(m_index_buffer->GetBuffer(), m_index_buffer->GetBuffer().GetRegion());
         m_frame->commands->BindVertexBuffer(m_vertex_buffer->GetBuffer(), 0);
         m_frame->commands->BindIndexBuffer(m_index_buffer->GetBuffer(), IndexType::Uint16, 0);
+
+        m_swap_chain->AcquireNextImage();
         
-        m_frame->commands->SetRenderTargetsCount(1);
-
-        BindBackBuffer(0);
-
-        m_frame->commands->BeginRendering({0, 0, m_swap_chain->Width(), m_swap_chain->Height()});
-        m_frame->commands->BindPipeline(*m_test_vertex_pipeline);
+        m_frame->BeginRenderPass(*m_test_vertex_pipeline, *m_swap_chain);
         m_frame->commands->Test({0, 0, m_swap_chain->Width(), m_swap_chain->Height()});
         m_frame->commands->DrawIndexed(36, 1, 0, 0, 0);
-        m_frame->commands->EndRendering();
+        m_frame->EndRenderPass();
     }
 
 } // Rc::Render

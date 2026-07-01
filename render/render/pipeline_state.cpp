@@ -136,19 +136,22 @@ namespace Rc::Render
         m_multisampling.alphaToOneEnable = VK_FALSE;
 
         // VkPipelineColorBlendAttachmentState
-        m_color_blend_attachment.blendEnable = VK_FALSE;
-        m_color_blend_attachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
-        m_color_blend_attachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
-        m_color_blend_attachment.colorBlendOp = VK_BLEND_OP_ADD;
-        m_color_blend_attachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-        m_color_blend_attachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-        m_color_blend_attachment.alphaBlendOp = VK_BLEND_OP_ADD;
-        m_color_blend_attachment.colorWriteMask = {
-            VK_COLOR_COMPONENT_R_BIT |
-            VK_COLOR_COMPONENT_G_BIT |
-            VK_COLOR_COMPONENT_B_BIT |
-            VK_COLOR_COMPONENT_A_BIT
-        };
+        for (auto& color_blend_attachment : m_color_blend_attachments)
+        {
+            color_blend_attachment.blendEnable = VK_FALSE;
+            color_blend_attachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
+            color_blend_attachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
+            color_blend_attachment.colorBlendOp = VK_BLEND_OP_ADD;
+            color_blend_attachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+            color_blend_attachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+            color_blend_attachment.alphaBlendOp = VK_BLEND_OP_ADD;
+            color_blend_attachment.colorWriteMask = {
+                VK_COLOR_COMPONENT_R_BIT |
+                VK_COLOR_COMPONENT_G_BIT |
+                VK_COLOR_COMPONENT_B_BIT |
+                VK_COLOR_COMPONENT_A_BIT
+            };
+        }
 
         // VkPipelineColorBlendStateCreateInfo
         m_color_blend.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
@@ -156,15 +159,15 @@ namespace Rc::Render
         m_color_blend.flags = 0;
         m_color_blend.logicOpEnable = VK_FALSE;
         m_color_blend.logicOp = VK_LOGIC_OP_COPY;
-        m_color_blend.attachmentCount = 1;
-        m_color_blend.pAttachments = &m_color_blend_attachment;
+        m_color_blend.attachmentCount = m_color_blend_attachments.size();
+        m_color_blend.pAttachments = m_color_blend_attachments.data();
 
         // VkPipelineRenderingCreateInfo
         m_pipeline_rendering.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
         m_pipeline_rendering.pNext = nullptr;
         m_pipeline_rendering.viewMask = 0;
-        m_pipeline_rendering.colorAttachmentCount = 1; //-------------------------- default should be 0
-        m_pipeline_rendering.pColorAttachmentFormats = &m_format;
+        m_pipeline_rendering.colorAttachmentCount = RenderTargetAttachments::slots_format.size();
+        m_pipeline_rendering.pColorAttachmentFormats = RenderTargetAttachments::slots_format.data();
         m_pipeline_rendering.depthAttachmentFormat = VK_FORMAT_UNDEFINED;
         m_pipeline_rendering.stencilAttachmentFormat = VK_FORMAT_UNDEFINED;
 

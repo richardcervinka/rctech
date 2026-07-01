@@ -1,6 +1,7 @@
 ﻿find_package(Vulkan REQUIRED)
 
 add_library(render STATIC
+    "attachment.h"
     "buffer.h"
     "buffer.cpp"
     "buffer_linear.h"
