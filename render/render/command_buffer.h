@@ -65,11 +65,6 @@ namespace Rc::Render
 
         void BindIndexBuffer(Buffer& ib, IndexType type, uint64_t offset);
 
-        // void SetRenderTargetsCount(int count);
-        // void AttachRenderTarget(int slot, RenderTargetView const& render_target_view);
-        // void DetachRenderTarget(int slot);
-        // void ClearRenderTarget(int slot, Color const& color);
-
         void BeginRendering(Rectangle<int> const& render_area, RenderTargetAttachments const& attachments);
         void EndRendering();
 
@@ -78,15 +73,13 @@ namespace Rc::Render
 
         void SetViewport(Viewport const& viewport);
 
+        void SetScissor(Rectangle<int> const& rect);
+
         void Draw(uint32_t vertex_count, uint32_t instance_count, uint32_t first_vertex, uint32_t first_instance);
 
         void DrawIndexed(uint32_t index_count, uint32_t instance_count, uint32_t first_index, int32_t vertex_offset, uint32_t first_instance);
 
         void BindResourceDescriptorHeap(ResourceDescriptorHeap const& heap);
-
-        void Test(
-            Rectangle<int> const& render_area
-        );
 
         VkCommandBuffer Handle() const
         {
@@ -101,11 +94,6 @@ namespace Rc::Render
 
         // Primary command buffers.
         VkCommandBuffer m_vk_command_buffer {VK_NULL_HANDLE};
-
-        //int m_color_attachments_count {0};
-
-        // Dynamic rendering color attachments (outputs)
-        //std::array<VkRenderingAttachmentInfo, 4> m_color_attachments {}; //----------------------- Presunout
 
         // seconday command buffers...
     };

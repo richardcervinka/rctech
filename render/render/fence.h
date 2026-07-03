@@ -21,7 +21,7 @@ namespace Rc::Render
 
         VkFence Handle() const { return m_vk_fence; }
 
-        void Wait();
+        void Wait() const;
 
         void Reset();
 

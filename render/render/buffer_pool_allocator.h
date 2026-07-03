@@ -5,7 +5,7 @@
 
 namespace Rc::Render
 {
-    class BufferPool
+    class BufferPool //---------------- Prejmenovat na BufferPoolAllocator
     {
     public:
 

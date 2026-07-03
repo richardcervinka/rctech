@@ -5,9 +5,11 @@
 #include "texture.h"
 #include <array>
 #include "shader.h"
-#include "buffer_linear.h"
 #include "descriptor_heap.h"
 #include "core/camera.h"
+#include "frame_renderer.h"
+#include "buffer_linear_allocator.h"
+#include "buffer_ring_allocator.h"
 
 namespace Rc::Render
 {
@@ -52,54 +54,6 @@ namespace Rc::Render
         BufferRegion m_region;
         Usage m_usage {};
         uint64_t m_uid {};
-    };
-    
-    class Frame
-    {
-    public:
-        void Begin()
-        {
-            fence->Wait();
-            fence->Reset();
-            staging_buffer->Reset();
-            
-            commands->Reset();
-            commands->Begin();
-            commands->BindResourceDescriptorHeap(*resource_descriptor_heap);
-        }
-
-        void BeginRenderPass(Pipeline const& pipeline, SwapChain const& swap_chain)
-        {
-            // Framebuffer memory barrier.
-            commands->UseRenderingFramebuffer(swap_chain.GetRenderTargetView());
-
-            RenderTargetAttachments attachments;
-            attachments.EnableColorAttachment(RenderTargetSlot::FrameBuffer, swap_chain.GetRenderTargetView());
-            attachments.ClearRenderTarget(RenderTargetSlot::FrameBuffer, Color(0, 0, 0, 1));
-
-            commands->BindPipeline(pipeline);
-            commands->BeginRendering(swap_chain.RenderArea(), attachments);
-        }
-
-        void EndRenderPass()
-        {
-            commands->EndRendering();
-        }
-
-    private:
-        friend class Renderer;
-
-        std::unique_ptr<Fence> fence;
-        
-        std::unique_ptr<RenderCommandBuffer> commands;
-
-        std::unique_ptr<BufferLinear> staging_buffer;
-
-        std::unique_ptr<Buffer> uniform_buffer;
-
-        std::unique_ptr<Buffer> resource_descriptor_heap_buffer;
-
-        std::unique_ptr<ResourceDescriptorHeap> resource_descriptor_heap;
     };
 
     //
@@ -155,8 +109,6 @@ namespace Rc::Render
         void SetCamera(Gfx::PerspectiveCamera const& camera);
 
     private:
-        void InitializeFramesInFlight();
-
         // Assign vertex shader to the slot.
         void SetVertexShader(VertexShaderSlot slot, std::unique_ptr<Shader> shader)
         {
@@ -192,9 +144,9 @@ namespace Rc::Render
 
         std::unique_ptr<SwapChain> m_swap_chain;
 
-        std::unique_ptr<RenderCommandQueue> m_render_queue;
+        std::unique_ptr<RenderCommandQueue> m_render_queue; // ------------- Presunout do Frame
 
-        std::unique_ptr<BufferLinear> m_transfer_buffer;
+        std::unique_ptr<BufferRingAllocator> m_transfer_buffer; // TODO: Mozna vice bufferu pro ruzne velikosti chunku allocatoru
         std::unique_ptr<TransferCommandQueue> m_transfer_queue;
         std::unique_ptr<TransferCommandBuffer> m_transfer_ocmmands;
         std::unique_ptr<TimelineSemaphore> m_transfer_semaphore;
@@ -214,8 +166,8 @@ namespace Rc::Render
         std::unique_ptr<Pipeline> m_test_pipeline;
         std::unique_ptr<Pipeline> m_test_vertex_pipeline;
 
-        std::unique_ptr<BufferLinear> m_vertex_buffer; //------------------------- TEST
-        std::unique_ptr<BufferLinear> m_index_buffer; //------------------------- TEST: Static index buffer
+        std::unique_ptr<BufferLinearAllocator> m_vertex_buffer; //------------------------- TEST
+        std::unique_ptr<BufferLinearAllocator> m_index_buffer; //------------------------- TEST: Static index buffer
 
         Window::EventSize::Handler m_on_window_size {this, &Renderer::OnWindowSize};
 

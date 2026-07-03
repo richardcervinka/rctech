@@ -356,17 +356,17 @@ namespace Rc::Render
         return std::make_unique<Shader>(*m_device, spirv);
     }
 
-    std::unique_ptr<RenderCommandQueue> Device::CreateGraphicsQueue()
+    std::unique_ptr<RenderCommandQueue> Device::CreateGraphicsQueue() const
     {
         return std::make_unique<RenderCommandQueue>(*m_device, m_vk_graphics_queue_family.first, m_vk_graphics_queue_family.second);
     }
 
-    std::unique_ptr<TransferCommandQueue> Device::CreateTransferQueue()
+    std::unique_ptr<TransferCommandQueue> Device::CreateTransferQueue() const
     {
         return std::make_unique<TransferCommandQueue>(*m_device, m_vk_transfer_queue_family.first, m_vk_transfer_queue_family.second);
     }
 
-    std::unique_ptr<Fence> Device::CreateFence()
+    std::unique_ptr<Fence> Device::CreateFence() const
     {
         return std::make_unique<Fence>(*m_device);
     }
@@ -399,34 +399,34 @@ namespace Rc::Render
         return PipelineFactory(*m_device);
     }
 
-    std::unique_ptr<ResourceDescriptorHeap> Device::CreateResourceDescriptorHeap(std::span<ResourceDescriptor const> descriptors)
+    std::unique_ptr<ResourceDescriptorHeap> Device::CreateResourceDescriptorHeap(std::span<ResourceDescriptor const> descriptors) const
     {
         return std::make_unique<ResourceDescriptorHeap>(*m_instance, *m_device, m_vk_physical_device, descriptors);
     }
 
-    std::unique_ptr<Buffer> Device::AllocateVertexBuffer(uint64_t size) const
+    std::unique_ptr<Buffer> Device::AllocateBuffer(VertexBufferInfo const& info) const
     {
-        return std::make_unique<Buffer>(*m_device, VertexBufferInfo{size}, m_vma_allocator);
+        return std::make_unique<Buffer>(*m_device, info, m_vma_allocator);
     }
 
-    std::unique_ptr<Buffer> Device::AllocateIndexBuffer(uint64_t size) const
+    std::unique_ptr<Buffer> Device::AllocateBuffer(IndexBufferInfo const& info) const
     {
-        return std::make_unique<Buffer>(*m_device, IndexBufferInfo{size}, m_vma_allocator);
+        return std::make_unique<Buffer>(*m_device, info, m_vma_allocator);
     }
 
-    std::unique_ptr<Buffer> Device::AllocateStagingBuffer(uint64_t size) const
+    std::unique_ptr<Buffer> Device::AllocateBuffer(StagingBufferInfo const& info) const
     {
-        return std::make_unique<Buffer>(*m_device, StagingBufferInfo{size}, m_vma_allocator);
+        return std::make_unique<Buffer>(*m_device, info, m_vma_allocator);
     }
 
-    std::unique_ptr<Buffer> Device::AllocateUniformBuffer(uint64_t size) const
+    std::unique_ptr<Buffer> Device::AllocateBuffer(UniformBufferInfo const& info) const
     {
-        return std::make_unique<Buffer>(*m_device, UniformBufferInfo{size}, m_vma_allocator);
+        return std::make_unique<Buffer>(*m_device, info, m_vma_allocator);
     }
 
-    std::unique_ptr<Buffer> Device::AllocateDescriptorHeapBuffer(uint64_t size) const
+    std::unique_ptr<Buffer> Device::AllocateBuffer(DescriptorHeapBufferInfo const& info) const
     {
-        return std::make_unique<Buffer>(*m_device, DescriptorHeapBufferInfo{size}, m_vma_allocator);
+        return std::make_unique<Buffer>(*m_device, info, m_vma_allocator);
     }
 
 } // Rc::Render

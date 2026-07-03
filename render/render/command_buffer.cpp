@@ -139,6 +139,23 @@ namespace Rc::Render
         m_vk_device->CmdSetViewport(m_vk_command_buffer, vp);  
     }
 
+    void RenderCommandBuffer::SetScissor(Rectangle<int> const& rect)
+    {
+        VkRect2D const scissors
+        {
+            .offset = {
+                static_cast<int32_t>(rect.x),
+                static_cast<int32_t>(rect.y)
+            },
+            .extent = {
+                static_cast<uint32_t>(rect.w),
+                static_cast<uint32_t>(rect.h)
+            }
+        };
+
+        m_vk_device->CmdSetScissor(m_vk_command_buffer, scissors);
+    }
+
     void RenderCommandBuffer::BeginRendering(Rectangle<int> const& render_area, RenderTargetAttachments const& attachments)
     {
         auto const& color_attachments = attachments.ColorAttachmentsInfo();
@@ -399,18 +416,6 @@ namespace Rc::Render
     void RenderCommandBuffer::DrawIndexed(uint32_t index_count, uint32_t instance_count, uint32_t first_index, int32_t vertex_offset, uint32_t first_instance)
     {
         m_vk_device->CmdDrawIndexed(m_vk_command_buffer, index_count, instance_count, first_index, vertex_offset, first_instance);
-    }
-
-    void RenderCommandBuffer::Test(Rectangle<int> const& render_area)
-    {
-        VkRect2D const scissors
-        {
-            {0, 0}, {(uint32_t)render_area.w, (uint32_t)render_area.h}
-        };
-
-        SetViewport({0, 0, static_cast<float>(render_area.w), static_cast<float>(render_area.h), 0, 1});
-
-        m_vk_device->CmdSetScissor(m_vk_command_buffer, scissors);
     }
 
     void RenderCommandBuffer::BindResourceDescriptorHeap(ResourceDescriptorHeap const& heap)

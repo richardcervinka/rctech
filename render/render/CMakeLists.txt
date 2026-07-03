@@ -15,6 +15,8 @@ add_library(render STATIC
     "adapter.cpp"
     "renderer.h"
     "renderer.cpp"
+    "frame_renderer.h"
+    "frame_renderer.cpp"
     "swap_chain.h"
     "swap_chain.cpp"
     "pipeline_state.h"

@@ -3,8 +3,10 @@
 
 namespace Rc::Render
 {
-    RenderTargetView::RenderTargetView(VulkanDevice const& vk_device, VkImage vk_image, VkFormat vk_format) :
-        m_vk_device{&vk_device}
+    RenderTargetView::RenderTargetView(VulkanDevice const& vk_device, VkImage vk_image, VkFormat vk_format, int width, int height) :
+        m_vk_device{&vk_device},
+        m_width{width},
+        m_height{height}
     {
         VkImageViewCreateInfo const create_info
         {
@@ -58,7 +60,7 @@ namespace Rc::Render
 
     std::unique_ptr<RenderTargetView> Texture2D::CreateView() const
     {
-        return std::make_unique<RenderTargetView>(*m_vk_device, m_vk_image, m_vk_format);
+        return std::make_unique<RenderTargetView>(*m_vk_device, m_vk_image, m_vk_format, m_width, m_height);
     }
 
 } // Rc::Render

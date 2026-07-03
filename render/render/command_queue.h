@@ -19,7 +19,7 @@ namespace Rc::Render
         RenderCommandQueue(RenderCommandQueue&& other) = delete;
         RenderCommandQueue& operator=(RenderCommandQueue&& other) = delete;
 
-        std::unique_ptr<RenderCommandBuffer> CreateCommandBuffer();
+        std::unique_ptr<RenderCommandBuffer> CreateCommandBuffer() const;
 
         // Submit render commands and reset internal state.
         void Submit(RenderCommandBuffer const& cb, Fence const& fence);

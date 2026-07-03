@@ -54,6 +54,11 @@ namespace Rc::Render
             return ++m_value;
         }
 
+        void Set(uint64_t value)
+        {
+            m_value = value;
+        }
+
         uint64_t Value() const
         {
             return m_value;

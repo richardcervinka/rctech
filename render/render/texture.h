@@ -13,7 +13,7 @@ namespace Rc::Render
         RenderTargetView() = default;
         ~RenderTargetView();
 
-        RenderTargetView(VulkanDevice const& vk_device, VkImage vk_image, VkFormat vk_format);
+        RenderTargetView(VulkanDevice const& vk_device, VkImage vk_image, VkFormat vk_format, int width, int height);
 
         RenderTargetView(RenderTargetView const&) = delete;
         RenderTargetView& operator=(RenderTargetView const&) = delete;
@@ -35,6 +35,16 @@ namespace Rc::Render
             return m_layout;
         }
 
+        int Width() const
+        {
+            return m_width;
+        }
+
+        int Height() const
+        {
+            return m_height;
+        }
+
     private:
         friend class RenderCommandBuffer;
 
@@ -46,6 +56,9 @@ namespace Rc::Render
         VkImageView m_view {VK_NULL_HANDLE};
 
         mutable VkImageLayout m_layout {VK_IMAGE_LAYOUT_UNDEFINED};
+
+        int m_width {0};
+        int m_height {0};
     };
 
 

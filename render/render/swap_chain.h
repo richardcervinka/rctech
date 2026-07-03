@@ -38,7 +38,7 @@ namespace Rc::Render
         }
 
         // Get number of images.
-        int Count()
+        int Size()
         {
             return m_images.size();
         }

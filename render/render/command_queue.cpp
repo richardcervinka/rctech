@@ -12,7 +12,7 @@ namespace Rc::Render
         m_vk_queue = m_vk_device->GetDeviceQueue(queue_family_index, queue_index);
     }
 
-    std::unique_ptr<RenderCommandBuffer> RenderCommandQueue::CreateCommandBuffer()
+    std::unique_ptr<RenderCommandBuffer> RenderCommandQueue::CreateCommandBuffer() const
     {
         return std::make_unique<RenderCommandBuffer>(*m_vk_device, m_vk_family);
     }
@@ -74,7 +74,7 @@ namespace Rc::Render
     {
         auto command_buffers = cb.Handle();
         auto signal_semaphores = signal.Handle();
-        auto value = signal.Increment();
+        auto value = signal.Value();
 
         VkTimelineSemaphoreSubmitInfo timeline_info
         {

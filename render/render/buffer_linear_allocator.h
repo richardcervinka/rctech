@@ -6,24 +6,24 @@
 namespace Rc::Render
 {
     //
-    // Linear buffer allocator
+    // Linear buffer allocator.
     //
-    class BufferLinear
+    class BufferLinearAllocator
     {
     public:
-        BufferLinear() = default;
-        ~BufferLinear() = default;
+        BufferLinearAllocator() = default;
+        ~BufferLinearAllocator() = default;
 
-        explicit BufferLinear(std::unique_ptr<Buffer> buffer) :
+        explicit BufferLinearAllocator(std::unique_ptr<Buffer> buffer) :
             m_buffer{std::move(buffer)}
         {
             assert(m_buffer != nullptr);
         }
 
-        BufferLinear(BufferLinear const&) = delete;
-        BufferLinear& operator=(BufferLinear const&) = delete;
-        BufferLinear(BufferLinear&&) = default;
-        BufferLinear& operator=(BufferLinear&&) = default;
+        BufferLinearAllocator(BufferLinearAllocator const&) = delete;
+        BufferLinearAllocator& operator=(BufferLinearAllocator const&) = delete;
+        BufferLinearAllocator(BufferLinearAllocator&&) = default;
+        BufferLinearAllocator& operator=(BufferLinearAllocator&&) = default;
 
         BufferRegion Allocate(uint64_t size)
         {

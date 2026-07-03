@@ -79,7 +79,7 @@ namespace Rc::Render
 
     void SwapChain::AcquireNextImage()
     {
-        m_acquire_index = (m_acquire_index + 1) % Count();
+        m_acquire_index = (m_acquire_index + 1) % Size();
 
         m_image_index = m_vk_device->AcquireNextImageKHR(
             m_vk_swap_chain,

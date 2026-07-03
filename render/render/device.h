@@ -6,7 +6,6 @@
 #include <string>
 #include <vector>
 #include <memory>
-#include <cstddef>
 #include <map>
 #include "swap_chain.h"
 #include "command_queue.h"
@@ -52,10 +51,10 @@ namespace Rc::Render
 
         std::unique_ptr<Shader> CreateShader(std::span<uint32_t const> spirv);
 
-        std::unique_ptr<RenderCommandQueue> CreateGraphicsQueue();
-        std::unique_ptr<TransferCommandQueue> CreateTransferQueue();
+        std::unique_ptr<RenderCommandQueue> CreateGraphicsQueue() const;
+        std::unique_ptr<TransferCommandQueue> CreateTransferQueue() const;
 
-        std::unique_ptr<Fence> CreateFence();
+        std::unique_ptr<Fence> CreateFence() const;
         std::unique_ptr<Semaphore> CreateSemaphore() const;
         std::unique_ptr<TimelineSemaphore> CreateTimelineSemaphore() const;
 
@@ -65,13 +64,13 @@ namespace Rc::Render
 
         PipelineFactory CreatePipelineFactory();
 
-        std::unique_ptr<ResourceDescriptorHeap> CreateResourceDescriptorHeap(std::span<ResourceDescriptor const> descriptors);
+        std::unique_ptr<ResourceDescriptorHeap> CreateResourceDescriptorHeap(std::span<ResourceDescriptor const> descriptors) const;
 
-        std::unique_ptr<Buffer> AllocateVertexBuffer(uint64_t size) const;
-        std::unique_ptr<Buffer> AllocateIndexBuffer(uint64_t size) const;
-        std::unique_ptr<Buffer> AllocateStagingBuffer(uint64_t size) const;
-        std::unique_ptr<Buffer> AllocateUniformBuffer(uint64_t size) const;
-        std::unique_ptr<Buffer> AllocateDescriptorHeapBuffer(uint64_t size) const;
+        std::unique_ptr<Buffer> AllocateBuffer(VertexBufferInfo const& info) const;
+        std::unique_ptr<Buffer> AllocateBuffer(IndexBufferInfo const& info) const;
+        std::unique_ptr<Buffer> AllocateBuffer(StagingBufferInfo const& info) const;
+        std::unique_ptr<Buffer> AllocateBuffer(UniformBufferInfo const& info) const;
+        std::unique_ptr<Buffer> AllocateBuffer(DescriptorHeapBufferInfo const& info) const;
 
     private:
         std::map<std::string, VulkanVersion> EnumerateExtensions() const;
@@ -82,11 +81,7 @@ namespace Rc::Render
         
         VkPhysicalDevice m_vk_physical_device {VK_NULL_HANDLE};
 
-        // Allocator m_allocator;
-
         VmaAllocator m_vma_allocator {VK_NULL_HANDLE};
-
-        //Queue m_render_queue;
 
         // Rendering queue info <family index, queue index>
         std::pair<uint32_t, uint32_t> m_vk_graphics_queue_family;
