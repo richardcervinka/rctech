@@ -10,6 +10,7 @@
 #include "base/math.h"
 #include "core/transformations.h"
 #include "core/camera.h"
+#include "generic/input.h"
 
 namespace Rc::Render
 {
@@ -24,6 +25,7 @@ namespace Rc::Render
             m_device->WaitIdle();
         }
 
+        m_instance_buffer = nullptr;
         m_vertex_buffer = nullptr;
         m_index_buffer = nullptr;
         m_test_vertex_pipeline = nullptr;
@@ -122,7 +124,7 @@ namespace Rc::Render
         for (auto& frame : m_frames)
         {
             frame.Create(*m_device);
-            frame.UpdateResourceDescriptorHeapBuffer(*m_device);
+            frame.UpdateResourceDescriptorHeap(*m_device);
         }
 
         // Create embedded shaders.
@@ -135,19 +137,29 @@ namespace Rc::Render
 
         ReserveVertexBuffer(Usage::Permanent, 2048);
         ReserveIndexBuffer(Usage::Permanent, 256);
+        m_instance_buffer = m_device->AllocateBuffer(VertexBufferInfo{.size = 2048});
 
-        auto pipeline_factory = m_device->CreatePipelineFactory();
-        pipeline_factory.SetPipelineLayout(m_pipeline_layout);
+        {
+            //auto vertex_attributes = Gfx::VertexBasic::attributes;
+            //vertex_attributes.insert_range(vertex_attributes.end(), m_instance_arrtibutes);
 
-        pipeline_factory.SetVertexShader(GetVertexShader(VertexShaderSlot::Overlay));
-        pipeline_factory.SetPixelShader(GetPixelShader(PixelShaderSlot::Null));
-        pipeline_factory.SetVertexInput(0, {});
-        m_test_pipeline = pipeline_factory.Create();
+            auto pipeline_factory = m_device->CreatePipelineFactory();
+            pipeline_factory.SetPipelineLayout(m_pipeline_layout);
+            pipeline_factory.SetVertexShader(GetVertexShader(VertexShaderSlot::Overlay));
+            pipeline_factory.SetPixelShader(GetPixelShader(PixelShaderSlot::Null));
+            m_test_pipeline = pipeline_factory.Create();
+        }
 
-        pipeline_factory.SetVertexShader(GetVertexShader(VertexShaderSlot::Test));
-        pipeline_factory.SetPixelShader(GetPixelShader(PixelShaderSlot::Null));
-        pipeline_factory.SetVertexInput(sizeof(Gfx::VertexBasic), Gfx::VertexBasic::attributes);
-        m_test_vertex_pipeline = pipeline_factory.Create();
+        {
+            auto pipeline_factory = m_device->CreatePipelineFactory();
+            pipeline_factory.SetPipelineLayout(m_pipeline_layout);
+            pipeline_factory.SetVertexShader(GetVertexShader(VertexShaderSlot::Test));
+            pipeline_factory.SetPixelShader(GetPixelShader(PixelShaderSlot::Null));
+            pipeline_factory.SetVertexBinding(Gfx::VertexBinding::PerVertex, sizeof(Gfx::VertexBasic));
+            pipeline_factory.SetVertexBinding(Gfx::VertexBinding::PerInstance, sizeof(Gfx::VertexInstance));
+            pipeline_factory.SetVertexAttributes({Gfx::VertexBasic::attributes, Gfx::VertexInstance::attributes});
+            m_test_vertex_pipeline = pipeline_factory.Create();
+        }
 
         // Test - transfer data do the vertex buffer
         {
@@ -227,7 +239,23 @@ namespace Rc::Render
             
             m_transfer_ocmmands->TransferBuffer(m_transfer_buffer->GetBuffer(), m_vertex_buffer->GetBuffer(), vb_region->Offset(), 0, vb_region->Size());
             m_transfer_ocmmands->TransferBuffer(m_transfer_buffer->GetBuffer(), m_index_buffer->GetBuffer(), ib_region->Offset(), 0, ib_region->Size());
-        
+
+            // Instance data test
+            {
+                auto region = m_transfer_buffer->Allocate(sizeof(float) * 4 * 4);
+                // TODO: Throw when vb_region is nullopt? --------------------------------------------------------
+                auto data = m_transfer_buffer->Map<std::byte>(*region);
+
+                Gfx::Transformations tm;
+                tm.yaw = Math::pi / 4.0;
+                auto t = tm.GetTransformations();
+                t.StoreAs<float>(data);
+
+                //data[0].transformations = tm.GetTransformations() Matrix4<float>::Identity();
+
+                m_transfer_ocmmands->TransferBuffer(m_transfer_buffer->GetBuffer(), *m_instance_buffer, region->Offset(), 0, region->Size());
+            }
+
             m_transfer_ocmmands->End();
             m_transfer_semaphore->Increment();
             m_transfer_queue->Submit(*m_transfer_ocmmands, *m_transfer_semaphore);
@@ -316,9 +344,6 @@ namespace Rc::Render
     {
         m_frame = &m_frames[m_frame_number % m_frames.size()];
 
-        // Reset state.
-        m_camera_projection = Matrix4<double>::Identity();
-
         m_frame->Begin();
 
         Test();
@@ -338,46 +363,69 @@ namespace Rc::Render
         m_frame_number += 1;
     }
 
-    void Renderer::SetCamera(Gfx::PerspectiveCamera const& camera)
-    {
-        m_camera_projection = camera.GetProjectionMatrix(Width(), Height());
-    }
-
     void Renderer::Test()
     {
-        static Gfx::Transformations transformations;
+        static Gfx::PerspectiveCamera camera;
 
-        // Write uniform buffer
+        camera.transformations.z = -3.0;
+        camera.fov = Math::DegToRad(75.0);
+
+        if (Input::Pushed(Input::KeyCode::LeftArrow))
         {
-            transformations.yaw += 0.005;
-            auto tm = transformations.GetTransformations();
-  
-            Gfx::PerspectiveCamera camera;
-            camera.transformations.z = -3.0;
-            camera.transformations.y = 1.5;
-            camera.transformations.pitch = -0.5;
-            camera.fov = Math::DegToRad(75.0);
-            SetCamera(camera);
-
-            auto ub_region = m_frame->staging_buffer->Allocate(2 * (sizeof(float) * 16));
-            auto ub_data = m_frame->staging_buffer->Map<float>(ub_region);
-
-            tm.StoreAs<float>(ub_data);
-            m_camera_projection.StoreAs<float>(ub_data.subspan(16));
-
-            m_frame->commands->TransferBuffer(m_frame->staging_buffer->GetBuffer(), *m_frame->uniform_buffer, ub_region.Offset(), 0, ub_region.Size());
-            m_frame->commands->UseUniformBuffer(*m_frame->uniform_buffer, m_frame->uniform_buffer->GetRegion());
+            camera.transformations.x += 0.01; 
+        }
+        if (Input::Pushed(Input::KeyCode::RightArrow))
+        {
+            camera.transformations.x -= 0.01; 
+        }
+        if (Input::Pushed(Input::KeyCode::UpArrow))
+        {
+            camera.transformations.y += 0.01; 
+        }
+        if (Input::Pushed(Input::KeyCode::DownArrow))
+        {
+            camera.transformations.y -= 0.01; 
+        }
+        if (Input::Pushed(Input::KeyCode::D))
+        {
+            camera.transformations.yaw += 0.005; 
+        }
+        if (Input::Pushed(Input::KeyCode::A))
+        {
+            camera.transformations.yaw -= 0.005; 
+        }
+        if (Input::Pushed(Input::KeyCode::W))
+        {
+            camera.transformations.pitch += 0.005; 
+        }
+        if (Input::Pushed(Input::KeyCode::S))
+        {
+            camera.transformations.pitch -= 0.005; 
         }
 
+        RenderPassContext render_pass_context {};
+        render_pass_context.camera = &camera;
+        //render_pass_context.vertex_buffers[0] = &m_vertex_buffer->GetBuffer();
+        //render_pass_context.index_buffer = &m_index_buffer->GetBuffer();
+
+        m_frame->commands->UseVertexBuffer(*m_instance_buffer, m_instance_buffer->GetRegion());
         m_frame->commands->UseVertexBuffer(m_vertex_buffer->GetBuffer(), m_vertex_buffer->GetBuffer().GetRegion());
         m_frame->commands->UseIndexBuffer(m_index_buffer->GetBuffer(), m_index_buffer->GetBuffer().GetRegion());
-        m_frame->commands->BindVertexBuffer(m_vertex_buffer->GetBuffer(), 0);
-        m_frame->commands->BindIndexBuffer(m_index_buffer->GetBuffer(), IndexType::Uint16, 0);
 
         m_swap_chain->AcquireNextImage();
 
-        m_frame->BeginTestRenderPass(*m_test_vertex_pipeline, m_swap_chain->GetRenderTargetView());
-        m_frame->commands->DrawIndexed(36, 1, 0, 0, 0);
+        m_frame->BeginTestRenderPass(
+            *m_test_vertex_pipeline,
+            m_swap_chain->GetRenderTargetView(),
+            render_pass_context
+        );
+
+        m_frame->BindVertexBuffer(m_vertex_buffer->GetBuffer(), 0, 0); // ---------------------- Use VertexBinding !!!!!!!!
+        m_frame->BindVertexBuffer(*m_instance_buffer, 1, 0);
+        m_frame->BindIndexBuffer(m_index_buffer->GetBuffer(), IndexType::Uint16, 0);
+
+        m_frame->Draw(36, 1, 0, 0, 0);
+
         m_frame->EndRenderPass();
     }
 

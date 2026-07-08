@@ -61,9 +61,9 @@ namespace Rc::Render
 
         void TransferBuffer(Buffer& src, Buffer& dst, uint64_t src_offset, uint64_t dst_offset, uint64_t size);
 
-        void BindVertexBuffer(Buffer& vb, uint64_t offset);
+        void BindVertexBuffer(Buffer const& vb, int slot, uint64_t offset);
 
-        void BindIndexBuffer(Buffer& ib, IndexType type, uint64_t offset);
+        void BindIndexBuffer(Buffer const& ib, IndexType type, uint64_t offset);
 
         void BeginRendering(Rectangle<int> const& render_area, RenderTargetAttachments const& attachments);
         void EndRendering();

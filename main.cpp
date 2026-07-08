@@ -2,15 +2,18 @@
 #include "generic/char_input.h"
 #include "generic/input.h"
 #include <print>
+#include <iostream>
 
 int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PWSTR cmdline, int cmdshow)
 {
     Rc::Input::ButtonEvent::Handler button_push_handler {[](auto key) {
-        std::println("PUSH {}", int(key));
+        std::cout << "PUSH " << int(key) << std::endl;
+        //std::println("PUSH {}", int(key));
     }};
 
     Rc::Input::ButtonEvent::Handler button_release_handler {[](auto key) {
-        std::println("RELEASE {}", int(key));
+        std::cout << "RELEASE " << int(key) << std::endl;
+        //std::println("RELEASE {}", int(key));
     }};
 
     Rc::CharInput::CharEvent::Handler char_handler {[](char32_t ch) {

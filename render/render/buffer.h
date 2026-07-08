@@ -125,6 +125,17 @@ namespace Rc::Render
             return Map(region.Offset(), region.Size());
         }
 
+        // template<typename T>
+        // std::span<T> Map(BufferRegion const& region)
+        // {
+        //     auto raw = m_buffer.Map(region);
+
+        //     return {
+        //         reinterpret_cast<T*>(raw.data()),
+        //         region.Size() / sizeof(T)
+        //     };
+        // }
+
     private:
         friend class RenderCommandBuffer;
         friend class TransferCommandBuffer;

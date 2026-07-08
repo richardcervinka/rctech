@@ -97,16 +97,14 @@ namespace Rc::Render
         uint64_t GetIndexBufferCapacity(Usage usage) const; // Return BufferInfo {capacity, available...}
         uint64_t GetIndexBufferAvailable(Usage usage) const;
 
-        void ReserveVertexBuffer(Usage usage, uint64_t capacity);
-        BufferHandle AllocateVertexbuffer(Usage usage, uint64_t size);
+        void ReserveVertexBuffer(Usage usage, uint64_t capacity);  // ------------------------------ REVIEW
+        BufferHandle AllocateVertexbuffer(Usage usage, uint64_t size);  // ------------------------------ REVIEW
         uint64_t GetVertexBufferCapacity(Usage usage) const;
         uint64_t GetVertexBufferAvailable(Usage usage) const;
 
         //void TransferBuffer(BufferHandle)
 
         // Test interace
-
-        void SetCamera(Gfx::PerspectiveCamera const& camera);
 
     private:
         // Assign vertex shader to the slot.
@@ -168,6 +166,8 @@ namespace Rc::Render
 
         std::unique_ptr<BufferLinearAllocator> m_vertex_buffer; //------------------------- TEST
         std::unique_ptr<BufferLinearAllocator> m_index_buffer; //------------------------- TEST: Static index buffer
+        // TODO: Static meshes vs dynamic meshes...
+        std::unique_ptr<Buffer> m_instance_buffer; //------------------------- TEST
 
         Window::EventSize::Handler m_on_window_size {this, &Renderer::OnWindowSize};
 
@@ -177,9 +177,6 @@ namespace Rc::Render
         std::unique_ptr<Device> CreateDevice();
 
         // TEST rendering -----------------------
-
-        Matrix4<double> m_camera_projection {Matrix4<double>::Identity()}; // -------------- TODO: Reset each frame
-
         void Test();
     };
 

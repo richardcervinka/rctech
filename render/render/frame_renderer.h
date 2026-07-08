@@ -7,29 +7,59 @@
 #include "fence.h"
 #include "command_buffer.h"
 #include "device.h"
+#include "core/camera.h"
+#include "constants.h"
 
 namespace Rc::Render
-{   
+{
+    struct FrameData
+    {
+        //
+    };
+
+    // struct RenderPassVertexBinding
+    // {
+    //     Buffer const* buffer;
+    //     uint64_t offset;
+
+    // };
+
+    struct RenderPassContext
+    {
+        Gfx::Camera const* camera;
+    };
+
     class Frame
     {
     public:
         static constexpr uint64_t staging_buffer_size = 2048;
-        static constexpr uint64_t uniform_buffer_size = 1024;
+        //static constexpr uint64_t render_pass_uniform_buffer_size = 16 * 4;
 
         void Create(Device const& device);
 
-        void UpdateResourceDescriptorHeapBuffer(Device const& device);
+        void UpdateResourceDescriptorHeap(Device const& device);
 
-        void Begin();
+        void Begin(/*FrameData const& data*/);
 
         // void End(SwapChain const& swap_chain);
 
         void BeginTestRenderPass(
             Pipeline const& pipeline,
-            RenderTargetView const& framebuffer
+            RenderTargetView const& framebuffer,
+            RenderPassContext const& context
         );
 
+        void BindVertexBuffer(Buffer const& buffer, int slot, uint64_t offset);
+        void BindIndexBuffer(Buffer const& buffer, IndexType type, uint64_t offset);
+
+        void Draw(uint32_t index_count, uint32_t instance_count, uint32_t first_index, int32_t vertex_offset, uint32_t first_instance);
+
         void EndRenderPass();
+
+        // void Draw(
+        //     uint32_t vertex_input_binding,
+        //     uint32_t instance_input_binding,
+        // );
 
         void Wait() const;
 
@@ -44,7 +74,9 @@ namespace Rc::Render
 
         std::unique_ptr<BufferLinearAllocator> staging_buffer;
 
-        std::unique_ptr<Buffer> uniform_buffer;
+        std::unique_ptr<Buffer> render_pass_uniform_buffer;
+
+        // TODO: Frame uniform buffer
 
         std::unique_ptr<Buffer> resource_descriptor_heap_buffer;
 

@@ -75,10 +75,14 @@ namespace Rc::Render
             m_pipeline_layout = std::move(layout);
         }
 
+        //void SetVertexBinding()
+
         // stride = size of vertex
         // 0 to disable vertex input binding
-        void SetVertexInput(std::size_t stride, std::span<Gfx::VertexDescription const> attributes);
-        void SetInstanceInput(std::size_t stride, std::span<Gfx::VertexDescription const> attributes);
+        void SetVertexAttributes(std::vector<std::span<Gfx::VertexDescription const>> const& attributes);
+        //void SetInstanceInput(std::span<Gfx::VertexDescription const> attributes);
+
+        void SetVertexBinding(Gfx::VertexBinding binding, std::size_t stride);
 
         // TODO: Do not return raw Vk object
         std::unique_ptr<Pipeline> Create();
@@ -88,7 +92,6 @@ namespace Rc::Render
         VkShaderModule m_vs {nullptr};
         VkShaderModule m_ps {nullptr};
         std::vector<VkVertexInputAttributeDescription> m_vertex_arrtibutes;
-        std::vector<VkVertexInputAttributeDescription> m_instance_arrtibutes;
         std::array<VkVertexInputBindingDescription, 2> m_vertex_binding_desc {};
         VkPipelineInputAssemblyStateCreateInfo m_input_assembly {};
         VkPipelineViewportStateCreateInfo m_viewport_state {};

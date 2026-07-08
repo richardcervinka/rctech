@@ -5,13 +5,23 @@
 
 namespace Rc::Gfx
 {
-    class PerspectiveCamera
+    class Camera
+    {
+    public:
+        Camera() = default;
+        virtual ~Camera() = default;
+
+        virtual Matrix4<double> GetProjectionMatrix(int viewport_width, int viewport_height) const = 0;
+    };
+
+
+    class PerspectiveCamera : public Camera
     {
     public:
         static constexpr double min_fov = 0;
         static constexpr double max_fov = Math::pi;
         
-        Matrix4<double> GetProjectionMatrix(int viewport_width, int viewport_height) const;
+        Matrix4<double> GetProjectionMatrix(int viewport_width, int viewport_height) const override;
 
         // The scale is ignored.
         Transformations transformations;

@@ -25,40 +25,13 @@ namespace Rc::Render
 
     PipelineLayout::PipelineLayout(VulkanDevice const& vk_device) : m_vk_device{&vk_device}
     {
-        // std::array<VkDescriptorSetLayoutBinding, 1> descriptor_set_layout_bindings
-        // {
-        //     VkDescriptorSetLayoutBinding
-        //     {
-        //         .binding = 0,
-        //         .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
-        //         .descriptorCount = 1000,
-        //         .stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-        //         .pImmutableSamplers = nullptr
-        //     }
-        // };
-        // VkDescriptorBindingFlags binding_flags
-        // {
-        //     VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | 
-        //     VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT |
-        //     VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT // Optional: if size is dynamic
-        // };
-
-        VkDescriptorSetLayoutBinding dummy_binding
-        {
-            .binding = 0,
-            .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-            .descriptorCount = 1,
-            .stageFlags = VK_SHADER_STAGE_ALL,
-            .pImmutableSamplers = nullptr
-        };
-
         VkDescriptorSetLayoutCreateInfo descriptor_set_layout_info
         {
             .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
             .pNext = nullptr,
             .flags = {},
-            .bindingCount = 1,
-            .pBindings = &dummy_binding
+            .bindingCount = 0,
+            .pBindings = nullptr
         };
 
         m_vk_descriptor_set_layout = m_vk_device->CreateDescriptorSetLayout(descriptor_set_layout_info);
@@ -232,13 +205,13 @@ namespace Rc::Render
             .pDynamicStates = dynamic_states.data()
         };
 
-        auto vertex_input_arrtibutes = m_vertex_arrtibutes;
-        vertex_input_arrtibutes.insert_range(vertex_input_arrtibutes.end(), m_instance_arrtibutes);
+        // auto vertex_input_arrtibutes = m_vertex_arrtibutes;
+        // vertex_input_arrtibutes.insert_range(vertex_input_arrtibutes.end(), m_instance_arrtibutes);
 
         VkPipelineVertexInputStateCreateInfo vertex_input_info {};
         vertex_input_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-        vertex_input_info.vertexAttributeDescriptionCount = vertex_input_arrtibutes.size();
-        vertex_input_info.pVertexAttributeDescriptions = vertex_input_arrtibutes.data();
+        vertex_input_info.vertexAttributeDescriptionCount = m_vertex_arrtibutes.size();
+        vertex_input_info.pVertexAttributeDescriptions = m_vertex_arrtibutes.data();
 
         // Setup vertex input binding...
 
@@ -309,6 +282,11 @@ namespace Rc::Render
                 return VK_FORMAT_R32G32B32_SFLOAT;
             case Gfx::VertexAttribute::Color:
                 return VK_FORMAT_R32G32B32_SFLOAT;
+            case Gfx::VertexAttribute::Transformations0:
+            case Gfx::VertexAttribute::Transformations1:
+            case Gfx::VertexAttribute::Transformations2:
+            case Gfx::VertexAttribute::Transformations3:
+                return VK_FORMAT_R32G32B32A32_SFLOAT;
         }
 
         std::unreachable();
@@ -324,33 +302,71 @@ namespace Rc::Render
                 return 1;
             case Gfx::VertexAttribute::Color:
                 return 2;
+            case Gfx::VertexAttribute::Transformations0:
+                return 3;
+            case Gfx::VertexAttribute::Transformations1:
+                return 4;
+            case Gfx::VertexAttribute::Transformations2:
+                return 5;
+            case Gfx::VertexAttribute::Transformations3:
+                return 6;
         }
 
         std::unreachable();
     }
 
-    void PipelineFactory::SetVertexInput(std::size_t stride, std::span<Gfx::VertexDescription const> attributes)
+    static uint32_t GetBinding(Gfx::VertexBinding binding)
     {
-        constexpr uint32_t binding = 0;
+        switch (binding)
+        {
+            case Gfx::VertexBinding::PerVertex:
+                return 0;
+            case Gfx::VertexBinding::PerInstance:
+                return 1;
+        }
 
-        m_vertex_binding_desc[0].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-        m_vertex_binding_desc[0].binding = binding;
-        m_vertex_binding_desc[0].stride = stride;
+        std::unreachable();
+    }
 
+    void PipelineFactory::SetVertexBinding(Gfx::VertexBinding binding, std::size_t stride)
+    {
+        if (binding == Gfx::VertexBinding::PerVertex)
+        {
+            m_vertex_binding_desc[0].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+            m_vertex_binding_desc[0].binding = 0;
+            m_vertex_binding_desc[0].stride = stride;
+            return;
+        }
+        if (binding == Gfx::VertexBinding::PerInstance)
+        {
+            m_vertex_binding_desc[1].inputRate = VK_VERTEX_INPUT_RATE_INSTANCE;
+            m_vertex_binding_desc[1].binding = 1;
+            m_vertex_binding_desc[1].stride = stride;
+            return;
+        }
+        std::unreachable();
+    }
+
+    void PipelineFactory::SetVertexAttributes(std::vector<std::span<Gfx::VertexDescription const>> const& attributes)
+    {
         m_vertex_arrtibutes.clear();
         m_vertex_arrtibutes.reserve(attributes.size());
 
-        for (auto const& a : attributes)
+        for (auto const& subset : attributes)
         {
-            m_vertex_arrtibutes.push_back({
-                .location = GetLocation(a.attribute),
-                .binding = binding,
-                .format = GetFormat(a.attribute),
-                .offset = a.offset
-            });
+            for (auto const& attribute : subset)
+            {
+                m_vertex_arrtibutes.push_back({
+                    .location = GetLocation(attribute.attribute),
+                    .binding = GetBinding(attribute.binding),
+                    .format = GetFormat(attribute.attribute),
+                    .offset = attribute.offset
+                });
+            }
         }
     }
 
+    /*
     void PipelineFactory::SetInstanceInput(std::size_t stride, std::span<Gfx::VertexDescription const> attributes)
     {
         constexpr uint32_t binding = 1;
@@ -361,7 +377,7 @@ namespace Rc::Render
 
         for (auto const& a : attributes)
         {
-            m_vertex_arrtibutes.push_back({
+            m_instance_arrtibutes.push_back({
                 .location = GetLocation(a.attribute),
                 .binding = binding,
                 .format = GetFormat(a.attribute),
@@ -369,5 +385,6 @@ namespace Rc::Render
             });
         }
     }
+    */
 
 } // Rc::Render

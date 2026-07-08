@@ -250,10 +250,31 @@ namespace Rc::Render
             .pNext = &timeline_semaphore_features,
             .dynamicRenderingUnusedAttachments = VK_TRUE
         };
-        VkPhysicalDeviceVulkan13Features features_1_4
+        VkPhysicalDeviceVulkan14Features features_1_4
         {
             .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_4_FEATURES,
             .pNext = &unused_attachments_features,
+            .globalPriorityQuery = VK_FALSE,
+            .shaderSubgroupRotate = VK_FALSE,
+            .shaderSubgroupRotateClustered = VK_FALSE,
+            .shaderFloatControls2 = VK_FALSE,
+            .shaderExpectAssume = VK_FALSE,
+            .rectangularLines = VK_FALSE,
+            .bresenhamLines = VK_FALSE,
+            .smoothLines = VK_FALSE,
+            .stippledRectangularLines = VK_FALSE,
+            .stippledBresenhamLines = VK_FALSE,
+            .stippledSmoothLines = VK_FALSE,
+            .vertexAttributeInstanceRateDivisor = VK_FALSE,
+            .vertexAttributeInstanceRateZeroDivisor = VK_FALSE,
+            .indexTypeUint8 = VK_FALSE,
+            .dynamicRenderingLocalRead = VK_FALSE,
+            .maintenance5 = VK_FALSE,
+            .maintenance6 = VK_FALSE,
+            .pipelineProtectedAccess = VK_FALSE,
+            .pipelineRobustness = VK_FALSE,
+            .hostImageCopy = VK_FALSE,
+            .pushDescriptor  = VK_FALSE
         };
         VkPhysicalDeviceShaderUntypedPointersFeaturesKHR shader_untyped_pointers_features
         {

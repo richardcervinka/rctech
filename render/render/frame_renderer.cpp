@@ -9,14 +9,14 @@ namespace Rc::Render
         fence = device.CreateFence();
         commands = m_queue->CreateCommandBuffer();
         staging_buffer = std::make_unique<BufferLinearAllocator>(device.AllocateBuffer(StagingBufferInfo{.size = staging_buffer_size}));
-        uniform_buffer = device.AllocateBuffer(UniformBufferInfo{.size = uniform_buffer_size});
+        render_pass_uniform_buffer = device.AllocateBuffer(UniformBufferInfo{.size = RenderPassConstants::size});
 
         std::array<ResourceDescriptor, 1> const resource_descriptors
         {
             UniformBufferDescriptor
             {
-                .address = uniform_buffer->Address(),
-                .size = uniform_buffer->Size()
+                .address = render_pass_uniform_buffer->Address(),
+                .size = render_pass_uniform_buffer->Size()
             }
         };
 
@@ -25,7 +25,7 @@ namespace Rc::Render
         resource_descriptor_heap->Attach(*resource_descriptor_heap_buffer);
     }
 
-    void Frame::UpdateResourceDescriptorHeapBuffer(Device const& device)
+    void Frame::UpdateResourceDescriptorHeap(Device const& device)
     {
         auto transfer_buffer = device.AllocateBuffer(StagingBufferInfo{.size = resource_descriptor_heap->Size()});
 
@@ -54,8 +54,9 @@ namespace Rc::Render
             resource_descriptor_heap_buffer->GetRegion()
         );
 
-        // Submit commands.
         commands->End();
+
+        // Submit commands.
         fence->Reset();
         m_queue->Submit(*commands, *fence);
         fence->Wait();
@@ -80,7 +81,8 @@ namespace Rc::Render
 
     void Frame::BeginTestRenderPass(
         Pipeline const& pipeline,
-        RenderTargetView const& framebuffer)
+        RenderTargetView const& framebuffer,
+        RenderPassContext const& context)
     {
         // Framebuffer memory barrier.
         commands->UseRenderingFramebuffer(framebuffer);
@@ -90,6 +92,31 @@ namespace Rc::Render
         attachments.ClearRenderTarget(RenderTargetSlot::FrameBuffer, Color(0, 0, 0, 1));
 
         Rectangle<int> const framebuffer_area {0, 0, framebuffer.Width(), framebuffer.Height()};
+
+        // Update uniform buffer
+        {
+            auto const region = staging_buffer->Allocate(RenderPassConstants::size);
+
+            RenderPassConstants constants
+            {
+                .camera_projection_matrix = context.camera->GetProjectionMatrix(framebuffer.Width(), framebuffer.Height())
+            };
+
+            constants.Write(staging_buffer->GetBuffer(), region);
+
+            commands->TransferBuffer(
+                staging_buffer->GetBuffer(),
+                *render_pass_uniform_buffer,
+                region.Offset(),
+                0,
+                region.Size()
+            );
+
+            // Memory barrier
+            commands->UseUniformBuffer(*render_pass_uniform_buffer, region);
+        }
+
+        // Begin rendering
 
         commands->SetViewport({
             .x = 0,
@@ -109,11 +136,30 @@ namespace Rc::Render
 
         commands->BindPipeline(pipeline);
         commands->BeginRendering(framebuffer_area, attachments);
+
+        // ---------------------------------- TEST ----------------------------------
+
+        //commands->DrawIndexed(36, 1, 0, 0, 0);
     }
 
     void Frame::EndRenderPass()
     {
         commands->EndRendering();
+    }
+
+    void Frame::BindVertexBuffer(Buffer const& buffer, int slot, uint64_t offset)
+    {
+        commands->BindVertexBuffer(buffer, slot, offset);
+    }
+
+    void Frame::BindIndexBuffer(Buffer const& buffer, IndexType type, uint64_t offset)
+    {
+        commands->BindIndexBuffer(buffer, type, offset);
+    }
+
+    void Frame::Draw(uint32_t index_count, uint32_t instance_count, uint32_t first_index, int32_t vertex_offset, uint32_t first_instance)
+    {
+        commands->DrawIndexed(index_count, instance_count, first_index, vertex_offset, first_instance);
     }
 
     void Frame::Wait() const

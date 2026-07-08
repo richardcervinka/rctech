@@ -380,16 +380,16 @@ namespace Rc::Render
         buffer.m_stage_flags = VK_PIPELINE_STAGE_2_ALL_GRAPHICS_BIT;
     }
 
-    void RenderCommandBuffer::BindVertexBuffer(Buffer& vb, uint64_t offset)
+    void RenderCommandBuffer::BindVertexBuffer(Buffer const& vb, int slot, uint64_t offset)
     {
         // TODO: Assert Buffer::usage
         const std::array<VkDeviceSize, 1> vk_offset {offset};
         const std::array<VkBuffer, 1> vk_buffers {vb.Handle()};
 
-        m_vk_device->CmdBindVertexBuffers(m_vk_command_buffer, 0, 1, vk_buffers, vk_offset);
+        m_vk_device->CmdBindVertexBuffers(m_vk_command_buffer, static_cast<uint32_t>(slot), 1, vk_buffers, vk_offset);
     }
 
-    void RenderCommandBuffer::BindIndexBuffer(Buffer& ib, IndexType type, uint64_t offset)
+    void RenderCommandBuffer::BindIndexBuffer(Buffer const& ib, IndexType type, uint64_t offset)
     {
         // TODO: Assert Buffer::usage
         

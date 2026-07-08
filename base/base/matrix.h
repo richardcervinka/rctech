@@ -388,34 +388,36 @@ namespace Rc
             At(row, 3) *= value;
         }
 
-        void Store(std::span<T> dst) const
+        void Store(std::span<std::byte> dst) const
         {
-            assert(dst.size() >= 16);
+            assert(dst.size() >= 16 * sizeof(T));
 
-            std::memcpy(dst.data(), m, 16 * sizeof(float));
+            std::memcpy(dst.data(), m, 16 * sizeof(T));
         }
 
         template<typename As>
-        void StoreAs(std::span<As> dst) const
+        void StoreAs(std::span<std::byte> dst) const
         {
-            assert(dst.size() >= 16);
+            assert(dst.size() >= 16 * sizeof(As));
 
-            dst[0] = static_cast<As>(m[0][0]);
-            dst[1] = static_cast<As>(m[0][1]);
-            dst[2] = static_cast<As>(m[0][2]);
-            dst[3] = static_cast<As>(m[0][3]);
-            dst[4] = static_cast<As>(m[1][0]);
-            dst[5] = static_cast<As>(m[1][1]);
-            dst[6] = static_cast<As>(m[1][2]);
-            dst[7] = static_cast<As>(m[1][3]);
-            dst[8] = static_cast<As>(m[2][0]);
-            dst[9] = static_cast<As>(m[2][1]);
-            dst[10] = static_cast<As>(m[2][2]);
-            dst[11] = static_cast<As>(m[2][3]);
-            dst[12] = static_cast<As>(m[3][0]);
-            dst[13] = static_cast<As>(m[3][1]);
-            dst[14] = static_cast<As>(m[3][2]);
-            dst[15] = static_cast<As>(m[3][3]);
+            std::span<As> raw {reinterpret_cast<As*>(dst.data()), 16};
+
+            raw[0] = static_cast<As>(m[0][0]);
+            raw[1] = static_cast<As>(m[0][1]);
+            raw[2] = static_cast<As>(m[0][2]);
+            raw[3] = static_cast<As>(m[0][3]);
+            raw[4] = static_cast<As>(m[1][0]);
+            raw[5] = static_cast<As>(m[1][1]);
+            raw[6] = static_cast<As>(m[1][2]);
+            raw[7] = static_cast<As>(m[1][3]);
+            raw[8] = static_cast<As>(m[2][0]);
+            raw[9] = static_cast<As>(m[2][1]);
+            raw[10] = static_cast<As>(m[2][2]);
+            raw[11] = static_cast<As>(m[2][3]);
+            raw[12] = static_cast<As>(m[3][0]);
+            raw[13] = static_cast<As>(m[3][1]);
+            raw[14] = static_cast<As>(m[3][2]);
+            raw[15] = static_cast<As>(m[3][3]);
         }
 
     private:
