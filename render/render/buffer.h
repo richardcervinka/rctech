@@ -6,6 +6,7 @@
 #include <cassert>
 #include "base/float.h"
 #include "base/vector.h"
+#include "base/matrix.h"
 
 namespace Rc::Render
 {
@@ -198,57 +199,62 @@ namespace Rc::Render
             m_ptr += value.size();
         }
 
+        BufferWriter& operator<<(float value)
+        {
+            Write(value);
+            return *this;
+        }
+
+        BufferWriter& operator<<(Vector4<float> value)
+        {
+            //value.
+            Write(value.x);
+            Write(value.y);
+            Write(value.z);
+            Write(value.w);
+            return *this;
+        }
+
+        BufferWriter& operator<<(Float4 value)
+        {
+            value.Store(m_ptr);
+            m_ptr += 4 * sizeof(float);
+            return *this;
+        }
+
+        BufferWriter& operator<<(Float3 value)
+        {
+            value.Store(m_ptr);
+            m_ptr += 3 * sizeof(float);
+            return *this;
+        }
+
+        BufferWriter& operator<<(Float2 value)
+        {
+            value.Store(m_ptr);
+            m_ptr += 2 * sizeof(float);
+            return *this;
+        }
+
+        BufferWriter& operator<<(std::span<uint16_t const> value)
+        {
+            Write(std::as_bytes(value));
+            return *this;
+        }
+
+        BufferWriter& operator<<(Matrix4<float> const& value)
+        {
+            std::span const raw{m_ptr, sizeof(float) * 16};
+            value.Store(raw);
+            m_ptr += raw.size();
+            return *this;
+        }
+
     private:
         std::byte* m_ptr {nullptr};
         //std::byte const* m_end {nullptr};
         //std::span<std::byte> m_dst;
         
     };
-
-    inline BufferWriter& operator<<(BufferWriter& writer, float value)
-    {
-        writer.Write(value);
-        return writer;
-    }
-
-    inline BufferWriter& operator<<(BufferWriter& writer, Vector4<float> value)
-    {
-        writer.Write(value.x);
-        writer.Write(value.y);
-        writer.Write(value.z);
-        writer.Write(value.w);
-        return writer;
-    }
-
-    inline BufferWriter& operator<<(BufferWriter& writer, Float4 value)
-    {
-        writer.Write(value.x);
-        writer.Write(value.y);
-        writer.Write(value.z);
-        writer.Write(value.w);
-        return writer;
-    }
-
-    inline BufferWriter& operator<<(BufferWriter& writer, Float3 value)
-    {
-        writer.Write(value.x);
-        writer.Write(value.y);
-        writer.Write(value.z);
-        return writer;
-    }
-
-    inline BufferWriter& operator<<(BufferWriter& writer, Float2 value)
-    {
-        writer.Write(value.x);
-        writer.Write(value.y);
-        return writer;
-    }
-
-    inline BufferWriter& operator<<(BufferWriter& writer, std::span<uint16_t const> value)
-    {
-        writer.Write(std::as_bytes(value));
-        return writer;
-    }
-
 
 } // Rc::Render

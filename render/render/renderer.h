@@ -11,6 +11,7 @@
 #include "frame_renderer.h"
 #include "buffer_linear_allocator.h"
 #include "buffer_ring_allocator.h"
+#include "buffer_manager.h"
 
 namespace Rc::Render
 {
@@ -41,42 +42,6 @@ namespace Rc::Render
 
         // ???
         Stream
-    };
-
-    enum class ResourceFamilyName : uint32_t {};
-
-    class VertexBufferHandle
-    {
-    public:
-        VertexBufferHandle() = default;
-
-    private:
-        friend class Renderer;
-
-        VertexBufferHandle(ResourceFamilyName family, uint64_t index) :
-            m_family{family},
-            m_index{index}
-        {}
-
-        ResourceFamilyName m_family {};
-        uint64_t m_index {};
-    };
-
-    class IndexBufferHandle
-    {
-    public:
-        IndexBufferHandle() = default;
-
-    private:
-        friend class Renderer;
-
-        IndexBufferHandle(ResourceFamilyName family, uint64_t index) :
-            m_family{family},
-            m_index{index}
-        {}
-
-        ResourceFamilyName m_family {};
-        uint64_t m_index {};
     };
 
     //
@@ -115,11 +80,13 @@ namespace Rc::Render
         // BeginFrame -> render commands -> EndFrame
         void EndFrame();
 
-        VertexBufferHandle AllocateVertexbuffer(ResourceFamilyName name, uint64_t size);
-        IndexBufferHandle AllocateIndexbuffer(ResourceFamilyName name, uint64_t size);
+        VertexBufferHandle AllocateVertexBuffer(ResourceFamilyName name, uint64_t size);
+        IndexBufferHandle AllocateIndexBuffer(ResourceFamilyName name, uint64_t size);
+        InstanceBufferHandle AllocateInstanceBuffer(ResourceFamilyName name, uint64_t size);
 
-        void UploadVertexBuffer(VertexBufferHandle handle, std::function<void(BufferWriter&)> writer_callback);
-        void UploadIndexBuffer(IndexBufferHandle handle, std::function<void(BufferWriter&)> writer_callback);
+        void UploadBuffer(VertexBufferHandle handle, std::function<void(BufferWriter&)> writer_callback);
+        void UploadBuffer(IndexBufferHandle handle, std::function<void(BufferWriter&)> writer_callback);
+        void UploadBuffer(InstanceBufferHandle handle, std::function<void(BufferWriter&)> writer_callback);
 
         //void reserveInstanceBuffer
 
@@ -189,50 +156,7 @@ namespace Rc::Render
         std::unique_ptr<Pipeline> m_test_pipeline;
         std::unique_ptr<Pipeline> m_test_vertex_pipeline;
 
-        // BEGIN ***********************************************************************
-
-        struct ResourceFamily
-        {
-            std::unique_ptr<BufferLinearAllocator> vertex_buffer_allocator;
-            std::unique_ptr<BufferLinearAllocator> instance_buffer_allocator;
-            std::unique_ptr<BufferLinearAllocator> index_buffer_allocator;
-
-            std::vector<BufferRegion> vertex_buffer_regions;
-            std::vector<BufferRegion> instance_buffer_regions;
-            std::vector<BufferRegion> index_buffer_regions;
-        };
-
-        // Map family index to a verte buffer regions.
-        std::array<ResourceFamily, 256> m_resources;
-
-        // TODO: uint64_t capacity ...
-        void CreateResourceFamily(ResourceFamilyName name)
-        {
-            assert(std::to_underlying(name) < m_resources.size());
-
-            auto const index = std::to_underlying(name);
-
-            {
-                auto buffer = m_device->AllocateBuffer(VertexBufferInfo{.size = 2048}); // !!!!!!!!!!!
-                m_resources[index].vertex_buffer_allocator = std::make_unique<BufferLinearAllocator>(std::move(buffer));
-                m_resources[index].vertex_buffer_regions.reserve(UINT16_MAX); // --------------- DO NOT USE UINT16_MAX
-            }
-            {
-                auto buffer = m_device->AllocateBuffer(VertexBufferInfo{.size = 2048}); // !!!!!!!!!!!
-                m_resources[index].instance_buffer_allocator = std::make_unique<BufferLinearAllocator>(std::move(buffer));
-                m_resources[index].instance_buffer_regions.reserve(UINT16_MAX); // --------------- DO NOT USE UINT16_MAX
-            }
-            {
-                auto buffer = m_device->AllocateBuffer(IndexBufferInfo{.size = 2048}); // !!!!!!!!!!!
-                m_resources[index].index_buffer_allocator = std::make_unique<BufferLinearAllocator>(std::move(buffer));
-                m_resources[index].index_buffer_regions.reserve(UINT16_MAX); // --------------- DO NOT USE UINT16_MAX
-            }
-        }
-
-        // END ***********************************************************************
-
-        //std::unique_ptr<BufferLinearAllocator> m_instance_buffer_permanent;
-        std::unique_ptr<BufferLinearAllocator> m_instance_buffer_static;
+        std::unique_ptr<BufferManager> m_buffer_manager;
 
         Window::EventSize::Handler m_on_window_size {this, &Renderer::OnWindowSize};
 
@@ -242,6 +166,12 @@ namespace Rc::Render
         std::unique_ptr<Device> CreateDevice();
 
         // TEST rendering -----------------------
+
+        VertexBufferHandle m_test_vb_handle;
+        InstanceBufferHandle m_test_in_handle;
+        IndexBufferHandle m_test_ib_handle;
+
+
         void Test();
     };
 
