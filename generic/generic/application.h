@@ -40,6 +40,11 @@ namespace Rc::Generic
 
         std::string Name() { return m_name; }
 
+        Window const& GetWindow() const
+        {
+            return *m_window;
+        }
+
     private:
         inline static Application* m_instance {nullptr};
 

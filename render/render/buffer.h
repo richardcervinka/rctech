@@ -4,6 +4,8 @@
 #include <span>
 #include <cstddef>
 #include <cassert>
+#include "base/float.h"
+#include "base/vector.h"
 
 namespace Rc::Render
 {
@@ -33,17 +35,29 @@ namespace Rc::Render
             return m_size == 0;
         }
 
+        VkBuffer Handle() const
+        {
+            return m_vk_buffer;
+        }
+
     private:
         friend class Buffer;
+        friend class RenderCommandBuffer;
+        friend class TransferCommandBuffer;
 
-        BufferRegion(uint64_t offset, uint64_t size) :
+        BufferRegion(VkBuffer buffer, uint64_t offset, uint64_t size) :
+            m_vk_buffer{buffer},
             m_offset{offset},
             m_size{size}
         {}
 
+        VkBuffer m_vk_buffer {VK_NULL_HANDLE};
         uint64_t m_offset {0};
         uint64_t m_size {0};
         //uint64_t m_generation {0};
+
+        VkAccessFlags2 m_access_flags {VK_ACCESS_NONE};
+        VkPipelineStageFlags m_stage_flags {VK_PIPELINE_STAGE_NONE};
     };
 
     struct VertexBufferInfo
@@ -137,9 +151,6 @@ namespace Rc::Render
         // }
 
     private:
-        friend class RenderCommandBuffer;
-        friend class TransferCommandBuffer;
-
         Buffer(
             VulkanDevice const& vk_device,
             uint64_t size,
@@ -153,8 +164,91 @@ namespace Rc::Render
         VmaAllocator m_vma_allocator {VK_NULL_HANDLE};
         VmaAllocation m_vma_allocation {nullptr};
         VmaAllocationInfo m_vma_allocation_info {};
-        VkAccessFlags2 m_access_flags {VK_ACCESS_NONE};
-        VkPipelineStageFlags m_stage_flags {VK_PIPELINE_STAGE_NONE};
     };
+
+    class BufferWriter
+    {
+    public:
+        explicit BufferWriter(std::span<std::byte> dst) :
+            m_ptr{dst.data()}
+            //m_end{dst.end()}
+        {}
+
+        void Write(float value)
+        {
+            *reinterpret_cast<float*>(m_ptr) = value;
+            m_ptr += sizeof(float);
+        }
+
+        void Write(uint32_t value)
+        {
+            *reinterpret_cast<uint32_t*>(m_ptr) = value;
+            m_ptr += sizeof(uint32_t);
+        }
+
+        void Write(int32_t value)
+        {
+            *reinterpret_cast<uint32_t*>(m_ptr) = value;
+            m_ptr += sizeof(uint32_t);
+        }
+
+        void Write(std::span<std::byte const> value)
+        {
+            std::memcpy(m_ptr, value.data(), value.size());
+            m_ptr += value.size();
+        }
+
+    private:
+        std::byte* m_ptr {nullptr};
+        //std::byte const* m_end {nullptr};
+        //std::span<std::byte> m_dst;
+        
+    };
+
+    inline BufferWriter& operator<<(BufferWriter& writer, float value)
+    {
+        writer.Write(value);
+        return writer;
+    }
+
+    inline BufferWriter& operator<<(BufferWriter& writer, Vector4<float> value)
+    {
+        writer.Write(value.x);
+        writer.Write(value.y);
+        writer.Write(value.z);
+        writer.Write(value.w);
+        return writer;
+    }
+
+    inline BufferWriter& operator<<(BufferWriter& writer, Float4 value)
+    {
+        writer.Write(value.x);
+        writer.Write(value.y);
+        writer.Write(value.z);
+        writer.Write(value.w);
+        return writer;
+    }
+
+    inline BufferWriter& operator<<(BufferWriter& writer, Float3 value)
+    {
+        writer.Write(value.x);
+        writer.Write(value.y);
+        writer.Write(value.z);
+        return writer;
+    }
+
+    inline BufferWriter& operator<<(BufferWriter& writer, Float2 value)
+    {
+        writer.Write(value.x);
+        writer.Write(value.y);
+        return writer;
+    }
+
+    inline BufferWriter& operator<<(BufferWriter& writer, std::span<uint16_t const> value)
+    {
+        writer.Write(std::as_bytes(value));
+        return writer;
+    }
+
 
 } // Rc::Render

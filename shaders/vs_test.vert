@@ -10,10 +10,10 @@ layout(descriptor_heap) uniform Constants
 // Input
 layout(location = 0) in vec3 in_position;
 layout(location = 2) in vec3 in_color;
-layout(location = 3) in vec4 in_transformation_c0;
-layout(location = 4) in vec4 in_transformation_c1;
-layout(location = 5) in vec4 in_transformation_c2;
-layout(location = 6) in vec4 in_transformation_c3;
+layout(location = 3) in vec4 in_t0;
+layout(location = 4) in vec4 in_t1;
+layout(location = 5) in vec4 in_t2;
+layout(location = 6) in vec4 in_t3;
 
 // Output
 layout(location = 0) out vec3 out_color;
@@ -22,14 +22,7 @@ void main()
 {
     vec4 position = vec4(in_position, 1.0);
 
-    mat4x4 transformations = mat4x4(
-        in_transformation_c0,
-        in_transformation_c1,
-        in_transformation_c2,
-        in_transformation_c3
-    );
-
-    position = transformations * position;
+    position = mat4x4(in_t0, in_t1, in_t2, in_t3) * position;
     position = ubo[0].camera_projection * position;
 
     gl_Position = position;

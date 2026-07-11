@@ -138,7 +138,7 @@ namespace Rc::Render
 
     BufferRegion Buffer::GetRegion() const
     {
-        return {0, Size()};
+        return {m_vk_buffer, 0, Size()};
     }
 
     BufferRegion Buffer::GetRegion(uint64_t offset, uint64_t size) const
@@ -148,7 +148,7 @@ namespace Rc::Render
             throw std::runtime_error("REFACTOR ME"); //--------------------------
         }
 
-        return {offset, size};
+        return {m_vk_buffer, offset, size};
     }
 
     std::span<std::byte> Buffer::Map(uint64_t offset, uint64_t size)

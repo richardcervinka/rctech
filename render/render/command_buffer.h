@@ -50,16 +50,17 @@ namespace Rc::Render
         void UsePresentingFramebuffer(RenderTargetView const& render_target);
 
         // Set vertex buffer read barrier.
-        void UseVertexBuffer(Buffer& buffer, BufferRegion const& region);
+        void UseVertexBuffer(BufferRegion& region);
 
         // Set index buffer read barrier.
-        void UseIndexBuffer(Buffer& buffer, BufferRegion const& region);
+        void UseIndexBuffer(BufferRegion& region);
 
-        void UseUniformBuffer(Buffer& buffer, BufferRegion const& region);
+        void UseUniformBuffer(BufferRegion& region);
 
-        void UseResourceDescriptorHeapBuffer(Buffer& buffer, BufferRegion const& region);
+        void UseResourceDescriptorHeapBuffer(BufferRegion& region);
 
-        void TransferBuffer(Buffer& src, Buffer& dst, uint64_t src_offset, uint64_t dst_offset, uint64_t size);
+        //void TransferBuffer(Buffer& src, Buffer& dst, uint64_t src_offset, uint64_t dst_offset, uint64_t size);
+        void TransferBuffer(BufferRegion const& src, BufferRegion& dst);
 
         void BindVertexBuffer(Buffer const& vb, int slot, uint64_t offset);
 
@@ -117,7 +118,7 @@ namespace Rc::Render
 
         void End();
 
-        void TransferBuffer(Buffer const& src, Buffer& dst, uint64_t src_offset, uint64_t dst_offset, uint64_t size);
+        void TransferBuffer(BufferRegion const& src, BufferRegion& dst);
         
         VkCommandBuffer Handle() const
         {

@@ -366,25 +366,4 @@ namespace Rc::Render
         }
     }
 
-    /*
-    void PipelineFactory::SetInstanceInput(std::size_t stride, std::span<Gfx::VertexDescription const> attributes)
-    {
-        constexpr uint32_t binding = 1;
-
-        m_vertex_binding_desc[1].inputRate = VK_VERTEX_INPUT_RATE_INSTANCE;
-        m_vertex_binding_desc[1].binding = binding;
-        m_vertex_binding_desc[1].stride = stride;
-
-        for (auto const& a : attributes)
-        {
-            m_instance_arrtibutes.push_back({
-                .location = GetLocation(a.attribute),
-                .binding = binding,
-                .format = GetFormat(a.attribute),
-                .offset = a.offset
-            });
-        }
-    }
-    */
-
 } // Rc::Render

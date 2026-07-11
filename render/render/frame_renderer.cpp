@@ -29,9 +29,11 @@ namespace Rc::Render
     {
         auto transfer_buffer = device.AllocateBuffer(StagingBufferInfo{.size = resource_descriptor_heap->Size()});
 
-        const auto region = transfer_buffer->GetRegion(0, resource_descriptor_heap->Size());
+        const auto staging_region = transfer_buffer->GetRegion(0, resource_descriptor_heap->Size());
         // TODO: Throw when vb_region is nullopt? --------------------------------------------------------
-        const auto memory = transfer_buffer->Map(region);
+        const auto memory = transfer_buffer->Map(staging_region);
+
+        auto dst_region = resource_descriptor_heap_buffer->GetRegion(0, resource_descriptor_heap->Size());
                 
         // Write descriotor heap to the transfer buffer.
         resource_descriptor_heap->Write(memory);
@@ -40,19 +42,10 @@ namespace Rc::Render
         commands->Begin();
 
         // Transfer the staging buffer.
-        commands->TransferBuffer(
-            *transfer_buffer,
-            *resource_descriptor_heap_buffer,
-            region.Offset(),
-            0,
-            region.Size()
-        );
+        commands->TransferBuffer(staging_region, dst_region);
 
         // Memory Barrier
-        commands->UseResourceDescriptorHeapBuffer(
-            *resource_descriptor_heap_buffer,
-            resource_descriptor_heap_buffer->GetRegion()
-        );
+        commands->UseResourceDescriptorHeapBuffer(dst_region);
 
         commands->End();
 
@@ -96,6 +89,7 @@ namespace Rc::Render
         // Update uniform buffer
         {
             auto const region = staging_buffer->Allocate(RenderPassConstants::size);
+            auto dst_region = render_pass_uniform_buffer->GetRegion(0, RenderPassConstants::size);
 
             RenderPassConstants constants
             {
@@ -104,16 +98,10 @@ namespace Rc::Render
 
             constants.Write(staging_buffer->GetBuffer(), region);
 
-            commands->TransferBuffer(
-                staging_buffer->GetBuffer(),
-                *render_pass_uniform_buffer,
-                region.Offset(),
-                0,
-                region.Size()
-            );
+            commands->TransferBuffer(region, dst_region);
 
             // Memory barrier
-            commands->UseUniformBuffer(*render_pass_uniform_buffer, region);
+            commands->UseUniformBuffer(dst_region);
         }
 
         // Begin rendering
