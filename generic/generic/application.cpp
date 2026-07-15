@@ -4,25 +4,25 @@ namespace Rc::Generic
 {
     Application::Application(ApplicationInfo const& info)
     {
-        assert(m_instance == nullptr);
+        assert(instance == nullptr);
 
-        m_instance = this;
+        instance = this;
 
-        m_name = info.name.value_or("RcTech");
+        name = info.name.value_or("RcTech");
         
-        m_window = std::make_unique<Window>(info.name.value_or("RcTech"));
-        m_window->Show();
+        window = std::make_unique<Window>(info.name.value_or("RcTech"));
+        window->Show();
 
-        m_renderer = std::make_unique<Render::Renderer>();
-        m_renderer->Initialize(*m_window);
-        m_resource_manager = m_renderer->GetResourceManager();
+        renderer = std::make_unique<Render::Renderer>();
+        renderer->Initialize(*window);
+        resource_manager = renderer->GetResourceManager();
     }
 
     Application::~Application()
     {
-        assert(m_instance != nullptr);
+        assert(instance != nullptr);
 
-        m_instance = nullptr;
+        instance = nullptr;
     }
 
     void Application::Initialize()
@@ -32,21 +32,34 @@ namespace Rc::Generic
 
     int Application::Run()
     {
-        m_time_run = Clock::now();
+        time_run = Clock::now();
 
         return Platform::Application::StartMessageLoop();
     }
 
     void Application::BeginFrame()
     {
-        m_time_now = Clock::now();
+        time_now = Clock::now();
 
-        m_renderer->BeginFrame();
+        resource_manager->QueryCounter();
+
+        renderer->BeginFrame();
     }
 
     void Application::EndFrame()
     {
-        m_renderer->EndFrame();
+        renderer->EndFrame();
+
+        // Submit copy commands.
+        if (resource_manager->PendingTransfer())
+        {
+            auto lock = std::unique_lock(*resource_manager, std::defer_lock);
+
+            if (lock.try_lock())
+            {
+                resource_manager->Transfer();
+            }
+        }
     }
 
 } // Rc::Generic

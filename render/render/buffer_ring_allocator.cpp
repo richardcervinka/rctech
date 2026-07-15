@@ -3,45 +3,45 @@
 namespace Rc::Render
 {
     BufferRingAllocator::BufferRingAllocator(std::unique_ptr<Buffer> buffer, uint64_t chunk_size) :
-        m_buffer{std::move(buffer)},
-        m_chunk_size{chunk_size}
+        buffer{std::move(buffer)},
+        chunk_size{chunk_size}
     {
-        assert(m_buffer != nullptr);
+        assert(this->buffer != nullptr);
 
-        uint64_t chunk_count = m_buffer->Size() / chunk_size;
+        uint64_t chunk_count = this->buffer->Size() / chunk_size;
 
-        m_chunks.reserve(chunk_count);
+        chunks.reserve(chunk_count);
 
         for (int i = 0; i < chunk_count; i++)
         {
-            m_chunks.push_back({.offset = i * chunk_size});
+            chunks.push_back({.offset = i * chunk_size});
         }
     }
 
     std::optional<BufferRegion> BufferRingAllocator::Allocate(uint64_t required)
     {
-        if (required > m_chunk_size)
+        if (required > chunk_size)
         {
             return std::nullopt;
         }
 
-        auto position = m_position;
+        auto index = position;
 
-        for (std::size_t i = 0; i < m_chunks.size(); i++)
+        for (std::size_t i = 0; i < chunks.size(); i++)
         {
-            auto& chunk = m_chunks[position];
+            auto& chunk = chunks[index];
 
-            if (chunk.timeline <= m_timeline_complete)
+            if (chunk.timeline <= timeline_complete)
             {
                 // Next allocating will start at the next position.
-                m_position = (position + 1) % m_chunks.size();
+                position = (index + 1) % chunks.size();
 
-                chunk.timeline = (++m_timeline_allocate);
+                chunk.timeline = (++timeline_allocate);
 
-                return m_buffer->GetRegion(chunk.offset, required);
+                return buffer->GetRegion(chunk.offset, required);
             }
 
-            position = (position + 1) % m_chunks.size();
+            index = (index + 1) % chunks.size();
         }
 
         return std::nullopt;
@@ -52,7 +52,7 @@ namespace Rc::Render
     {
         uint64_t result = 0;
 
-        for (auto& chunk : m_chunks)
+        for (auto& chunk : chunks)
         {
             if (chunk.timeline <= timeline_complete)
             {
@@ -65,11 +65,11 @@ namespace Rc::Render
 
     void BufferRingAllocator::Reset()
     {
-        m_timeline_complete = 0;
-        m_timeline_allocate = 0;
-        m_position = 0;
+        timeline_complete = 0;
+        timeline_allocate = 0;
+        position = 0;
 
-        for (auto& chunk : m_chunks)
+        for (auto& chunk : chunks)
         {
             chunk.timeline = 0;
         }

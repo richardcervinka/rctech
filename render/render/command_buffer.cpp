@@ -9,7 +9,7 @@ namespace Rc::Render
     // RenderCommandBuffer
     
     RenderCommandBuffer::RenderCommandBuffer(VulkanDevice const& vk_device, uint32_t vk_family_index) :
-        m_vk_device{&vk_device}
+        vk_device{&vk_device}
     {
         VkCommandPoolCreateInfo const command_pool_info
         {
@@ -19,32 +19,32 @@ namespace Rc::Render
             .queueFamilyIndex = vk_family_index
         };
 
-        m_vk_pool = m_vk_device->CreateCommandPool(command_pool_info);
+        vk_pool = this->vk_device->CreateCommandPool(command_pool_info);
 
         VkCommandBufferAllocateInfo const allocate_info
         {
             .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
             .pNext = nullptr,
-            .commandPool = m_vk_pool,
+            .commandPool = vk_pool,
             .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
             .commandBufferCount = 1
         };
 
-        m_vk_command_buffer = m_vk_device->AllocateCommandBuffer(allocate_info);
+        vk_command_buffer = this->vk_device->AllocateCommandBuffer(allocate_info);
     }
 
     RenderCommandBuffer::~RenderCommandBuffer()
     {
-        if (m_vk_device != nullptr)
+        if (vk_device != nullptr)
         {
-            m_vk_device->FreeCommandBuffer(m_vk_pool, m_vk_command_buffer);
-            m_vk_device->DestroyCommandPool(m_vk_pool);
+            vk_device->FreeCommandBuffer(vk_pool, vk_command_buffer);
+            vk_device->DestroyCommandPool(vk_pool);
         }
     }
 
     void RenderCommandBuffer::Reset()
     {
-        m_vk_device->ResetCommandPool(m_vk_pool, VK_COMMAND_POOL_RESET_RELEASE_RESOURCES_BIT);
+        vk_device->ResetCommandPool(vk_pool, VK_COMMAND_POOL_RESET_RELEASE_RESOURCES_BIT);
     }
 
     void RenderCommandBuffer::Begin()
@@ -57,14 +57,14 @@ namespace Rc::Render
             .pInheritanceInfo = nullptr
         };
 
-        m_vk_device->BeginCommandBuffer(m_vk_command_buffer, begin_info);
+        vk_device->BeginCommandBuffer(vk_command_buffer, begin_info);
 
         // Use VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT  -----------------------?
     }
 
     void RenderCommandBuffer::End()
     {
-        m_vk_device->EndCommandBuffer(m_vk_command_buffer);
+        vk_device->EndCommandBuffer(vk_command_buffer);
     }
 
     void RenderCommandBuffer::UseRenderingFramebuffer(RenderTargetView const& render_target)
@@ -83,8 +83,8 @@ namespace Rc::Render
             .subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}
         };
 
-        m_vk_device->CmdPipelineBarrier(
-            m_vk_command_buffer,
+        vk_device->CmdPipelineBarrier(
+            vk_command_buffer,
             VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
             VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
             {},
@@ -112,8 +112,8 @@ namespace Rc::Render
             .subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}
         };
 
-        m_vk_device->CmdPipelineBarrier(
-            m_vk_command_buffer,
+        vk_device->CmdPipelineBarrier(
+            vk_command_buffer,
             VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
             VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
             {},
@@ -136,7 +136,7 @@ namespace Rc::Render
             .maxDepth = viewport.max_depth
         };
 
-        m_vk_device->CmdSetViewport(m_vk_command_buffer, vp);  
+        vk_device->CmdSetViewport(vk_command_buffer, vp);  
     }
 
     void RenderCommandBuffer::SetScissor(Rectangle<int> const& rect)
@@ -153,7 +153,7 @@ namespace Rc::Render
             }
         };
 
-        m_vk_device->CmdSetScissor(m_vk_command_buffer, scissors);
+        vk_device->CmdSetScissor(vk_command_buffer, scissors);
     }
 
     void RenderCommandBuffer::BeginRendering(Rectangle<int> const& render_area, RenderTargetAttachments const& attachments)
@@ -174,17 +174,17 @@ namespace Rc::Render
             .pStencilAttachment = nullptr
         };
 
-        m_vk_device->CmdBeginRendering(m_vk_command_buffer, rendering_info);
+        vk_device->CmdBeginRendering(vk_command_buffer, rendering_info);
     }
 
     void RenderCommandBuffer::EndRendering()
     {
-        m_vk_device->CmdEndRendering(m_vk_command_buffer);
+        vk_device->CmdEndRendering(vk_command_buffer);
     }
 
     void RenderCommandBuffer::BindPipeline(Pipeline const& pipeline)
     {
-        m_vk_device->CmdBindPipeline(m_vk_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.Handle());
+        vk_device->CmdBindPipeline(vk_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.Handle());
     }
 
     void RenderCommandBuffer::TransferBuffer(BufferRegion const& src, BufferRegion& dst)
@@ -195,8 +195,8 @@ namespace Rc::Render
         {
             .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2,
             .pNext = nullptr,
-            .srcStageMask = dst.m_stage_flags,
-            .srcAccessMask = dst.m_access_flags,
+            .srcStageMask = dst.stage_flags,
+            .srcAccessMask = dst.access_flags,
             .dstStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT,
             .dstAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT,
             .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
@@ -219,8 +219,8 @@ namespace Rc::Render
             .pImageMemoryBarriers = nullptr
         };
 
-        dst.m_access_flags = VK_ACCESS_2_TRANSFER_WRITE_BIT;
-        dst.m_stage_flags = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
+        dst.access_flags = VK_ACCESS_2_TRANSFER_WRITE_BIT;
+        dst.stage_flags = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
 
         struct VkBufferCopy region
         {
@@ -229,7 +229,7 @@ namespace Rc::Render
             .size = VkDeviceSize{src.Size()}
         };
         
-        m_vk_device->CmdCopyBuffer(m_vk_command_buffer, src.Handle(), dst.Handle(), {&region, 1});
+        vk_device->CmdCopyBuffer(vk_command_buffer, src.Handle(), dst.Handle(), {&region, 1});
     }
 
     void RenderCommandBuffer::UseVertexBuffer(BufferRegion& region)
@@ -240,8 +240,8 @@ namespace Rc::Render
         {
             .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2,
             .pNext = nullptr,
-            .srcStageMask = region.m_stage_flags,
-            .srcAccessMask = region.m_access_flags,
+            .srcStageMask = region.stage_flags,
+            .srcAccessMask = region.access_flags,
             .dstStageMask = VK_PIPELINE_STAGE_2_VERTEX_INPUT_BIT,
             .dstAccessMask = VK_ACCESS_2_VERTEX_ATTRIBUTE_READ_BIT,
             .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
@@ -264,8 +264,8 @@ namespace Rc::Render
             .pImageMemoryBarriers = nullptr
         };
 
-        region.m_access_flags = VK_ACCESS_2_VERTEX_ATTRIBUTE_READ_BIT;
-        region.m_stage_flags = VK_PIPELINE_STAGE_2_VERTEX_INPUT_BIT;
+        region.access_flags = VK_ACCESS_2_VERTEX_ATTRIBUTE_READ_BIT;
+        region.stage_flags = VK_PIPELINE_STAGE_2_VERTEX_INPUT_BIT;
     }
 
     void RenderCommandBuffer::UseIndexBuffer(BufferRegion& region)
@@ -276,8 +276,8 @@ namespace Rc::Render
         {
             .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2,
             .pNext = nullptr,
-            .srcStageMask = region.m_stage_flags,
-            .srcAccessMask = region.m_access_flags,
+            .srcStageMask = region.stage_flags,
+            .srcAccessMask = region.access_flags,
             .dstStageMask = VK_PIPELINE_STAGE_2_VERTEX_INPUT_BIT,
             .dstAccessMask = VK_ACCESS_2_INDEX_READ_BIT,
             .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
@@ -300,10 +300,10 @@ namespace Rc::Render
             .pImageMemoryBarriers = nullptr
         };
 
-        m_vk_device->CmdPipelineBarrier2(m_vk_command_buffer, dependency_info);
+        vk_device->CmdPipelineBarrier2(vk_command_buffer, dependency_info);
 
-        region.m_access_flags = VK_ACCESS_2_INDEX_READ_BIT;
-        region.m_stage_flags = VK_PIPELINE_STAGE_2_VERTEX_INPUT_BIT;
+        region.access_flags = VK_ACCESS_2_INDEX_READ_BIT;
+        region.stage_flags = VK_PIPELINE_STAGE_2_VERTEX_INPUT_BIT;
     }
 
     void RenderCommandBuffer::UseUniformBuffer(BufferRegion& region)
@@ -314,8 +314,8 @@ namespace Rc::Render
         {
             .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2,
             .pNext = nullptr,
-            .srcStageMask = region.m_stage_flags,
-            .srcAccessMask = region.m_access_flags,
+            .srcStageMask = region.stage_flags,
+            .srcAccessMask = region.access_flags,
             .dstStageMask = VK_PIPELINE_STAGE_2_VERTEX_SHADER_BIT,
             .dstAccessMask = VK_ACCESS_2_UNIFORM_READ_BIT,
             .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
@@ -338,10 +338,10 @@ namespace Rc::Render
             .pImageMemoryBarriers = nullptr
         };
 
-        m_vk_device->CmdPipelineBarrier2(m_vk_command_buffer, dependency_info);
+        vk_device->CmdPipelineBarrier2(vk_command_buffer, dependency_info);
 
-        region.m_access_flags = VK_ACCESS_2_UNIFORM_READ_BIT;
-        region.m_stage_flags = VK_PIPELINE_STAGE_2_VERTEX_INPUT_BIT;
+        region.access_flags = VK_ACCESS_2_UNIFORM_READ_BIT;
+        region.stage_flags = VK_PIPELINE_STAGE_2_VERTEX_INPUT_BIT;
     }
 
     void RenderCommandBuffer::UseResourceDescriptorHeapBuffer(BufferRegion& region)
@@ -352,8 +352,8 @@ namespace Rc::Render
         {
             .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2,
             .pNext = nullptr,
-            .srcStageMask = region.m_stage_flags,
-            .srcAccessMask = region.m_access_flags,
+            .srcStageMask = region.stage_flags,
+            .srcAccessMask = region.access_flags,
             .dstStageMask = VK_PIPELINE_STAGE_2_ALL_GRAPHICS_BIT,
             .dstAccessMask = VK_ACCESS_2_RESOURCE_HEAP_READ_BIT_EXT,
             .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
@@ -376,10 +376,10 @@ namespace Rc::Render
             .pImageMemoryBarriers = nullptr
         };
 
-        m_vk_device->CmdPipelineBarrier2(m_vk_command_buffer, dependency_info);
+        vk_device->CmdPipelineBarrier2(vk_command_buffer, dependency_info);
 
-        region.m_access_flags = VK_ACCESS_2_RESOURCE_HEAP_READ_BIT_EXT;
-        region.m_stage_flags = VK_PIPELINE_STAGE_2_ALL_GRAPHICS_BIT;
+        region.access_flags = VK_ACCESS_2_RESOURCE_HEAP_READ_BIT_EXT;
+        region.stage_flags = VK_PIPELINE_STAGE_2_ALL_GRAPHICS_BIT;
     }
 
     void RenderCommandBuffer::BindVertexBuffer(Buffer const& vb, int slot, uint64_t offset)
@@ -388,7 +388,7 @@ namespace Rc::Render
         const std::array<VkDeviceSize, 1> vk_offset {offset};
         const std::array<VkBuffer, 1> vk_buffers {vb.Handle()};
 
-        m_vk_device->CmdBindVertexBuffers(m_vk_command_buffer, static_cast<uint32_t>(slot), 1, vk_buffers, vk_offset);
+        vk_device->CmdBindVertexBuffers(vk_command_buffer, static_cast<uint32_t>(slot), 1, vk_buffers, vk_offset);
     }
 
     void RenderCommandBuffer::BindIndexBuffer(Buffer const& ib, IndexType type, uint64_t offset)
@@ -398,11 +398,11 @@ namespace Rc::Render
         switch (type)
         {
             case IndexType::Uint16:
-                m_vk_device->CmdBindIndexBuffer(m_vk_command_buffer, ib.Handle(), offset, VK_INDEX_TYPE_UINT16);
+                vk_device->CmdBindIndexBuffer(vk_command_buffer, ib.Handle(), offset, VK_INDEX_TYPE_UINT16);
                 return;
 
             case IndexType::Uint32:
-                m_vk_device->CmdBindIndexBuffer(m_vk_command_buffer, ib.Handle(), offset, VK_INDEX_TYPE_UINT32);
+                vk_device->CmdBindIndexBuffer(vk_command_buffer, ib.Handle(), offset, VK_INDEX_TYPE_UINT32);
                 return;
 
             default:
@@ -412,12 +412,12 @@ namespace Rc::Render
 
     void RenderCommandBuffer::Draw(uint32_t vertex_count, uint32_t instance_count, uint32_t first_vertex, uint32_t first_instance)
     {
-        m_vk_device->CmdDraw(m_vk_command_buffer, vertex_count, instance_count, first_vertex, first_instance);
+        vk_device->CmdDraw(vk_command_buffer, vertex_count, instance_count, first_vertex, first_instance);
     }
 
     void RenderCommandBuffer::DrawIndexed(uint32_t index_count, uint32_t instance_count, uint32_t first_index, int32_t vertex_offset, uint32_t first_instance)
     {
-        m_vk_device->CmdDrawIndexed(m_vk_command_buffer, index_count, instance_count, first_index, vertex_offset, first_instance);
+        vk_device->CmdDrawIndexed(vk_command_buffer, index_count, instance_count, first_index, vertex_offset, first_instance);
     }
 
     void RenderCommandBuffer::BindResourceDescriptorHeap(ResourceDescriptorHeap const& heap)
@@ -432,13 +432,13 @@ namespace Rc::Render
             .reservedRangeSize = heap.Reserved()
         };
 
-        m_vk_device->CmdBindResourceHeapEXT(m_vk_command_buffer, bind_info);
+        vk_device->CmdBindResourceHeapEXT(vk_command_buffer, bind_info);
     }
 
     // TransferCommandBuffer
 
     TransferCommandBuffer::TransferCommandBuffer(VulkanDevice const& vk_device, uint32_t vk_family_index) :
-        m_vk_device{&vk_device}
+        vk_device{&vk_device}
     {
         VkCommandPoolCreateInfo const command_pool_info
         {
@@ -448,32 +448,32 @@ namespace Rc::Render
             .queueFamilyIndex = vk_family_index
         };
 
-        m_vk_pool = m_vk_device->CreateCommandPool(command_pool_info);
+        vk_pool = this->vk_device->CreateCommandPool(command_pool_info);
 
         VkCommandBufferAllocateInfo const allocate_info
         {
             .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
             .pNext = nullptr,
-            .commandPool = m_vk_pool,
+            .commandPool = vk_pool,
             .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
             .commandBufferCount = 1
         };
 
-        m_vk_command_buffer = m_vk_device->AllocateCommandBuffer(allocate_info);
+        vk_command_buffer = this->vk_device->AllocateCommandBuffer(allocate_info);
     }
 
     TransferCommandBuffer::~TransferCommandBuffer()
     {
-        if (m_vk_device != nullptr)
+        if (vk_device != nullptr)
         {
-            m_vk_device->FreeCommandBuffer(m_vk_pool, m_vk_command_buffer);
-            m_vk_device->DestroyCommandPool(m_vk_pool);
+            vk_device->FreeCommandBuffer(vk_pool, vk_command_buffer);
+            vk_device->DestroyCommandPool(vk_pool);
         }
     }
 
     void TransferCommandBuffer::Reset()
     {
-        m_vk_device->ResetCommandPool(m_vk_pool, VK_COMMAND_POOL_RESET_RELEASE_RESOURCES_BIT);
+        vk_device->ResetCommandPool(vk_pool, VK_COMMAND_POOL_RESET_RELEASE_RESOURCES_BIT);
     }
 
 
@@ -487,14 +487,14 @@ namespace Rc::Render
             .pInheritanceInfo = nullptr
         };
 
-        m_vk_device->BeginCommandBuffer(m_vk_command_buffer, begin_info);
+        vk_device->BeginCommandBuffer(vk_command_buffer, begin_info);
 
         // Use VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT  -----------------------?
     }
 
     void TransferCommandBuffer::End()
     {
-        m_vk_device->EndCommandBuffer(m_vk_command_buffer);
+        vk_device->EndCommandBuffer(vk_command_buffer);
     }
 
     void TransferCommandBuffer::TransferBuffer(BufferRegion const& src, BufferRegion& dst)
@@ -505,8 +505,8 @@ namespace Rc::Render
         {
             .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2,
             .pNext = nullptr,
-            .srcStageMask = dst.m_stage_flags,
-            .srcAccessMask = dst.m_access_flags,
+            .srcStageMask = dst.stage_flags,
+            .srcAccessMask = dst.access_flags,
             .dstStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT,
             .dstAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT,
             .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
@@ -529,8 +529,8 @@ namespace Rc::Render
             .pImageMemoryBarriers = nullptr
         };
 
-        dst.m_access_flags = VK_ACCESS_2_TRANSFER_WRITE_BIT;
-        dst.m_stage_flags = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
+        dst.access_flags = VK_ACCESS_2_TRANSFER_WRITE_BIT;
+        dst.stage_flags = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
 
         struct VkBufferCopy region
         {
@@ -539,7 +539,7 @@ namespace Rc::Render
             .size = VkDeviceSize{src.Size()}
         };
         
-        m_vk_device->CmdCopyBuffer(m_vk_command_buffer, src.Handle(), dst.Handle(), {&region, 1});
+        vk_device->CmdCopyBuffer(vk_command_buffer, src.Handle(), dst.Handle(), {&region, 1});
     }
 
 } // Rc::Render

@@ -6,15 +6,15 @@ namespace Rc::Render
     // RenderCommandQueue
 
     RenderCommandQueue::RenderCommandQueue(VulkanDevice const& vk_device, uint32_t queue_family_index, uint32_t queue_index) :
-        m_vk_device{&vk_device},
-        m_vk_family{queue_family_index}
+        vk_device{&vk_device},
+        vk_family{queue_family_index}
     {
-        m_vk_queue = m_vk_device->GetDeviceQueue(queue_family_index, queue_index);
+        vk_queue = this->vk_device->GetDeviceQueue(queue_family_index, queue_index);
     }
 
     std::unique_ptr<RenderCommandBuffer> RenderCommandQueue::CreateCommandBuffer() const
     {
-        return std::make_unique<RenderCommandBuffer>(*m_vk_device, m_vk_family);
+        return std::make_unique<RenderCommandBuffer>(*vk_device, vk_family);
     }
 
     void RenderCommandQueue::Submit(RenderCommandBuffer const& cb, Fence const& fence)
@@ -39,35 +39,35 @@ namespace Rc::Render
             .pSignalSemaphores = nullptr
         };
 
-        if (m_vk_submit_wait != VK_NULL_HANDLE)
+        if (vk_submit_wait != VK_NULL_HANDLE)
         {
             submit_info.waitSemaphoreCount = 1u;
-            submit_info.pWaitSemaphores = &m_vk_submit_wait;
+            submit_info.pWaitSemaphores = &vk_submit_wait;
         }
-        if (m_vk_submit_signal != VK_NULL_HANDLE)
+        if (vk_submit_signal != VK_NULL_HANDLE)
         {
             submit_info.signalSemaphoreCount = 1u;
-            submit_info.pSignalSemaphores = &m_vk_submit_signal;
+            submit_info.pSignalSemaphores = &vk_submit_signal;
         }
         
-        m_vk_device->QueueSubmit(m_vk_queue, submit_info, fence.Handle());
+        vk_device->QueueSubmit(vk_queue, submit_info, fence.Handle());
 
-        m_vk_submit_wait = VK_NULL_HANDLE;
-        m_vk_submit_signal =VK_NULL_HANDLE;
+        vk_submit_wait = VK_NULL_HANDLE;
+        vk_submit_signal =VK_NULL_HANDLE;
     }
 
     // TransferCommandQueue
 
     TransferCommandQueue::TransferCommandQueue(VulkanDevice const& vk_device, uint32_t queue_family_index, uint32_t queue_index) :
-        m_vk_device{&vk_device},
-        m_vk_family{queue_family_index}
+        vk_device{&vk_device},
+        vk_family{queue_family_index}
     {
-        m_vk_queue = m_vk_device->GetDeviceQueue(queue_family_index, queue_index);
+        vk_queue = this->vk_device->GetDeviceQueue(queue_family_index, queue_index);
     }
 
     std::unique_ptr<TransferCommandBuffer> TransferCommandQueue::CreateCommandBuffer()
     {
-        return std::make_unique<TransferCommandBuffer>(*m_vk_device, m_vk_family);
+        return std::make_unique<TransferCommandBuffer>(*vk_device, vk_family);
     }
 
     void TransferCommandQueue::Submit(TransferCommandBuffer const& cb, TimelineSemaphore& signal)
@@ -99,7 +99,7 @@ namespace Rc::Render
             .pSignalSemaphores = &signal_semaphores
         };
         
-        m_vk_device->QueueSubmit(m_vk_queue, submit_info, VK_NULL_HANDLE);
+        vk_device->QueueSubmit(vk_queue, submit_info, VK_NULL_HANDLE);
     }
 
 } // Rc::Render

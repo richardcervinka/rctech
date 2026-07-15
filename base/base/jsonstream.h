@@ -65,7 +65,7 @@ namespace Rc::Json
     class Stream
     {
     public:
-        explicit Stream(std::string& dst) : m_dst{dst} {}
+        explicit Stream(std::string& dst) : dst{dst} {}
 
         Stream& operator<<(BeginJsonTag);
         Stream& operator<<(EndJsonTag);
@@ -112,11 +112,11 @@ namespace Rc::Json
         template<typename T>
         Stream& Append(Number<T> number);
 
-        std::string& m_dst;
-        State m_state {State::Initial};
+        std::string& dst;
+        State state {State::Initial};
 
         //#ifndef NDEBUG
-        std::vector<Scope> m_scope;
+        std::vector<Scope> scope;
         //#endif
 
         void AssertInitial() const;

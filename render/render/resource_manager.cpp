@@ -114,13 +114,23 @@ namespace Rc::Render
         //m_transfer_buffer->TimelineValue()
     }
 
-    uint64_t ResourceManager::Transfer()
+    void ResourceManager::BeginUpload()
     {
-        auto const semaphore_value = m_transfer_buffer->TimelineValue();
-        m_transfer_semaphore->Set(semaphore_value);
+        m_transfer_commands->Reset();
+        m_transfer_commands->Begin();
+    }
+
+    void ResourceManager::EndUpload()
+    {
+        m_transfer_commands->End();
+        m_pending = true;
+    }
+    
+    void ResourceManager::Transfer()
+    {
+        m_transfer_semaphore->Set(m_transfer_buffer->TimelineValue());
         m_transfer_queue->Submit(*m_transfer_commands, *m_transfer_semaphore);
-        //m_transfer_semaphore->Wait();
-        return semaphore_value;
+        m_pending = false;
     }
 
     void ResourceManager::QueryCounter()

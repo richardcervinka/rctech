@@ -45,41 +45,41 @@ namespace Rc::Json
 
     void Stream::AssertInitial() const
     {
-        assert(m_scope.empty());
-        assert(m_state == State::Initial);
+        assert(scope.empty());
+        assert(state == State::Initial);
     }
 
     void Stream::AssertState(State first, State second) const
     {
-        assert((m_state == first) || (m_state == second));
+        assert((state == first) || (state == second));
     }
 
     void Stream::AssertKey() const
     {
         if constexpr (Rc::debug)
         {
-            if (!m_scope.empty() && (m_scope.back() == Scope::Object))
+            if (!scope.empty() && (scope.back() == Scope::Object))
             {
-                assert(m_state == State::Key);
+                assert(state == State::Key);
             }
         }
     }
 
     void Stream::AssertScope(Scope scope) const
     {
-        assert(!m_scope.empty() && (m_scope.back() == scope));
+        assert(!this->scope.empty() && (this->scope.back() == scope));
     }
 
     void Stream::AssertScope() const
     {
-        assert(m_scope.empty());
+        assert(scope.empty());
     }
 
     void Stream::EnterScope(Scope scope)
     {
         if constexpr (Rc::debug)
         {
-            m_scope.push_back(scope);
+            this->scope.push_back(scope);
         }
     }
 
@@ -87,7 +87,7 @@ namespace Rc::Json
     {
         if constexpr (Rc::debug)
         {
-            m_scope.pop_back();
+            scope.pop_back();
         }
     }
 
@@ -110,13 +110,13 @@ namespace Rc::Json
     {
         AssertKey();
 
-        if (m_state == State::Value)
+        if (state == State::Value)
         {
-            m_dst += ',';
+            dst += ',';
         }
 
-        m_dst += '{';
-        m_state = State::Empty;
+        dst += '{';
+        state = State::Empty;
 
         EnterScope(Scope::Object);
 
@@ -128,8 +128,8 @@ namespace Rc::Json
         AssertScope(Scope::Object);
         AssertState(State::Empty, State::Value);
 
-        m_dst += '}';
-        m_state = State::Value;
+        dst += '}';
+        state = State::Value;
 
         LeaveScope();
 
@@ -140,13 +140,13 @@ namespace Rc::Json
     {
         AssertKey();
 
-        if (m_state == State::Value)
+        if (state == State::Value)
         {
-            m_dst += ',';
+            dst += ',';
         }
 
-        m_dst += '[';
-        m_state = State::Empty;
+        dst += '[';
+        state = State::Empty;
 
         EnterScope(Scope::Array);
 
@@ -158,8 +158,8 @@ namespace Rc::Json
         AssertScope(Scope::Array);
         AssertState(State::Empty, State::Value);
 
-        m_dst += ']';
-        m_state = State::Value;
+        dst += ']';
+        state = State::Value;
 
         LeaveScope();
 
@@ -171,17 +171,17 @@ namespace Rc::Json
         AssertScope(Scope::Object);
         AssertState(State::Empty, State::Value);
 
-        if (m_state == State::Value)
+        if (state == State::Value)
         {
-            m_dst += ',';
+            dst += ',';
         }
 
-        m_dst += '"';
-        m_dst += key.name;
-        m_dst += '"';
-        m_dst += ':';
+        dst += '"';
+        dst += key.name;
+        dst += '"';
+        dst += ':';
 
-        m_state = State::Key;
+        state = State::Key;
 
         return *this;
     }
@@ -190,13 +190,13 @@ namespace Rc::Json
     {
         AssertKey();
 
-        if (m_state == State::Value)
+        if (state == State::Value)
         {
-            m_dst += ',';
+            dst += ',';
         }
 
-        m_dst += "true";
-        m_state = State::Value;
+        dst += "true";
+        state = State::Value;
 
         return *this;
     }
@@ -205,13 +205,13 @@ namespace Rc::Json
     {
         AssertKey();
 
-        if (m_state == State::Value)
+        if (state == State::Value)
         {
-            m_dst += ',';
+            dst += ',';
         }
 
-        m_dst += "false";
-        m_state = State::Value;
+        dst += "false";
+        state = State::Value;
 
         return *this;
     }
@@ -220,13 +220,13 @@ namespace Rc::Json
     {
         AssertKey();
 
-        if (m_state == State::Value)
+        if (state == State::Value)
         {
-            m_dst += ',';
+            dst += ',';
         }
 
-        m_dst += "null";
-        m_state = State::Value;
+        dst += "null";
+        state = State::Value;
 
         return *this;
     }
@@ -240,37 +240,37 @@ namespace Rc::Json
     {
         AssertKey();
 
-        if (m_state == State::Value)
+        if (state == State::Value)
         {
-            m_dst += ',';
+            dst += ',';
         }
 
-        m_dst.reserve(m_dst.size() + value.str.size() + 2u);
-        m_dst += '"';
+        dst.reserve(dst.size() + value.str.size() + 2u);
+        dst += '"';
 
         for (auto ch : value.str)
         {
             if (static_cast<uint32_t>(ch) < 32u)
             {
-                m_dst += escapes[static_cast<int>(ch)];
+                dst += escapes[static_cast<int>(ch)];
             }
             else if (ch == '"')
             {
-                m_dst += "\\\"";
+                dst += "\\\"";
             }
             else if (ch == '\\')
             {
-                m_dst += "\\\\";
+                dst += "\\\\";
             }
             else
             {
-                m_dst += static_cast<char>(ch);
+                dst += static_cast<char>(ch);
             }
         }
 
-        m_dst += '"';
+        dst += '"';
 
-        m_state = State::Value;
+        state = State::Value;
 
         return *this;
     }
@@ -279,37 +279,37 @@ namespace Rc::Json
     {
         AssertKey();
 
-        if (m_state == State::Value)
+        if (state == State::Value)
         {
-            m_dst += ',';
+            dst += ',';
         }
 
-        m_dst.reserve(m_dst.size() + value.str.size() + 2u);
-        m_dst += '"';
+        dst.reserve(dst.size() + value.str.size() + 2u);
+        dst += '"';
 
         for (Utf16::Iterator it{value.str}; it != Utf16::Sentinel(); ++it)
         {
             if (*it < 32u)
             {
-                m_dst += escapes[*it];
+                dst += escapes[*it];
             }
             else if (*it == U'"')
             {
-                m_dst += "\\\"";
+                dst += "\\\"";
             }
             else if (*it == U'\\')
             {
-                m_dst += "\\\\";
+                dst += "\\\\";
             }
             else
             {
-                Utf8::PushBack(*it, m_dst);
+                Utf8::PushBack(*it, dst);
             }
         }
 
-        m_dst += '"';
+        dst += '"';
 
-        m_state = State::Value;
+        state = State::Value;
 
         return *this;
     }
@@ -318,37 +318,37 @@ namespace Rc::Json
     {
         AssertKey();
 
-        if (m_state == State::Value)
+        if (state == State::Value)
         {
-            m_dst += ',';
+            dst += ',';
         }
 
-        m_dst.reserve(m_dst.size() + value.str.size() + 2u);
-        m_dst += '"';
+        dst.reserve(dst.size() + value.str.size() + 2u);
+        dst += '"';
 
         for (auto ch : value.str)
         {
             if (ch < 32u)
             {
-                m_dst += escapes[ch];
+                dst += escapes[ch];
             }
             else if (ch == U'"')
             {
-                m_dst += "\\\"";
+                dst += "\\\"";
             }
             else if (ch == U'\\')
             {
-                m_dst += "\\\\";
+                dst += "\\\\";
             }
             else
             {
-                Utf8::PushBack(ch, m_dst);
+                Utf8::PushBack(ch, dst);
             }
         }
 
-        m_dst += '"';
+        dst += '"';
 
-        m_state = State::Value;
+        state = State::Value;
 
         return *this;
     }
@@ -357,17 +357,17 @@ namespace Rc::Json
     {
         AssertKey();
 
-        if (m_state == State::Value)
+        if (state == State::Value)
         {
-            m_dst += ',';
+            dst += ',';
         }
 
-        m_dst.reserve(m_dst.size() + value.str.size() + 2u);
-        m_dst += '"';
-        m_dst += value.str;
-        m_dst += '"';
+        dst.reserve(dst.size() + value.str.size() + 2u);
+        dst += '"';
+        dst += value.str;
+        dst += '"';
 
-        m_state = State::Value;
+        state = State::Value;
 
         return *this;
     }
@@ -381,13 +381,13 @@ namespace Rc::Json
         const auto str = std::to_chars(buffer.data(), buffer.data() + buffer.size(), number.value);
         assert(str.ec == std::errc());
 
-        if (m_state == State::Value)
+        if (state == State::Value)
         {
-            m_dst += ',';
+            dst += ',';
         }
 
-        m_dst.append(buffer.data(), str.ptr);
-        m_state = State::Value;
+        dst.append(buffer.data(), str.ptr);
+        state = State::Value;
 
         return *this;
     }

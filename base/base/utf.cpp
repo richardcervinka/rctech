@@ -8,119 +8,119 @@ namespace Rc::Utf8
 {
     void Iterator::Decode() const
     {
-        if (m_src.empty())
+        if (src.empty())
         {
             throw std::runtime_error("Empty UTF-8 sequence");
         }
 
         // 1 byte character 0xxxxxxx
-        if (m_src[0] < 0x80u)
+        if (src[0] < 0x80u)
         {
-            m_code = static_cast<char32_t>(m_src[0]);
-            m_step = 1;
+            code = static_cast<char32_t>(src[0]);
+            step = 1;
             return;
         }
 
         // 2 byte character 110xxxxx 10xxxxxx
-        if (m_src[0] < 0xE0u)
+        if (src[0] < 0xE0u)
         {
-            if (m_src.size() < 2)
+            if (src.size() < 2)
             {
                 throw std::runtime_error("Bad UTF-8 sequence");
             }
-            if ((m_src[1] & 0b11000000u) != 0b10000000u)
+            if ((src[1] & 0b11000000u) != 0b10000000u)
             {
                 throw std::runtime_error("Bad UTF-8 sequence");
             }
 
-            m_code = {
-                ((m_src[0] & 0x01Fu) << 6) |
-                ((m_src[1] & 0x03Fu) << 0)
+            code = {
+                ((src[0] & 0x01Fu) << 6) |
+                ((src[1] & 0x03Fu) << 0)
             };
             
-            if (m_code < 0x80u)
+            if (code < 0x80u)
             {
                 throw std::runtime_error("Overlong coding in UTF-8 sequence");
             }
 
-            m_step = 2;
+            step = 2;
             return;
         }
 
         // 3 byte character 1110xxxx 10xxxxxx 10xxxxxx
-        if (m_src[0] < 0xF0u)
+        if (src[0] < 0xF0u)
         {
-            if (m_src.size() < 3)
+            if (src.size() < 3)
             {
                 throw std::runtime_error("Bad UTF-8 sequence");
             }
-            if ((m_src[1] & 0b11000000u) != 0b10000000u)
+            if ((src[1] & 0b11000000u) != 0b10000000u)
             {
                 throw std::runtime_error("Bad UTF-8 sequence");
             }
-            if ((m_src[2] & 0b11000000u) != 0b10000000u)
+            if ((src[2] & 0b11000000u) != 0b10000000u)
             {
                 throw std::runtime_error("Bad UTF-8 sequence");
             }
 
-            m_code = {
-                ((m_src[0] & 0x000Fu) << 12) |
-                ((m_src[1] & 0x003Fu) << 6) |
-                ((m_src[2] & 0x003Fu) << 0)
+            code = {
+                ((src[0] & 0x000Fu) << 12) |
+                ((src[1] & 0x003Fu) << 6) |
+                ((src[2] & 0x003Fu) << 0)
             };
 
             // Surrogates (U+D800 - U+DFFF)
-            if ((m_code >= 0xD800u) && (m_code <= 0xDFFFu))
+            if ((code >= 0xD800u) && (code <= 0xDFFFu))
             {
                 throw std::runtime_error("Surrogates in UTF-8 sequence");
             }
-            if (m_code < 0x800u)
+            if (code < 0x800u)
             {
                 throw std::runtime_error("Overlong coding in UTF-8 sequence");
             }
 
-            m_step = 3;
+            step = 3;
             return;
         }
 
         // 4 byte character 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
-        if (m_src[0] < 0xF8u)
+        if (src[0] < 0xF8u)
         {
-            if (m_src.size() < 4)
+            if (src.size() < 4)
             {
                 throw std::runtime_error("Bad UTF-8 sequence");
             }
 
-            if ((m_src[1] & 0b11000000u) != 0b10000000u)
+            if ((src[1] & 0b11000000u) != 0b10000000u)
             {
                 throw std::runtime_error("Bad UTF-8 sequence");
             }
-            if ((m_src[2] & 0b11000000u) != 0b10000000u)
+            if ((src[2] & 0b11000000u) != 0b10000000u)
             {
                 throw std::runtime_error("Bad UTF-8 sequence");
             }
-            if ((m_src[3] & 0b11000000u) != 0b10000000u)
+            if ((src[3] & 0b11000000u) != 0b10000000u)
             {
                 throw std::runtime_error("Bad UTF-8 sequence");
             }
 
-            m_code = {
-                ((m_src[0] & 0x0007u) << 18) |
-                ((m_src[1] & 0x003Fu) << 12) |
-                ((m_src[2] & 0x003Fu) << 6) |
-                ((m_src[3] & 0x003Fu) << 0)
+            code = {
+                ((src[0] & 0x0007u) << 18) |
+                ((src[1] & 0x003Fu) << 12) |
+                ((src[2] & 0x003Fu) << 6) |
+                ((src[3] & 0x003Fu) << 0)
             };
 
-            if (m_code > 0x10FFFFu)
+            if (code > 0x10FFFFu)
             {
                 throw std::runtime_error("UTF-8 character is out of range 0x10FFFF");
             }
-            if (m_code < 0x10000u)
+            if (code < 0x10000u)
             {
                 throw std::runtime_error("Overlong coding in UTF-8 sequence");
             }
 
-            m_step = 4;
+            step = 4;
             return;
         }
 
@@ -129,34 +129,34 @@ namespace Rc::Utf8
 
     char32_t Iterator::operator*() const
     {
-        if (m_step == 0)
+        if (step == 0)
         {
             Decode();
         }
 
-        return m_code;
+        return code;
     }
 
     Iterator& Iterator::operator++()
     {
-        if (m_step == 0)
+        if (step == 0)
         {
             Decode();
         }
         
-        m_src = m_src.substr(m_step);
-        m_step = 0;
+        src = src.substr(step);
+        step = 0;
         return *this;
     }
 
     bool Iterator::operator==(Sentinel) const noexcept
     {
-        return m_src.empty();
+        return src.empty();
     }
 
     bool Iterator::operator!=(Sentinel) const noexcept
     {
-        return !m_src.empty();
+        return !src.empty();
     }
 
 } // Rc::Utf8
@@ -165,60 +165,60 @@ namespace Rc::Utf16
 {
     void Iterator::Decode() const
     {
-        if (m_src.empty())
+        if (src.empty())
         {
             throw std::runtime_error("Empty UTF-16 sequence");
         }
 
         // Surrogate pairs.
-        if ((m_src[0] >= 0xD800u) && (m_src[0] <= 0xDFFFu))
+        if ((src[0] >= 0xD800u) && (src[0] <= 0xDFFFu))
         {
-            if (m_src.size() < 2)
+            if (src.size() < 2)
             {
                 throw std::runtime_error("Bad size of UTF-16 sequence");
             }
 
-            m_code = ((m_src[0] & 0x3FFu) << 10) | (m_src[1] & 0x3FFu);
-            m_code += 0x010000u;
-            m_step = 2;
+            code = ((src[0] & 0x3FFu) << 10) | (src[1] & 0x3FFu);
+            code += 0x010000u;
+            step = 2;
             return;
         }
 
         // One char16 character.
-        m_code = m_src[0];
-        m_step = 1;
+        code = src[0];
+        step = 1;
     }
 
     char32_t Iterator::operator*() const
     {
-        if (m_step == 0)
+        if (step == 0)
         {
             Decode();
         }
         
-        return m_code;
+        return code;
     }
 
     Iterator& Iterator::operator++()
     {
-        if (m_step == 0)
+        if (step == 0)
         {
             Decode();
         }
 
-        m_src = m_src.substr(m_step);
-        m_step = 0;
+        src = src.substr(step);
+        step = 0;
         return *this;
     }
 
     bool Iterator::operator==(Sentinel) const noexcept
     {
-        return m_src.empty();
+        return src.empty();
     }
 
     bool Iterator::operator!=(Sentinel) const noexcept
     {
-        return !m_src.empty();
+        return !src.empty();
     }
 
 } // Rc

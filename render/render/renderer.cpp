@@ -171,10 +171,9 @@ namespace Rc::Render
 
         m_frame->Begin();
 
-        m_resource_manager->QueryCounter();
         m_swap_chain->AcquireNextImage();
 
-        if (m_resource_manager->Complete(transfer_timeline))
+        if (m_resource_manager->Complete(3))
         {
             Test();
         }

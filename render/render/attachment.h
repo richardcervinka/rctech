@@ -30,7 +30,7 @@ namespace Rc::Render
 
         RenderTargetAttachments()
         {
-            for (auto& attachment : m_color_attachments)
+            for (auto& attachment : color_attachments)
             {
                 attachment = {
                     .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
@@ -56,7 +56,7 @@ namespace Rc::Render
 
         void EnableColorAttachment(RenderTargetSlot slot, RenderTargetView const& render_target)
         {
-            m_color_attachments[std::to_underlying(slot)] = {
+            color_attachments[std::to_underlying(slot)] = {
                 .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
                 .pNext = nullptr,
                 .imageView = render_target.View(),
@@ -71,7 +71,7 @@ namespace Rc::Render
 
         void ClearRenderTarget(RenderTargetSlot slot, Color const& color)
         {
-            auto& attachment = m_color_attachments[std::to_underlying(slot)];
+            auto& attachment = color_attachments[std::to_underlying(slot)];
 
             attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
             attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -83,12 +83,12 @@ namespace Rc::Render
 
         void LoadRenderTarget(RenderTargetSlot slot)
         {
-            m_color_attachments[std::to_underlying(slot)].loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+            color_attachments[std::to_underlying(slot)].loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
         }
 
         void DisableColorAttachment(RenderTargetSlot slot)
         {
-            m_color_attachments[std::to_underlying(slot)] = {
+            color_attachments[std::to_underlying(slot)] = {
                 .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
                 .pNext = nullptr,
                 .imageView = VK_NULL_HANDLE,
@@ -104,14 +104,14 @@ namespace Rc::Render
 
         std::span<VkRenderingAttachmentInfo const, slots_count> ColorAttachmentsInfo() const
         {
-            return m_color_attachments;
+            return color_attachments;
         }
 
     private:
         // Dynamic rendering color attachments (outputs)
-        std::array<VkRenderingAttachmentInfo, slots_count> m_color_attachments {};
+        std::array<VkRenderingAttachmentInfo, slots_count> color_attachments {};
         
-        std::optional<VkRenderingAttachmentInfo> m_depth_attachment;
+        std::optional<VkRenderingAttachmentInfo> depth_attachment;
     };
 
     

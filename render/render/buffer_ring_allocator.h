@@ -28,22 +28,22 @@ namespace Rc::Render
 
         void Complete(uint64_t timeline)
         {
-            m_timeline_complete = std::max(m_timeline_complete, timeline); // ------------- REVIEW the std::max
+            timeline_complete = std::max(timeline_complete, timeline); // ------------- REVIEW the std::max
         }
 
         uint64_t TimelineValue() const
         {
-            return m_timeline_allocate;
+            return timeline_allocate;
         }
 
         uint64_t ChunkSize() const
         {
-            return m_chunk_size;
+            return chunk_size;
         }
 
         uint64_t ChunkCount() const
         {
-            return m_chunks.size();
+            return chunks.size();
         }
 
         // Get number of available chunks.
@@ -51,7 +51,7 @@ namespace Rc::Render
 
         Buffer& GetBuffer() //------------------------------ TODO: Review potencialni dira!
         {
-            return *m_buffer;
+            return *buffer;
         }
 
         void Reset();
@@ -59,7 +59,7 @@ namespace Rc::Render
         template<typename T>
         std::span<T> Map(BufferRegion const& region)
         {
-            auto raw = m_buffer->Map(region);
+            auto raw = buffer->Map(region);
 
             return {
                 reinterpret_cast<T*>(raw.data()),
@@ -68,8 +68,8 @@ namespace Rc::Render
         }
 
     private:
-        std::unique_ptr<Buffer> m_buffer;
-        uint64_t m_chunk_size {0};
+        std::unique_ptr<Buffer> buffer;
+        uint64_t chunk_size {0};
 
         struct Chunk
         {
@@ -77,12 +77,12 @@ namespace Rc::Render
             uint64_t timeline {0};
         };
 
-        std::vector<Chunk> m_chunks;
+        std::vector<Chunk> chunks;
 
-        uint64_t m_timeline_complete {0};
-        uint64_t m_timeline_allocate {0};
+        uint64_t timeline_complete {0};
+        uint64_t timeline_allocate {0};
 
-        std::size_t m_position {0};
+        std::size_t position {0};
     };
 
 } // Rc::Render

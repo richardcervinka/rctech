@@ -4,8 +4,6 @@
 #include "vulkan/device.h"
 #include "buffer.h"
 #include "base/geometry.h"
-#include "base/color.h"
-#include <array>
 #include <cstdint>
 #include "texture.h"
 #include "pipeline_state.h"
@@ -84,17 +82,17 @@ namespace Rc::Render
 
         VkCommandBuffer Handle() const
         {
-            return m_vk_command_buffer;
+            return vk_command_buffer;
         }
 
     private:
         // Parent device.
-        VulkanDevice const* m_vk_device {nullptr};
+        VulkanDevice const* vk_device {nullptr};
 
-        VkCommandPool m_vk_pool {VK_NULL_HANDLE};
+        VkCommandPool vk_pool {VK_NULL_HANDLE};
 
         // Primary command buffers.
-        VkCommandBuffer m_vk_command_buffer {VK_NULL_HANDLE};
+        VkCommandBuffer vk_command_buffer {VK_NULL_HANDLE};
 
         // seconday command buffers...
     };
@@ -122,17 +120,17 @@ namespace Rc::Render
         
         VkCommandBuffer Handle() const
         {
-            return m_vk_command_buffer;
+            return vk_command_buffer;
         }
 
     private:
         // Parent device.
-        VulkanDevice const* m_vk_device {nullptr};
+        VulkanDevice const* vk_device {nullptr};
 
-        VkCommandPool m_vk_pool {VK_NULL_HANDLE};
+        VkCommandPool vk_pool {VK_NULL_HANDLE};
 
         // Primary command buffers.
-        VkCommandBuffer m_vk_command_buffer {VK_NULL_HANDLE};
+        VkCommandBuffer vk_command_buffer {VK_NULL_HANDLE};
     };
     
 } // Rc::Render

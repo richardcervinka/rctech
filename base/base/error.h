@@ -18,7 +18,7 @@ namespace Rc
 
     protected:
         // Non-copyable buffer for the what() method.
-        mutable std::string m_buffer;
+        mutable std::string buffer;
     };
 
 } // Rc

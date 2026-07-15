@@ -23,7 +23,7 @@ namespace Rc
 
         HWND Hwnd() const { return m_hwnd; }
 
-        void OnEventSize(EventSize::Handler& handler) { m_event_size.Add(handler); }
+        void OnEventSize(EventSize::Handler& handler) { event_size.Add(handler); }
 
     private:
         // Window procedure static function.
@@ -34,7 +34,7 @@ namespace Rc
 
         HWND m_hwnd {NULL};
 
-        EventSize m_event_size;
+        EventSize event_size;
     };
 
 } // Rc

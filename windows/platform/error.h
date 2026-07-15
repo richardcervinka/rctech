@@ -8,15 +8,15 @@ namespace Rc
     class SystemException : public Exception
     {
     public:
-        SystemException(HRESULT h) : m_hresult{h} {}
-        SystemException(DWORD e) : m_hresult{HRESULT_FROM_WIN32(e)} {}
+        SystemException(HRESULT h) : hresult{h} {}
+        SystemException(DWORD e) : hresult{HRESULT_FROM_WIN32(e)} {}
 
         const char* what() const override;
 
-        uint32_t Code() const { return m_hresult; }
+        uint32_t Code() const { return hresult; }
 
     private:
-        HRESULT m_hresult;
+        HRESULT hresult;
     };
 
 } // Rc

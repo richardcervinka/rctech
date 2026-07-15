@@ -12,36 +12,36 @@ namespace Rc
     {
     public:
         explicit VulkanException(VkResult r, std::source_location src = std::source_location::current()) :
-            m_result{r},
-            m_src{src}
+            result{r},
+            src{src}
         {}
 
         char const* what() const noexcept override;
 
-        VkResult Value() const { return m_result; }
+        VkResult Value() const { return result; }
 
         // Convert the VkResult value to string.
         std::string ValueStr() const;
 
     private:
-        VkResult m_result;
-        std::source_location m_src;
+        VkResult result;
+        std::source_location src;
     };
 
     class VulkanLoaderException : public Exception
     {
     public:
-        VulkanLoaderException(char const* fn) : m_fn{fn} {}
+        VulkanLoaderException(char const* fn) : fn{fn} {}
 
         char const* what() const override
         {
-            m_buffer = "NULL ";
-            m_buffer += m_fn;
-            return m_buffer.c_str();
+            buffer = "NULL ";
+            buffer += fn;
+            return buffer.c_str();
         }
 
     private:
-        char const* m_fn;
+        char const* fn;
     };
 
 } // Rc

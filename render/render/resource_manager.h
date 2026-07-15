@@ -178,19 +178,12 @@ namespace Rc::Render
         BufferRegion& GetBufferRegion(IndexBufferHandle handle);
         BufferRegion& GetBufferRegion(InstanceBufferHandle handle);
 
-        void BeginUpload()
-        {
-            m_transfer_commands->Reset();
-            m_transfer_commands->Begin();
-        }
+        void BeginUpload();
 
-        void EndUpload()
-        {
-            m_transfer_commands->End();
-        }
+        void EndUpload();
 
         // Call in render loop ---------------------- TODO: Typed TransferFuture....
-        uint64_t Transfer();
+        void Transfer();
 
         // Call in render loop
         void QueryCounter();
@@ -213,6 +206,29 @@ namespace Rc::Render
             Upload(GetBufferRegion(handle), writer_callback);
         }
 
+        // Lockable interface
+        bool try_lock()
+        {
+            return m_mutex.try_lock();
+        }
+
+        // Basic-Lockable interface
+        void lock()
+        {
+            m_mutex.lock();
+        }
+
+        // Basic-Lockable interface
+        void unlock()
+        {
+            m_mutex.unlock();
+        }
+
+        bool PendingTransfer() const
+        {
+            return m_pending;
+        }
+
     private:
         void Upload(BufferRegion region, std::function<void(BufferWriter&)>& writer_callback);
 
@@ -232,6 +248,8 @@ namespace Rc::Render
         std::mutex m_mutex;
 
         uint64_t m_counter {0};
+
+        std::atomic<bool> m_pending {false};
     };
 
 } // Rc::Render

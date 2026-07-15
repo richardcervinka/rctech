@@ -5,21 +5,21 @@ namespace Rc
 {
     const char* SystemException::what() const
     {
-        LPWSTR buffer = nullptr;
+        LPWSTR message = nullptr;
 
         DWORD size = FormatMessage(
             FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
             nullptr,
-            m_hresult,
+            hresult,
             MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-            reinterpret_cast<LPWSTR>(&buffer),
+            reinterpret_cast<LPWSTR>(&message),
             0,
             nullptr
         );
 
-        m_buffer = Windows::WcharToUtf8(buffer);
-        LocalFree(buffer);
-        return m_buffer.c_str();
+        buffer = Windows::WcharToUtf8(message);
+        LocalFree(message);
+        return buffer.c_str();
     }
 
 } // Rc

@@ -38,49 +38,49 @@ namespace Rc::Generic
         void BeginFrame() override;
         void EndFrame() override;
 
-        Clock::time_point Now() { return m_time_now; }
+        Clock::time_point Now() { return time_now; }
 
-        std::string Name() { return m_name; }
+        std::string Name() { return name; }
 
         Window const& GetWindow() const
         {
-            return *m_window;
+            return *window;
         }
 
     protected: // ------------------------------ Review, needed for development
 
         Window& GetWindow()
         {
-            return *m_window;
+            return *window;
         }
 
         Render::Renderer& GetRenderer()
         {
-            return *m_renderer;
+            return *renderer;
         }
 
         Render::ResourceManager& GetResourceManager()
         {
-            return *m_resource_manager;
+            return *resource_manager;
         }
 
     private:
-        inline static Application* m_instance {nullptr};
+        inline static Application* instance {nullptr};
 
-        std::string m_name;
+        std::string name;
 
         // Main window.
-        std::unique_ptr<Window> m_window;
+        std::unique_ptr<Window> window;
 
-        std::unique_ptr<Render::Renderer> m_renderer;
+        std::unique_ptr<Render::Renderer> renderer;
 
-        std::shared_ptr<Render::ResourceManager> m_resource_manager;
+        std::shared_ptr<Render::ResourceManager> resource_manager;
 
         // Main loop time point, application time epoch.
-        Clock::time_point m_time_run;
+        Clock::time_point time_run;
 
         // Constant time between BeginFrame() and EndFrame().
-        Clock::time_point m_time_now;
+        Clock::time_point time_now;
     };
 
 } // Rc::Generic

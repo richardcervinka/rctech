@@ -21,15 +21,15 @@ namespace Rc
         explicit Library(std::string name);
 
         template<typename T>
-        T GetPfn(std::string const& name)
+        T GetPfn(std::string const& fn_name)
         {
-            return reinterpret_cast<T>(GetProcAddress(m_hmodule, name.c_str()));
+            return reinterpret_cast<T>(GetProcAddress(hmodule, fn_name.c_str()));
         }
 
     private:
-        std::string m_name;
+        std::string name;
 
-        HMODULE m_hmodule {NULL};
+        HMODULE hmodule {NULL};
     };
 
 } // Rc {

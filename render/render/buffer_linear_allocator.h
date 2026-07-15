@@ -15,9 +15,9 @@ namespace Rc::Render
         ~BufferLinearAllocator() = default;
 
         explicit BufferLinearAllocator(std::unique_ptr<Buffer> buffer) :
-            m_buffer{std::move(buffer)}
+            buffer{std::move(buffer)}
         {
-            assert(m_buffer != nullptr);
+            assert(this->buffer != nullptr);
         }
 
         BufferLinearAllocator(BufferLinearAllocator const&) = delete;
@@ -27,40 +27,40 @@ namespace Rc::Render
 
         BufferRegion Allocate(uint64_t size)
         {
-            auto region = m_buffer->GetRegion(m_offset, size);
-            m_offset += size;
+            auto region = buffer->GetRegion(offset, size);
+            offset += size;
             return region;
         }
 
         uint64_t Capacity() const
         {
-            return m_buffer->Size();
+            return buffer->Size();
         }
 
         uint64_t Available() const
         {
-            return m_buffer->Size() - m_offset;
+            return buffer->Size() - offset;
         }
 
         Buffer& GetBuffer() //------------------------------ potencialni dira!
         {
-            return *m_buffer;
+            return *buffer;
         }
 
         Buffer const& GetBuffer() const
         {
-            return *m_buffer;
+            return *buffer;
         }
 
         void Reset()
         {
-            m_offset = 0;
+            offset = 0;
         }
 
         template<typename T>
         std::span<T> Map(BufferRegion const& region)
         {
-            auto raw = m_buffer->Map(region);
+            auto raw = buffer->Map(region);
 
             return {
                 reinterpret_cast<T*>(raw.data()),
@@ -69,8 +69,8 @@ namespace Rc::Render
         }
 
     private:
-        std::unique_ptr<Buffer> m_buffer;
-        uint64_t m_offset {0};
+        std::unique_ptr<Buffer> buffer;
+        uint64_t offset {0};
         //uint64_t m_generation {0};
     };
 

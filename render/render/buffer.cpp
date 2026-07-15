@@ -6,9 +6,9 @@ namespace Rc::Render
 {
     Buffer::~Buffer()
     {
-        if (m_vma_allocator != VK_NULL_HANDLE)
+        if (vma_allocator != VK_NULL_HANDLE)
         {
-            vmaDestroyBuffer(m_vma_allocator, m_vk_buffer, m_vma_allocation);
+            vmaDestroyBuffer(vma_allocator, vk_buffer, vma_allocation);
         }
     }
 
@@ -97,7 +97,7 @@ namespace Rc::Render
         VkBufferUsageFlags2 usage_flags,
         VmaAllocationCreateFlags vma_flags
     ) :
-        m_vk_device{&vk_device}
+        vk_device{&vk_device}
     {
         VmaAllocationCreateInfo alloc_info {};
         alloc_info.usage = VMA_MEMORY_USAGE_AUTO;
@@ -126,9 +126,9 @@ namespace Rc::Render
             vma_allocator,
             &create_info,
             &alloc_info,
-            &m_vk_buffer,
-            &m_vma_allocation,
-            &m_vma_allocation_info
+            &vk_buffer,
+            &vma_allocation,
+            &vma_allocation_info
         );
 
         if (vk_result != VK_SUCCESS)
@@ -136,12 +136,12 @@ namespace Rc::Render
             throw VulkanException(vk_result);
         }
 
-        m_vma_allocator = vma_allocator;   
+        this->vma_allocator = vma_allocator;   
     }
 
     BufferRegion Buffer::GetRegion() const
     {
-        return {m_vk_buffer, 0, Size()};
+        return {vk_buffer, 0, Size()};
     }
 
     BufferRegion Buffer::GetRegion(uint64_t offset, uint64_t size) const
@@ -151,25 +151,25 @@ namespace Rc::Render
             throw std::runtime_error("REFACTOR ME"); //--------------------------
         }
 
-        return {m_vk_buffer, offset, size};
+        return {vk_buffer, offset, size};
     }
 
     std::span<std::byte> Buffer::Map(uint64_t offset, uint64_t size)
     {
-        assert(offset + size <= m_vma_allocation_info.size);
+        assert(offset + size <= vma_allocation_info.size);
 
         return {
-            static_cast<std::byte*>(m_vma_allocation_info.pMappedData) + offset,
+            static_cast<std::byte*>(vma_allocation_info.pMappedData) + offset,
             static_cast<std::size_t>(size)
         };
     }
 
     std::span<std::byte const> Buffer::Map(uint64_t offset, uint64_t size) const
     {
-        assert(offset + size <= m_vma_allocation_info.size);
+        assert(offset + size <= vma_allocation_info.size);
 
         return {
-            static_cast<std::byte const*>(m_vma_allocation_info.pMappedData) + offset,
+            static_cast<std::byte const*>(vma_allocation_info.pMappedData) + offset,
             static_cast<std::size_t>(size)
         };
     }
@@ -180,10 +180,10 @@ namespace Rc::Render
         {
             .sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO,
             .pNext = nullptr,
-            .buffer = m_vk_buffer
+            .buffer = vk_buffer
         };
 
-        return m_vk_device->GetBufferDeviceAddress(info);
+        return vk_device->GetBufferDeviceAddress(info);
     }
 
 } // Rc::Render

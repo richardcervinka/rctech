@@ -12,10 +12,10 @@ namespace Rc::Utf8
     {
     public:
         explicit Iterator(std::string_view src) :
-            m_src{reinterpret_cast<char8_t const*>(std::to_address(src.cbegin())), src.size()}
+            src{reinterpret_cast<char8_t const*>(std::to_address(src.cbegin())), src.size()}
         {}
 
-        explicit Iterator(std::u8string_view src) : m_src{src} {}
+        explicit Iterator(std::u8string_view src) : src{src} {}
 
         char32_t operator*() const;
         Iterator& operator++();
@@ -25,9 +25,9 @@ namespace Rc::Utf8
     private:
         void Decode() const;
 
-        std::u8string_view m_src;
-        mutable char32_t m_code {0};
-        mutable int m_step {0};
+        std::u8string_view src;
+        mutable char32_t code {0};
+        mutable int step {0};
     };
 
     std::size_t PushBack(char32_t ch, std::string& dst);
@@ -53,7 +53,7 @@ namespace Rc::Utf16
     class Iterator
     {
     public:
-        explicit Iterator(std::u16string_view src) : m_src{src} {}
+        explicit Iterator(std::u16string_view src) : src{src} {}
 
         char32_t operator*() const;
         Iterator& operator++();
@@ -63,9 +63,9 @@ namespace Rc::Utf16
     private:
         void Decode() const;
 
-        std::u16string_view m_src;
-        mutable char32_t m_code {0};
-        mutable int m_step {0};
+        std::u16string_view src;
+        mutable char32_t code {0};
+        mutable int step {0};
     };
 
     std::size_t PushBack(char32_t ch, std::u16string& dst);

@@ -23,22 +23,22 @@ namespace Rc::Render
 
         uint64_t Offset() const
         {
-            return m_offset;
+            return offset;
         }
         
         uint64_t Size() const
         {
-            return m_size;
+            return size;
         }
         
         bool Empty() const
         {
-            return m_size == 0;
+            return size == 0;
         }
 
         VkBuffer Handle() const
         {
-            return m_vk_buffer;
+            return vk_buffer;
         }
 
     private:
@@ -47,18 +47,18 @@ namespace Rc::Render
         friend class TransferCommandBuffer;
 
         BufferRegion(VkBuffer buffer, uint64_t offset, uint64_t size) :
-            m_vk_buffer{buffer},
-            m_offset{offset},
-            m_size{size}
+            vk_buffer{buffer},
+            offset{offset},
+            size{size}
         {}
 
-        VkBuffer m_vk_buffer {VK_NULL_HANDLE};
-        uint64_t m_offset {0};
-        uint64_t m_size {0};
-        //uint64_t m_generation {0};
+        VkBuffer vk_buffer {VK_NULL_HANDLE};
+        uint64_t offset {0};
+        uint64_t size {0};
+        //uint64_t generation {0};
 
-        VkAccessFlags2 m_access_flags {VK_ACCESS_NONE};
-        VkPipelineStageFlags m_stage_flags {VK_PIPELINE_STAGE_NONE};
+        VkAccessFlags2 access_flags {VK_ACCESS_NONE};
+        VkPipelineStageFlags stage_flags {VK_PIPELINE_STAGE_NONE};
     };
 
     struct VertexBufferInfo
@@ -108,14 +108,14 @@ namespace Rc::Render
 
         VkBuffer Handle() const
         {
-            return m_vk_buffer;
+            return vk_buffer;
         }
 
         VkDeviceAddress Address() const;
 
         uint64_t Size() const
         {
-            return m_vma_allocation_info.size;
+            return vma_allocation_info.size;
         }
 
         BufferRegion GetRegion() const;
@@ -160,43 +160,43 @@ namespace Rc::Render
             VmaAllocationCreateFlags vma_flags
         );
 
-        VulkanDevice const* m_vk_device {nullptr};
-        VkBuffer m_vk_buffer {VK_NULL_HANDLE};
-        VmaAllocator m_vma_allocator {VK_NULL_HANDLE};
-        VmaAllocation m_vma_allocation {nullptr};
-        VmaAllocationInfo m_vma_allocation_info {};
+        VulkanDevice const* vk_device {nullptr};
+        VkBuffer vk_buffer {VK_NULL_HANDLE};
+        VmaAllocator vma_allocator {VK_NULL_HANDLE};
+        VmaAllocation vma_allocation {nullptr};
+        VmaAllocationInfo vma_allocation_info {};
     };
 
     class BufferWriter
     {
     public:
         explicit BufferWriter(std::span<std::byte> dst) :
-            m_ptr{dst.data()}
+            ptr{dst.data()}
             //m_end{dst.end()}
         {}
 
         void Write(float value)
         {
-            *reinterpret_cast<float*>(m_ptr) = value;
-            m_ptr += sizeof(float);
+            *reinterpret_cast<float*>(ptr) = value;
+            ptr += sizeof(float);
         }
 
         void Write(uint32_t value)
         {
-            *reinterpret_cast<uint32_t*>(m_ptr) = value;
-            m_ptr += sizeof(uint32_t);
+            *reinterpret_cast<uint32_t*>(ptr) = value;
+            ptr += sizeof(uint32_t);
         }
 
         void Write(int32_t value)
         {
-            *reinterpret_cast<uint32_t*>(m_ptr) = value;
-            m_ptr += sizeof(uint32_t);
+            *reinterpret_cast<uint32_t*>(ptr) = value;
+            ptr += sizeof(uint32_t);
         }
 
         void Write(std::span<std::byte const> value)
         {
-            std::memcpy(m_ptr, value.data(), value.size());
-            m_ptr += value.size();
+            std::memcpy(ptr, value.data(), value.size());
+            ptr += value.size();
         }
 
         BufferWriter& operator<<(float value)
@@ -217,22 +217,22 @@ namespace Rc::Render
 
         BufferWriter& operator<<(Float4 value)
         {
-            value.Store(m_ptr);
-            m_ptr += 4 * sizeof(float);
+            value.Store(ptr);
+            ptr += 4 * sizeof(float);
             return *this;
         }
 
         BufferWriter& operator<<(Float3 value)
         {
-            value.Store(m_ptr);
-            m_ptr += 3 * sizeof(float);
+            value.Store(ptr);
+            ptr += 3 * sizeof(float);
             return *this;
         }
 
         BufferWriter& operator<<(Float2 value)
         {
-            value.Store(m_ptr);
-            m_ptr += 2 * sizeof(float);
+            value.Store(ptr);
+            ptr += 2 * sizeof(float);
             return *this;
         }
 
@@ -244,14 +244,14 @@ namespace Rc::Render
 
         BufferWriter& operator<<(Matrix4<float> const& value)
         {
-            std::span const raw{m_ptr, sizeof(float) * 16};
+            std::span const raw{ptr, sizeof(float) * 16};
             value.Store(raw);
-            m_ptr += raw.size();
+            ptr += raw.size();
             return *this;
         }
 
     private:
-        std::byte* m_ptr {nullptr};
+        std::byte* ptr {nullptr};
         //std::byte const* m_end {nullptr};
         //std::span<std::byte> m_dst;
         

@@ -4,36 +4,36 @@
 
 namespace Rc
 {
-    Library::Library(std::string name) : m_name{std::move(name)}
+    Library::Library(std::string name) : name{std::move(name)}
     {
-        const auto lname = Utf16::FromUtf8(m_name);
-        m_hmodule = LoadLibrary(reinterpret_cast<LPCWSTR>(lname.c_str()));
+        const auto lname = Utf16::FromUtf8(this->name);
+        hmodule = LoadLibrary(reinterpret_cast<LPCWSTR>(lname.c_str()));
 
-        if (m_hmodule == NULL)
+        if (hmodule == NULL)
         {
             throw SystemException(GetLastError());
         }
     }
 
     Library::Library(Library&& other) noexcept :
-        m_hmodule{other.m_hmodule},
-        m_name{std::move(other.m_name)}
+        hmodule{other.hmodule},
+        name{std::move(other.name)}
     {
-        other.m_hmodule = NULL;
+        other.hmodule = NULL;
     }
 
     Library& Library::operator=(Library&& other) noexcept
     {
-        std::swap(m_hmodule, other.m_hmodule);
-        std::swap(m_name, other.m_name);
+        std::swap(hmodule, other.hmodule);
+        std::swap(name, other.name);
         return *this;
     }
 
     Library::~Library()
     {
-        if (m_hmodule != NULL)
+        if (hmodule != NULL)
         {
-            FreeLibrary(m_hmodule);
+            FreeLibrary(hmodule);
         }
     }
 

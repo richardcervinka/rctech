@@ -4,7 +4,7 @@ namespace Rc
 {
     std::string VulkanException::ValueStr() const
     {
-        switch (m_result)
+        switch (result)
         {
             case VK_SUCCESS:
                 return "VK_SUCCESS";
@@ -108,15 +108,15 @@ namespace Rc
                 return "VK_RESULT_MAX_ENUM";
         }
 
-        return std::to_string(m_result);
+        return std::to_string(result);
     }
 
     char const* VulkanException::what() const noexcept
     {
-        m_buffer = m_src.function_name();
-        m_buffer += " error: ";
-        m_buffer += ValueStr();
-        return m_buffer.c_str();
+        buffer = src.function_name();
+        buffer += " error: ";
+        buffer += ValueStr();
+        return buffer.c_str();
     }
 
 } // Rc

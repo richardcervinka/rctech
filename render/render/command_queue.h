@@ -26,31 +26,31 @@ namespace Rc::Render
 
         uint32_t FamilyIndex() const
         {
-            return m_vk_family;
+            return vk_family;
         }
 
         VkQueue Handle() const
         {
-            return m_vk_queue;
+            return vk_queue;
         }
 
         void WaitSemaphore(Semaphore const& semaphore)
         {
-            m_vk_submit_wait = semaphore.Handle();
+            vk_submit_wait = semaphore.Handle();
         }
 
         void SignalSemaphore(Semaphore const& semaphore)
         {
-            m_vk_submit_signal = semaphore.Handle();
+            vk_submit_signal = semaphore.Handle();
         }
 
     private:
-        VulkanDevice const* m_vk_device {nullptr};
-        uint32_t m_vk_family {};
-        VkQueue m_vk_queue {VK_NULL_HANDLE};
+        VulkanDevice const* vk_device {nullptr};
+        uint32_t vk_family {};
+        VkQueue vk_queue {VK_NULL_HANDLE};
 
-        VkSemaphore m_vk_submit_wait {VK_NULL_HANDLE};
-        VkSemaphore m_vk_submit_signal {VK_NULL_HANDLE};
+        VkSemaphore vk_submit_wait {VK_NULL_HANDLE};
+        VkSemaphore vk_submit_signal {VK_NULL_HANDLE};
     };
 
     class TransferCommandQueue
@@ -72,18 +72,18 @@ namespace Rc::Render
 
         uint32_t FamilyIndex() const
         {
-            return m_vk_family;
+            return vk_family;
         }
 
         VkQueue Handle() const
         {
-            return m_vk_queue;
+            return vk_queue;
         }
 
     private:
-        VulkanDevice const* m_vk_device {nullptr};
-        uint32_t m_vk_family {};
-        VkQueue m_vk_queue {VK_NULL_HANDLE};
+        VulkanDevice const* vk_device {nullptr};
+        uint32_t vk_family {};
+        VkQueue vk_queue {VK_NULL_HANDLE};
     };
 
 } // Rc::Render

@@ -31,10 +31,10 @@ namespace Rc
         void Dispatch(E const& e) noexcept;
 
     private:
-        std::vector<EventHandler<E> const*> m_handlers;
+        std::vector<EventHandler<E> const*> handlers;
 
         // Reentrant dispatch guard.
-        bool m_dispatching {false};
+        bool dispatching {false};
     };
 
     template<typename E>
@@ -46,13 +46,13 @@ namespace Rc
         EventHandler() = default;
 
         explicit EventHandler(std::function<void(E const&)> callback) :
-            m_callback{std::move(callback)}
+            callback{std::move(callback)}
         {}
 
         template<typename T>
         EventHandler(T* instance, void(T::*callback)(E const&))
         {
-            m_callback = [instance, callback](E const& e)
+            this->callback = [instance, callback](E const& e)
             {
                 return std::invoke(callback, instance, e);
             };
@@ -61,7 +61,7 @@ namespace Rc
         template<typename T>
         EventHandler(T* instance, void(T::*callback)(E))
         {
-            m_callback = [instance, callback](E const& e)
+            this->callback = [instance, callback](E const& e)
             {
                 return std::invoke(callback, instance, e);
             };
@@ -80,11 +80,11 @@ namespace Rc
         // Remove from the bound dispatcher.
         void Unbind() noexcept
         {
-            if (auto ptr = m_dispatcher.lock())
+            if (auto ptr = dispatcher.lock())
             {
                 ptr->Remove(*this);
             }
-            m_dispatcher.reset();
+            dispatcher.reset();
         }
 
     private:
@@ -92,16 +92,16 @@ namespace Rc
 
         void Call(E const& event) const
         {
-            if (m_callback)
+            if (callback)
             {
-                m_callback(event);
+                callback(event);
             }
         }
 
         // Only the one dispatcher can be connected with the handler.
-        std::weak_ptr<EventDispatcher<E>> m_dispatcher;
+        std::weak_ptr<EventDispatcher<E>> dispatcher;
 
-        std::function<void(E const&)> m_callback {nullptr};
+        std::function<void(E const&)> callback {nullptr};
     };
 
     // EventDispatcher
@@ -112,19 +112,19 @@ namespace Rc
         assert(dispatcher != nullptr);
 
         // Remove the handler from the current dispatcher.
-        if (auto ptr = handler.m_dispatcher.lock())
+        if (auto ptr = handler.dispatcher.lock())
         {
             ptr->Remove(handler);
         }
 
-        handler.m_dispatcher = dispatcher;
-        dispatcher->m_handlers.push_back(&handler);
+        handler.dispatcher = dispatcher;
+        dispatcher->handlers.push_back(&handler);
     }
 
     template<typename E>
     inline void EventDispatcher<E>::Remove(EventHandler<E> const& handler) noexcept
     {
-        for (auto& ref : m_handlers)
+        for (auto& ref : handlers)
         {
             if (ref == &handler)
             {
@@ -136,18 +136,18 @@ namespace Rc
     template<typename E>
     inline void EventDispatcher<E>::Dispatch(E const& e) noexcept
     {
-        assert(!m_dispatching && "Reentrant dispatch");
+        assert(!dispatching && "Reentrant dispatch");
 
-        m_dispatching = true;
+        dispatching = true;
 
-        std::size_t const end = m_handlers.size();
+        std::size_t const end = handlers.size();
 
         // Call the handler.
         for (std::size_t i = 0; i < end; i++)
         {
             try
             {
-                if (auto const* handler = m_handlers[i])
+                if (auto const* handler = handlers[i])
                 {
                     handler->Call(e);
                 }
@@ -159,9 +159,9 @@ namespace Rc
         }
 
         // Remove null handlers.
-        std::erase_if(m_handlers, [](auto h){ return h == nullptr; });
+        std::erase_if(handlers, [](auto h){ return h == nullptr; });
 
-        m_dispatching = false;
+        dispatching = false;
     }
 
     // Dispatcher wrapper to reduce std::shared_ptr verbosity...
@@ -174,21 +174,21 @@ namespace Rc
 
         void Add(EventHandler<E>& handler)
         {
-            EventDispatcher<E>::Bind(m_dispatcher, handler);
+            EventDispatcher<E>::Bind(dispatcher, handler);
         }
 
         void Remove(EventHandler<E> const& handler) noexcept
         {
-            m_dispatcher->Remove(handler);
+            dispatcher->Remove(handler);
         }
 
         void Dispatch(E const& e) noexcept
         {
-            m_dispatcher->Dispatch(e);
+            dispatcher->Dispatch(e);
         }
 
     private:
-        std::shared_ptr<EventDispatcher<E>> m_dispatcher {std::make_shared<EventDispatcher<E>>()};
+        std::shared_ptr<EventDispatcher<E>> dispatcher {std::make_shared<EventDispatcher<E>>()};
     };
 
     // void specialization
@@ -217,10 +217,10 @@ namespace Rc
         void Dispatch() noexcept;
 
     private:
-        std::vector<EventHandler<void> const*> m_handlers;
+        std::vector<EventHandler<void> const*> handlers;
 
         // Reentrant dispatch guard.
-        bool m_dispatching {false};
+        bool dispatching {false};
     };
 
     template<>
@@ -232,13 +232,13 @@ namespace Rc
         EventHandler() = default;
 
         explicit EventHandler(std::function<void()> callback) :
-            m_callback{std::move(callback)}
+            callback{std::move(callback)}
         {}
 
         template<typename T>
         EventHandler(T* instance, void(T::*callback)())
         {
-            m_callback = [instance, callback]()
+            this->callback = [instance, callback]()
             {
                 return std::invoke(callback, instance);
             };
@@ -257,11 +257,11 @@ namespace Rc
         // Remove from the bound dispatcher.
         void Unbind() noexcept
         {
-            if (auto ptr = m_dispatcher.lock())
+            if (auto ptr = dispatcher.lock())
             {
                 ptr->Remove(*this);
             }
-            m_dispatcher.reset();
+            dispatcher.reset();
         }
 
     private:
@@ -269,16 +269,16 @@ namespace Rc
 
         void Call() const
         {
-            if (m_callback)
+            if (callback)
             {
-                m_callback();
+                callback();
             }
         }
 
         // Only the one dispatcher can be connected with the handler.
-        std::weak_ptr<EventDispatcher<void>> m_dispatcher;
+        std::weak_ptr<EventDispatcher<void>> dispatcher;
 
-        std::function<void()> m_callback {nullptr};
+        std::function<void()> callback {nullptr};
     };
 
     // EventDispatcher
@@ -288,18 +288,18 @@ namespace Rc
         assert(dispatcher != nullptr);
 
         // Remove the handler from the current dispatcher.
-        if (auto ptr = handler.m_dispatcher.lock())
+        if (auto ptr = handler.dispatcher.lock())
         {
             ptr->Remove(handler);
         }
 
-        handler.m_dispatcher = dispatcher;
-        dispatcher->m_handlers.push_back(&handler);
+        handler.dispatcher = dispatcher;
+        dispatcher->handlers.push_back(&handler);
     }
 
     inline void EventDispatcher<void>::Remove(EventHandler<void> const& handler) noexcept
     {
-        for (auto& ref : m_handlers)
+        for (auto& ref : handlers)
         {
             if (ref == &handler)
             {
@@ -310,18 +310,18 @@ namespace Rc
 
     inline void EventDispatcher<void>::Dispatch() noexcept
     {
-        assert(!m_dispatching && "Reentrant dispatch");
+        assert(!dispatching && "Reentrant dispatch");
         
-        m_dispatching = true;
+        dispatching = true;
 
-        std::size_t const end = m_handlers.size();
+        std::size_t const end = handlers.size();
 
         // Call the handler.
         for (std::size_t i = 0; i < end; i++)
         {
             try
             {
-                if (auto const* handler = m_handlers[i])
+                if (auto const* handler = handlers[i])
                 {
                     handler->Call();
                 }
@@ -333,9 +333,9 @@ namespace Rc
         }
 
         // Remove null handlers.
-        std::erase_if(m_handlers, [](auto h){ return h == nullptr; });
+        std::erase_if(handlers, [](auto h){ return h == nullptr; });
 
-        m_dispatching = false;
+        dispatching = false;
     }
 
     // Dispatcher wrapper to reduce std::shared_ptr verbosity...
@@ -348,21 +348,21 @@ namespace Rc
 
         void Add(EventHandler<void>& handler)
         {
-            EventDispatcher<void>::Bind(m_dispatcher, handler);
+            EventDispatcher<void>::Bind(dispatcher, handler);
         }
 
         void Remove(EventHandler<void> const& handler) noexcept
         {
-            m_dispatcher->Remove(handler);
+            dispatcher->Remove(handler);
         }
 
         void Dispatch() noexcept
         {
-            m_dispatcher->Dispatch();
+            dispatcher->Dispatch();
         }
 
     private:
-        std::shared_ptr<EventDispatcher<void>> m_dispatcher {std::make_shared<EventDispatcher<void>>()};
+        std::shared_ptr<EventDispatcher<void>> dispatcher {std::make_shared<EventDispatcher<void>>()};
     };
 
 } // Rc

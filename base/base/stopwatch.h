@@ -13,13 +13,13 @@ namespace Rc
 
         Stopwatch() = default;
 
-        Stopwatch(Clock::time_point begin) : m_begin{begin} {}
+        Stopwatch(Clock::time_point begin) : begin{begin} {}
 
         // Get time duration to the end.
         template<typename T>
         T Elapsed(Clock::time_point end) const noexcept
         {
-            return std::chrono::duration_cast<T>(end - m_begin);
+            return std::chrono::duration_cast<T>(end - begin);
         }
 
         // Get time duration to the Clock::now() as T.
@@ -32,16 +32,16 @@ namespace Rc
         // Reset to the Clock::now()
         void Reset()
         {
-            m_begin = Clock::now();
+            begin = Clock::now();
         }
 
         // Reset to the Clock::now() and return elapsed time.
         template<typename T>
         T Restart()
         {
-            auto const beg = m_begin;
+            auto const beg = begin;
             Reset();
-            return std::chrono::duration_cast<T>(m_begin - beg);
+            return std::chrono::duration_cast<T>(begin - beg);
         }
 
         // Reset to the Clock::now() and return elapsed time.
@@ -50,10 +50,10 @@ namespace Rc
             return Restart<Duration>();
         }
 
-        Clock::time_point Begin() const noexcept { return m_begin; }
+        Clock::time_point Begin() const noexcept { return begin; }
 
     private:
-        Clock::time_point m_begin {Clock::now()};
+        Clock::time_point begin {Clock::now()};
     };
 
 } // Rc

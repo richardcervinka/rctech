@@ -36,7 +36,7 @@ namespace Rc
             return 0;
 
         case WM_SIZE:
-            m_event_size.Dispatch({
+            event_size.Dispatch({
                 .x = 0,
                 .y = 0,
                 .w = LOWORD(lparam),

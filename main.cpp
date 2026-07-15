@@ -83,7 +83,7 @@ void TestApplication::Initialize()
     });
 
     rm.EndUpload();
-    GetRenderer().transfer_timeline = rm.Transfer();
+    //GetRenderer().transfer_timeline = rm.Transfer();
 }
 
 int APIENTRY wWinMain(

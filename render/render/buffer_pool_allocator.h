@@ -10,7 +10,7 @@ namespace Rc::Render
     public:
 
     private:
-        std::unique_ptr<Buffer> m_buffer;
+        std::unique_ptr<Buffer> buffer;
     };
 
 } // Rc::Render
