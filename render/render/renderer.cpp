@@ -27,7 +27,7 @@ namespace Rc::Render
             m_device->WaitIdle();
         }
 
-        m_buffer_manager = nullptr;
+        m_resource_manager = nullptr;
         m_test_vertex_pipeline = nullptr;
         m_test_pipeline = nullptr;
         m_pipeline_layout = nullptr;
@@ -122,13 +122,13 @@ namespace Rc::Render
         // Handle window resizing.
         window.OnEventSize(m_on_window_size);
 
-        m_buffer_manager = std::make_unique<ResourceManager>(m_device);
+        m_resource_manager = std::make_unique<ResourceManager>(m_device);
         
         // ---------------------------- TEST ----------------------------
 
-        m_buffer_manager->ReserveVertexBuffer(ResourceFamily{0}, 2048);
-        m_buffer_manager->ReserveIndexBuffer(ResourceFamily{0}, 2048);
-        m_buffer_manager->ReserveInstanceBuffer(ResourceFamily{0}, 2048);
+        m_resource_manager->ReserveVertexBuffer(ResourceFamily{0}, 2048);
+        m_resource_manager->ReserveIndexBuffer(ResourceFamily{0}, 2048);
+        m_resource_manager->ReserveInstanceBuffer(ResourceFamily{0}, 2048);
 
         {
             auto factory = m_device->CreatePipelineFactory();
@@ -137,7 +137,6 @@ namespace Rc::Render
             factory.SetPixelShader(GetPixelShader(PixelShaderSlot::Null));
             m_test_pipeline = factory.Create();
         }
-
         {
             auto factory = m_device->CreatePipelineFactory();
             factory.SetPipelineLayout(m_pipeline_layout);
@@ -147,73 +146,6 @@ namespace Rc::Render
             factory.SetVertexBinding(Gfx::VertexBinding::PerInstance, sizeof(Gfx::VertexInstance));
             factory.SetVertexAttributes({Gfx::VertexBasic::attributes, Gfx::VertexInstance::attributes});
             m_test_vertex_pipeline = factory.Create();
-        }
-
-        // Test - transfer data do the vertex buffer
-        {
-            m_buffer_manager->BeginUpload();
-
-            m_test_vb_handle = m_buffer_manager->AllocateVertexBuffer(ResourceFamily{0}, sizeof(Gfx::VertexBasic) * 8);
-
-            m_buffer_manager->Upload(m_test_vb_handle, [](BufferWriter& writer) {
-                // front-left-bottom
-                writer << Float3{-1, -1,  1};
-                writer << Float3{1, 0, 0};
-                // front-right-top
-                writer << Float3{1,  1,  1};
-                writer << Float3{1, 0, 0};
-                // front-left-top
-                writer << Float3{-1,  1,  1};
-                writer << Float3{1, 0, 0};
-                // front-right-bottom
-                writer << Float3{1, -1,  1};
-                writer << Float3{1, 0, 0};
-                // back-left-bottom
-                writer << Float3{-1, -1, -1};
-                writer << Float3{0, 1, 0};
-                // back-right-top
-                writer << Float3{1,  1, -1};
-                writer << Float3{0, 1, 0};
-                // back-left-top
-                writer << Float3{-1,  1, -1};
-                writer << Float3{0, 0, 1};
-                // back-right-bottom
-                writer << Float3{1, -1, -1};
-                writer << Float3{0, 0, 1};
-            });
-            
-            m_test_ib_handle = m_buffer_manager->AllocateIndexBuffer(ResourceFamily{0}, sizeof(uint16_t) * 36);
-
-            m_buffer_manager->Upload(m_test_ib_handle, [](BufferWriter& writer) {
-                writer << std::array<uint16_t, 36>{
-                    // front
-                    0, 1, 2, 0, 3, 1,
-                    // back
-                    4, 6, 5, 4, 5, 7,
-                    // left
-                    4, 2, 6, 4, 0, 2,
-                    // right
-                    3, 5, 1, 3, 7, 5,
-                    // top
-                    2, 1, 5, 2, 5, 6,
-                    // bottom
-                    4, 3, 0, 4, 7, 3
-                };
-            });
-
-            // Instance data test
-            
-            m_test_in_handle = m_buffer_manager->AllocateInstanceBuffer(ResourceFamily{0}, sizeof(float) * 4 * 4);
-            
-            m_buffer_manager->Upload(m_test_in_handle, [](BufferWriter& writer) {
-                Gfx::Transformations tm;
-                tm.yaw = Math::pi + (Math::pi / 4.0);
-
-                writer << tm.GetTransformations().To<float>();
-            });
-
-            m_buffer_manager->EndUpload();
-            transfer_timeline = m_buffer_manager->Transfer();
         }
 
         Log::Debug("Renderer initialized");
@@ -239,9 +171,10 @@ namespace Rc::Render
 
         m_frame->Begin();
 
+        m_resource_manager->QueryCounter();
         m_swap_chain->AcquireNextImage();
 
-        if (m_buffer_manager->Complete(transfer_timeline))
+        if (m_resource_manager->Complete(transfer_timeline))
         {
             Test();
         }
@@ -304,9 +237,9 @@ namespace Rc::Render
         RenderPassContext render_pass_context {};
         render_pass_context.camera = &camera;
 
-        m_frame->commands->UseVertexBuffer(m_buffer_manager->GetBufferRegion(m_test_in_handle));
-        m_frame->commands->UseVertexBuffer(m_buffer_manager->GetBufferRegion(m_test_vb_handle));
-        m_frame->commands->UseIndexBuffer(m_buffer_manager->GetBufferRegion(m_test_ib_handle));
+        m_frame->commands->UseVertexBuffer(m_resource_manager->GetBufferRegion(g_test_model.in_handle));
+        m_frame->commands->UseVertexBuffer(m_resource_manager->GetBufferRegion(g_test_model.vb_handle));
+        m_frame->commands->UseIndexBuffer(m_resource_manager->GetBufferRegion(g_test_model.ib_handle));
 
         //m_swap_chain->AcquireNextImage();
 
@@ -316,9 +249,9 @@ namespace Rc::Render
             render_pass_context
         );
 
-        m_frame->BindVertexBuffer(m_buffer_manager->GetVertexBuffer(ResourceFamily{0}), 0, 0); // ---------------------- Use VertexBinding !!!!!!!!
-        m_frame->BindVertexBuffer(m_buffer_manager->GetInstanceBuffer(ResourceFamily{0}), 1, 0);
-        m_frame->BindIndexBuffer(m_buffer_manager->GetIndexBuffer(ResourceFamily{0}), IndexType::Uint16, 0);
+        m_frame->BindVertexBuffer(m_resource_manager->GetVertexBuffer(ResourceFamily{0}), 0, 0); // ---------------------- Use VertexBinding !!!!!!!!
+        m_frame->BindVertexBuffer(m_resource_manager->GetInstanceBuffer(ResourceFamily{0}), 1, 0);
+        m_frame->BindIndexBuffer(m_resource_manager->GetIndexBuffer(ResourceFamily{0}), IndexType::Uint16, 0);
 
         m_frame->Draw(36, 1, 0, 0, 0);
 

@@ -21,7 +21,7 @@ namespace Rc::Generic
         using Platform::Application::Quit;
         using Platform::Application::GetCmdArgs;
 
-        Application();
+        Application(ApplicationInfo const& info);
         ~Application();
 
         Application(Application const&) = delete;
@@ -29,8 +29,10 @@ namespace Rc::Generic
         Application& operator=(Application const&) = delete;
         Application& operator=(Application&&) = delete;
 
-        void Create(ApplicationInfo const& info);
+        //void Create(ApplicationInfo const& info);
 
+        void Initialize() override;
+        
         int Run();
 
         void BeginFrame() override;
@@ -45,6 +47,23 @@ namespace Rc::Generic
             return *m_window;
         }
 
+    protected: // ------------------------------ Review, needed for development
+
+        Window& GetWindow()
+        {
+            return *m_window;
+        }
+
+        Render::Renderer& GetRenderer()
+        {
+            return *m_renderer;
+        }
+
+        Render::ResourceManager& GetResourceManager()
+        {
+            return *m_resource_manager;
+        }
+
     private:
         inline static Application* m_instance {nullptr};
 
@@ -54,6 +73,8 @@ namespace Rc::Generic
         std::unique_ptr<Window> m_window;
 
         std::unique_ptr<Render::Renderer> m_renderer;
+
+        std::shared_ptr<Render::ResourceManager> m_resource_manager;
 
         // Main loop time point, application time epoch.
         Clock::time_point m_time_run;

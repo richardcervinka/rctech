@@ -13,6 +13,15 @@
 #include "buffer_ring_allocator.h"
 #include "resource_manager.h"
 
+struct TestModel
+{
+    Rc::Render::VertexBufferHandle vb_handle;
+    Rc::Render::InstanceBufferHandle in_handle;
+    Rc::Render::IndexBufferHandle ib_handle; 
+};
+
+inline TestModel g_test_model;
+
 namespace Rc::Render
 {
     enum class VertexShaderSlot
@@ -50,6 +59,11 @@ namespace Rc::Render
     class Renderer
     {
     public:
+
+        // TEST rendering -----------------------
+        uint64_t transfer_timeline {0};
+        // --------------------------------------
+
         Renderer();
         ~Renderer();
 
@@ -80,16 +94,10 @@ namespace Rc::Render
         // BeginFrame -> render commands -> EndFrame
         void EndFrame();
 
-        // std::shared_ptr<ResourceManager> GetResourceManager()
-        // {
-        //     return m_buffer_manager;
-        // }
-
-        //void reserveInstanceBuffer
-
-        // void TransferBuffer(BufferHandle)
-
-        // Test interace
+        std::shared_ptr<ResourceManager> GetResourceManager()
+        {
+            return m_resource_manager;
+        }
 
     private:
         // Assign vertex shader to the slot.
@@ -146,7 +154,7 @@ namespace Rc::Render
         std::unique_ptr<Pipeline> m_test_pipeline;
         std::unique_ptr<Pipeline> m_test_vertex_pipeline;
 
-        std::shared_ptr<ResourceManager> m_buffer_manager;
+        std::shared_ptr<ResourceManager> m_resource_manager;
 
         Window::EventSize::Handler m_on_window_size {this, &Renderer::OnWindowSize};
 
@@ -154,14 +162,6 @@ namespace Rc::Render
         void InitializeShaders();
 
         std::unique_ptr<Device> CreateDevice();
-
-        // TEST rendering -----------------------
-
-        uint64_t transfer_timeline {0};
-        VertexBufferHandle m_test_vb_handle;
-        InstanceBufferHandle m_test_in_handle;
-        IndexBufferHandle m_test_ib_handle;
-
 
         void Test();
     };

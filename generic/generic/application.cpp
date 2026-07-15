@@ -2,11 +2,20 @@
 
 namespace Rc::Generic
 {
-    Application::Application()
+    Application::Application(ApplicationInfo const& info)
     {
         assert(m_instance == nullptr);
 
         m_instance = this;
+
+        m_name = info.name.value_or("RcTech");
+        
+        m_window = std::make_unique<Window>(info.name.value_or("RcTech"));
+        m_window->Show();
+
+        m_renderer = std::make_unique<Render::Renderer>();
+        m_renderer->Initialize(*m_window);
+        m_resource_manager = m_renderer->GetResourceManager();
     }
 
     Application::~Application()
@@ -16,17 +25,9 @@ namespace Rc::Generic
         m_instance = nullptr;
     }
 
-    void Application::Create(ApplicationInfo const& info)
+    void Application::Initialize()
     {
         Platform::Application::Initialize();
-
-        m_name = info.name.value_or("RcTech");
-        
-        m_window = std::make_unique<Window>(info.name.value_or("RcTech"));
-        m_window->Show();
-
-        m_renderer = std::make_unique<Render::Renderer>();
-        m_renderer->Initialize(*m_window);
     }
 
     int Application::Run()

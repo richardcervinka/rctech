@@ -3,6 +3,7 @@
 #include <array>
 #include <memory>
 #include <atomic>
+#include <mutex>
 #include "buffer_linear_allocator.h"
 #include "buffer_ring_allocator.h"
 #include "render/device.h"
@@ -173,38 +174,9 @@ namespace Rc::Render
         IndexBufferHandle AllocateIndexBuffer(ResourceFamily name, uint64_t size);
         InstanceBufferHandle AllocateInstanceBuffer(ResourceFamily name, uint64_t size);
 
-        BufferRegion& GetBufferRegion(VertexBufferHandle handle)
-        {
-            auto const family = std::to_underlying(handle.FamilyName());
-            auto const index = handle.Index();
-
-            assert(m_pools[family].vertex_buffer_allocator->regions.size() >= index);
-            // TODO: family assert
-
-            return m_pools[family].vertex_buffer_allocator->regions[index];
-        }
-
-        BufferRegion& GetBufferRegion(IndexBufferHandle handle)
-        {
-            auto const family = std::to_underlying(handle.FamilyName());
-            auto const index = handle.Index();
-
-            assert(m_pools[family].index_buffer_allocator->regions.size() >= index);
-            // TODO: family assert
-
-            return m_pools[family].index_buffer_allocator->regions[index];
-        }
-
-        BufferRegion& GetBufferRegion(InstanceBufferHandle handle)
-        {
-            auto const family = std::to_underlying(handle.FamilyName());
-            auto const index = handle.Index();
-
-            assert(m_pools[family].instance_buffer_allocator->regions.size() >= index);
-            // TODO: family assert
-
-            return m_pools[family].instance_buffer_allocator->regions[index];
-        }
+        BufferRegion& GetBufferRegion(VertexBufferHandle handle);
+        BufferRegion& GetBufferRegion(IndexBufferHandle handle);
+        BufferRegion& GetBufferRegion(InstanceBufferHandle handle);
 
         void BeginUpload()
         {
@@ -218,22 +190,13 @@ namespace Rc::Render
         }
 
         // Call in render loop ---------------------- TODO: Typed TransferFuture....
-        uint64_t Transfer()
-        {
-            auto const semaphore_value = m_transfer_buffer->TimelineValue();
-            m_transfer_semaphore->Set(semaphore_value);
-            m_transfer_queue->Submit(*m_transfer_commands, *m_transfer_semaphore);
-            //m_transfer_semaphore->Wait();
-            return semaphore_value;
-        }
+        uint64_t Transfer();
 
         // Call in render loop
-        bool Complete(uint64_t timeline_number) const
-        {
-            auto const counter = m_transfer_semaphore->QueryCounter();
-            m_transfer_buffer->Complete(counter); //---------------------------------- Is not threadsafe
-            return counter >= timeline_number;
-        }
+        void QueryCounter();
+
+        // Call in render loop
+        bool Complete(uint64_t counter) const;
 
         void Upload(VertexBufferHandle handle, std::function<void(BufferWriter&)> writer_callback)
         {
@@ -251,23 +214,7 @@ namespace Rc::Render
         }
 
     private:
-        void Upload(BufferRegion region, std::function<void(BufferWriter&)>& writer_callback)
-        {
-            assert(writer_callback != nullptr);
-
-            auto staging_region = m_transfer_buffer->Allocate(region.Size()); // -------------- Reset complete allocations, see RingAllocator
-            // TODO: Throw when vb_region is nullopt? --------------------------------------------------------
-            auto staging_memory = m_transfer_buffer->Map<std::byte>(*staging_region);
-
-            BufferWriter writer(staging_memory);
-            writer_callback(writer);
-
-            // -------- transfer command
-
-            m_transfer_commands->TransferBuffer(*staging_region, region);
-
-            //m_transfer_buffer->TimelineValue()
-        }
+        void Upload(BufferRegion region, std::function<void(BufferWriter&)>& writer_callback);
 
         std::shared_ptr<Device> m_device;
 
@@ -281,6 +228,10 @@ namespace Rc::Render
 
         // Map family index to a verte buffer regions.
         std::array<ResourcePool, 256> m_pools;
+
+        std::mutex m_mutex;
+
+        uint64_t m_counter {0};
     };
 
 } // Rc::Render
