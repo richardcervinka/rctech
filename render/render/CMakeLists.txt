@@ -8,8 +8,8 @@ add_library(render STATIC
     "buffer_ring_allocator.h"
     "buffer_ring_allocator.cpp"
     "buffer_pool_allocator.h"
-    "buffer_manager.h"
-    "buffer_manager.cpp"
+    "resource_manager.h"
+    "resource_manager.cpp"
     "constants.h"
     "instance.h"
     "instance.cpp"
@@ -55,6 +55,7 @@ target_link_libraries(render
     PUBLIC platform
     PUBLIC resources
     PUBLIC core
+    PUBLIC std26
 )
 
 target_compile_features(render

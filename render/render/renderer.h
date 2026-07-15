@@ -11,7 +11,7 @@
 #include "frame_renderer.h"
 #include "buffer_linear_allocator.h"
 #include "buffer_ring_allocator.h"
-#include "buffer_manager.h"
+#include "resource_manager.h"
 
 namespace Rc::Render
 {
@@ -80,13 +80,10 @@ namespace Rc::Render
         // BeginFrame -> render commands -> EndFrame
         void EndFrame();
 
-        VertexBufferHandle AllocateVertexBuffer(ResourceFamilyName name, uint64_t size);
-        IndexBufferHandle AllocateIndexBuffer(ResourceFamilyName name, uint64_t size);
-        InstanceBufferHandle AllocateInstanceBuffer(ResourceFamilyName name, uint64_t size);
-
-        void UploadBuffer(VertexBufferHandle handle, std::function<void(BufferWriter&)> writer_callback);
-        void UploadBuffer(IndexBufferHandle handle, std::function<void(BufferWriter&)> writer_callback);
-        void UploadBuffer(InstanceBufferHandle handle, std::function<void(BufferWriter&)> writer_callback);
+        // std::shared_ptr<ResourceManager> GetResourceManager()
+        // {
+        //     return m_buffer_manager;
+        // }
 
         //void reserveInstanceBuffer
 
@@ -122,22 +119,15 @@ namespace Rc::Render
             Resize(e.w, e.h);
         }
 
-        void UploadBuffer(BufferRegion region, std::function<void(BufferWriter&)>& writer_callback);
-
         std::unique_ptr<Instance> m_instance;
         
-        std::unique_ptr<Device> m_device;
+        std::shared_ptr<Device> m_device;
 
         std::unique_ptr<Surface> m_surface;
 
         std::unique_ptr<SwapChain> m_swap_chain;
 
         std::unique_ptr<RenderCommandQueue> m_render_queue;
-
-        std::unique_ptr<BufferRingAllocator> m_transfer_buffer; // TODO: Mozna vice bufferu pro ruzne velikosti chunku allocatoru
-        std::unique_ptr<TransferCommandQueue> m_transfer_queue;
-        std::unique_ptr<TransferCommandBuffer> m_transfer_commands;
-        std::unique_ptr<TimelineSemaphore> m_transfer_semaphore;
 
         std::array<std::unique_ptr<Shader>, std::to_underlying(VertexShaderSlot::Count)> m_vertex_shaders;
         std::array<std::unique_ptr<Shader>, std::to_underlying(PixelShaderSlot::Count)> m_pixel_shaders;
@@ -156,7 +146,7 @@ namespace Rc::Render
         std::unique_ptr<Pipeline> m_test_pipeline;
         std::unique_ptr<Pipeline> m_test_vertex_pipeline;
 
-        std::unique_ptr<BufferManager> m_buffer_manager;
+        std::shared_ptr<ResourceManager> m_buffer_manager;
 
         Window::EventSize::Handler m_on_window_size {this, &Renderer::OnWindowSize};
 
@@ -167,6 +157,7 @@ namespace Rc::Render
 
         // TEST rendering -----------------------
 
+        uint64_t transfer_timeline {0};
         VertexBufferHandle m_test_vb_handle;
         InstanceBufferHandle m_test_in_handle;
         IndexBufferHandle m_test_ib_handle;

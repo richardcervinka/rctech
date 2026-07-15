@@ -88,20 +88,14 @@ namespace Rc::Render
 
         // Update uniform buffer
         {
-            auto const region = staging_buffer->Allocate(RenderPassConstants::size);
-            auto dst_region = render_pass_uniform_buffer->GetRegion(0, RenderPassConstants::size);
+            auto region = render_pass_uniform_buffer->GetRegion(0, RenderPassConstants::size);
 
             RenderPassConstants constants
             {
                 .camera_projection_matrix = context.camera->GetProjectionMatrix(framebuffer.Width(), framebuffer.Height())
             };
 
-            constants.Write(staging_buffer->GetBuffer(), region);
-
-            commands->TransferBuffer(region, dst_region);
-
-            // Memory barrier
-            commands->UseUniformBuffer(dst_region);
+            constants.Write(*render_pass_uniform_buffer, region);
         }
 
         // Begin rendering
@@ -124,10 +118,6 @@ namespace Rc::Render
 
         commands->BindPipeline(pipeline);
         commands->BeginRendering(framebuffer_area, attachments);
-
-        // ---------------------------------- TEST ----------------------------------
-
-        //commands->DrawIndexed(36, 1, 0, 0, 0);
     }
 
     void Frame::EndRenderPass()

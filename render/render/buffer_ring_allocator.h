@@ -28,7 +28,7 @@ namespace Rc::Render
 
         void Complete(uint64_t timeline)
         {
-            m_timeline_complete = timeline;
+            m_timeline_complete = std::max(m_timeline_complete, timeline); // ------------- REVIEW the std::max
         }
 
         uint64_t TimelineValue() const

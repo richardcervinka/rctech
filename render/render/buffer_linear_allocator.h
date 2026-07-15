@@ -47,6 +47,11 @@ namespace Rc::Render
             return *m_buffer;
         }
 
+        Buffer const& GetBuffer() const
+        {
+            return *m_buffer;
+        }
+
         void Reset()
         {
             m_offset = 0;

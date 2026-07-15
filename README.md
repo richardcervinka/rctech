@@ -14,3 +14,4 @@ This is a long‑term experimental playground for graphics and modern C++ design
 * tools - Tool needed to build the project.
 * vulkan - Vulkan loader (vulkan C++ abstraction layer).
 * windows - Windows-specific types.
+* std_26 - Placeholders for not-implemented C++26 STL classes and functions. They are intended to be replaced.

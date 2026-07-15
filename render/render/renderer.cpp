@@ -5,6 +5,7 @@
 #include <cassert>
 #include <algorithm>
 #include <span>
+#include <iostream>
 #include <stdexcept>
 #include "platform/log.h"
 #include "core/vertex.h"
@@ -42,10 +43,6 @@ namespace Rc::Render
         }
 
         m_render_queue = nullptr;
-        m_transfer_buffer = nullptr;
-        m_transfer_semaphore = nullptr;
-        m_transfer_commands = nullptr;
-        m_transfer_queue = nullptr;
         m_swap_chain = nullptr;
         m_surface = nullptr;
         m_device = nullptr;
@@ -111,13 +108,6 @@ namespace Rc::Render
         m_render_queue = m_device->CreateGraphicsQueue();
         m_pipeline_layout = m_device->CreatePipelineLayout();
 
-        // Transfer infrastructure.
-        StagingBufferInfo const transfer_buffer_info {.size = BufferRingAllocator::default_chunk_size * 16 };
-        m_transfer_buffer = std::make_unique<BufferRingAllocator>(m_device->AllocateBuffer(transfer_buffer_info), BufferRingAllocator::default_chunk_size);
-        m_transfer_queue = m_device->CreateTransferQueue();
-        m_transfer_commands = m_transfer_queue->CreateCommandBuffer();
-        m_transfer_semaphore = m_device->CreateTimelineSemaphore();
-
         // Create frames in flight.
         m_frames.resize(m_swap_chain->Size());
         for (auto& frame : m_frames)
@@ -132,17 +122,13 @@ namespace Rc::Render
         // Handle window resizing.
         window.OnEventSize(m_on_window_size);
 
-        m_buffer_manager = std::make_unique<BufferManager>();
+        m_buffer_manager = std::make_unique<ResourceManager>(m_device);
         
         // ---------------------------- TEST ----------------------------
 
-        m_buffer_manager->CreateResourceFamily(
-            ResourceFamilyName{0},
-            m_device->AllocateBuffer(VertexBufferInfo{.size = 2048}),
-            m_device->AllocateBuffer(VertexBufferInfo{.size = 2048}),
-            m_device->AllocateBuffer(IndexBufferInfo{.size = 2048})
-        );
-
+        m_buffer_manager->ReserveVertexBuffer(ResourceFamily{0}, 2048);
+        m_buffer_manager->ReserveIndexBuffer(ResourceFamily{0}, 2048);
+        m_buffer_manager->ReserveInstanceBuffer(ResourceFamily{0}, 2048);
 
         {
             auto factory = m_device->CreatePipelineFactory();
@@ -165,12 +151,11 @@ namespace Rc::Render
 
         // Test - transfer data do the vertex buffer
         {
-            m_transfer_commands->Reset();
-            m_transfer_commands->Begin();
- 
-            m_test_vb_handle = AllocateVertexBuffer(ResourceFamilyName{0}, sizeof(Gfx::VertexBasic) * 8);
+            m_buffer_manager->BeginUpload();
 
-            UploadBuffer(m_test_vb_handle, [](BufferWriter& writer) {
+            m_test_vb_handle = m_buffer_manager->AllocateVertexBuffer(ResourceFamily{0}, sizeof(Gfx::VertexBasic) * 8);
+
+            m_buffer_manager->Upload(m_test_vb_handle, [](BufferWriter& writer) {
                 // front-left-bottom
                 writer << Float3{-1, -1,  1};
                 writer << Float3{1, 0, 0};
@@ -197,10 +182,9 @@ namespace Rc::Render
                 writer << Float3{0, 0, 1};
             });
             
-            
-            m_test_ib_handle = AllocateIndexBuffer(ResourceFamilyName{0}, sizeof(uint16_t) * 36);
+            m_test_ib_handle = m_buffer_manager->AllocateIndexBuffer(ResourceFamily{0}, sizeof(uint16_t) * 36);
 
-            UploadBuffer(m_test_ib_handle, [](BufferWriter& writer) {
+            m_buffer_manager->Upload(m_test_ib_handle, [](BufferWriter& writer) {
                 writer << std::array<uint16_t, 36>{
                     // front
                     0, 1, 2, 0, 3, 1,
@@ -219,19 +203,17 @@ namespace Rc::Render
 
             // Instance data test
             
-            m_test_in_handle = AllocateInstanceBuffer(ResourceFamilyName{0}, sizeof(float) * 4 * 4);
+            m_test_in_handle = m_buffer_manager->AllocateInstanceBuffer(ResourceFamily{0}, sizeof(float) * 4 * 4);
             
-            UploadBuffer(m_test_in_handle, [](BufferWriter& writer) {
+            m_buffer_manager->Upload(m_test_in_handle, [](BufferWriter& writer) {
                 Gfx::Transformations tm;
                 tm.yaw = Math::pi + (Math::pi / 4.0);
 
                 writer << tm.GetTransformations().To<float>();
             });
 
-            m_transfer_commands->End();
-            m_transfer_semaphore->Increment();
-            m_transfer_queue->Submit(*m_transfer_commands, *m_transfer_semaphore);
-            m_transfer_semaphore->Wait();
+            m_buffer_manager->EndUpload();
+            transfer_timeline = m_buffer_manager->Transfer();
         }
 
         Log::Debug("Renderer initialized");
@@ -251,59 +233,18 @@ namespace Rc::Render
         m_swap_chain->Resize(width, height);
     }
 
-    VertexBufferHandle Renderer::AllocateVertexBuffer(ResourceFamilyName name, uint64_t size)
-    {
-        return m_buffer_manager->AllocateVertexBuffer(name, size);
-    }
-
-    IndexBufferHandle Renderer::AllocateIndexBuffer(ResourceFamilyName name, uint64_t size)
-    {
-        return m_buffer_manager->AllocateIndexBuffer(name, size);
-    }
-
-    InstanceBufferHandle Renderer::AllocateInstanceBuffer(ResourceFamilyName name, uint64_t size)
-    {
-        return m_buffer_manager->AllocateInstanceBuffer(name, size);
-    }
-
-    void Renderer::UploadBuffer(BufferRegion region, std::function<void(BufferWriter&)>& writer_callback)
-    {
-        assert(writer_callback != nullptr);
-
-        auto staging_region = m_transfer_buffer->Allocate(region.Size());
-        // TODO: Throw when vb_region is nullopt? --------------------------------------------------------
-        auto staging_memory = m_transfer_buffer->Map<std::byte>(*staging_region);
-
-        BufferWriter writer(staging_memory);
-        writer_callback(writer);
-
-        // -------- transfer command
-
-        m_transfer_commands->TransferBuffer(*staging_region, region);
-    }
-
-    void Renderer::UploadBuffer(VertexBufferHandle handle, std::function<void(BufferWriter&)> writer_callback)
-    {
-        UploadBuffer(m_buffer_manager->GetBufferRegion(handle), writer_callback);
-    }
-
-    void Renderer::UploadBuffer(IndexBufferHandle handle, std::function<void(BufferWriter&)> writer_callback)
-    {
-        UploadBuffer(m_buffer_manager->GetBufferRegion(handle), writer_callback);
-    }
-
-    void Renderer::UploadBuffer(InstanceBufferHandle handle, std::function<void(BufferWriter&)> writer_callback)
-    {
-        UploadBuffer(m_buffer_manager->GetBufferRegion(handle), writer_callback);
-    }
-
     void Renderer::BeginFrame()
     {
         m_frame = &m_frames[m_frame_number % m_frames.size()];
 
         m_frame->Begin();
 
-        Test();
+        m_swap_chain->AcquireNextImage();
+
+        if (m_buffer_manager->Complete(transfer_timeline))
+        {
+            Test();
+        }
     }
 
     void Renderer::EndFrame()
@@ -367,7 +308,7 @@ namespace Rc::Render
         m_frame->commands->UseVertexBuffer(m_buffer_manager->GetBufferRegion(m_test_vb_handle));
         m_frame->commands->UseIndexBuffer(m_buffer_manager->GetBufferRegion(m_test_ib_handle));
 
-        m_swap_chain->AcquireNextImage();
+        //m_swap_chain->AcquireNextImage();
 
         m_frame->BeginTestRenderPass(
             *m_test_vertex_pipeline,
@@ -375,9 +316,9 @@ namespace Rc::Render
             render_pass_context
         );
 
-        m_frame->BindVertexBuffer(m_buffer_manager->GetVertexBuffer(ResourceFamilyName{0}), 0, 0); // ---------------------- Use VertexBinding !!!!!!!!
-        m_frame->BindVertexBuffer(m_buffer_manager->GetInstanceBuffer(ResourceFamilyName{0}), 1, 0);
-        m_frame->BindIndexBuffer(m_buffer_manager->GetIndexBuffer(ResourceFamilyName{0}), IndexType::Uint16, 0);
+        m_frame->BindVertexBuffer(m_buffer_manager->GetVertexBuffer(ResourceFamily{0}), 0, 0); // ---------------------- Use VertexBinding !!!!!!!!
+        m_frame->BindVertexBuffer(m_buffer_manager->GetInstanceBuffer(ResourceFamily{0}), 1, 0);
+        m_frame->BindIndexBuffer(m_buffer_manager->GetIndexBuffer(ResourceFamily{0}), IndexType::Uint16, 0);
 
         m_frame->Draw(36, 1, 0, 0, 0);
 

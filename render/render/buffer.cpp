@@ -64,11 +64,14 @@ namespace Rc::Render
             vma_allocator,
             VkBufferUsageFlags2
             {
-                VK_BUFFER_USAGE_2_TRANSFER_DST_BIT |
                 VK_BUFFER_USAGE_2_UNIFORM_BUFFER_BIT |
                 VK_BUFFER_USAGE_2_SHADER_DEVICE_ADDRESS_BIT
             },
-            VmaAllocationCreateFlags{}
+            VmaAllocationCreateFlags
+            {
+                VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT |
+                VMA_ALLOCATION_CREATE_MAPPED_BIT
+            }
         )
     {}
 

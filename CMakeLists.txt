@@ -4,6 +4,7 @@ project(rctech)
 
 add_definitions(-DNOMINMAX)
 
+add_subdirectory("std26")
 add_subdirectory("res")
 add_subdirectory("ext")
 add_subdirectory("tools")
