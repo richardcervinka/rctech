@@ -5,9 +5,9 @@ namespace Rc::Render
 {
     void Frame::Create(Device const& device)
     {
-        m_queue = device.CreateGraphicsQueue();
+        queue = device.CreateGraphicsQueue();
         fence = device.CreateFence();
-        commands = m_queue->CreateCommandBuffer();
+        commands = queue->CreateCommandBuffer();
         staging_buffer = std::make_unique<BufferLinearAllocator>(device.AllocateBuffer(StagingBufferInfo{.size = staging_buffer_size}));
         render_pass_uniform_buffer = device.AllocateBuffer(UniformBufferInfo{.size = RenderPassConstants::size});
 
@@ -51,7 +51,7 @@ namespace Rc::Render
 
         // Submit commands.
         fence->Reset();
-        m_queue->Submit(*commands, *fence);
+        queue->Submit(*commands, *fence);
         fence->Wait();
     }
 

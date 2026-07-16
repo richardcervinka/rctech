@@ -66,7 +66,7 @@ namespace Rc::Render
     private:
         friend class Renderer;
 
-        std::unique_ptr<RenderCommandQueue> m_queue;
+        std::unique_ptr<RenderCommandQueue> queue;
 
         std::unique_ptr<Fence> fence;
         

@@ -87,7 +87,7 @@ namespace Rc::Render
 
     private:
         // Parent device.
-        VulkanDevice const* vk_device {nullptr};
+        VulkanDevice const& vk_device;
 
         VkCommandPool vk_pool {VK_NULL_HANDLE};
 
@@ -125,7 +125,7 @@ namespace Rc::Render
 
     private:
         // Parent device.
-        VulkanDevice const* vk_device {nullptr};
+        VulkanDevice const& vk_device;
 
         VkCommandPool vk_pool {VK_NULL_HANDLE};
 

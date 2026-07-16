@@ -9,7 +9,7 @@ namespace Rc::Render
     // RenderCommandBuffer
     
     RenderCommandBuffer::RenderCommandBuffer(VulkanDevice const& vk_device, uint32_t vk_family_index) :
-        vk_device{&vk_device}
+        vk_device{vk_device}
     {
         VkCommandPoolCreateInfo const command_pool_info
         {
@@ -19,7 +19,7 @@ namespace Rc::Render
             .queueFamilyIndex = vk_family_index
         };
 
-        vk_pool = this->vk_device->CreateCommandPool(command_pool_info);
+        vk_pool = vk_device.CreateCommandPool(command_pool_info);
 
         VkCommandBufferAllocateInfo const allocate_info
         {
@@ -30,21 +30,18 @@ namespace Rc::Render
             .commandBufferCount = 1
         };
 
-        vk_command_buffer = this->vk_device->AllocateCommandBuffer(allocate_info);
+        vk_command_buffer = vk_device.AllocateCommandBuffer(allocate_info);
     }
 
     RenderCommandBuffer::~RenderCommandBuffer()
     {
-        if (vk_device != nullptr)
-        {
-            vk_device->FreeCommandBuffer(vk_pool, vk_command_buffer);
-            vk_device->DestroyCommandPool(vk_pool);
-        }
+        vk_device.FreeCommandBuffer(vk_pool, vk_command_buffer);
+        vk_device.DestroyCommandPool(vk_pool);
     }
 
     void RenderCommandBuffer::Reset()
     {
-        vk_device->ResetCommandPool(vk_pool, VK_COMMAND_POOL_RESET_RELEASE_RESOURCES_BIT);
+        vk_device.ResetCommandPool(vk_pool, VK_COMMAND_POOL_RESET_RELEASE_RESOURCES_BIT);
     }
 
     void RenderCommandBuffer::Begin()
@@ -57,14 +54,14 @@ namespace Rc::Render
             .pInheritanceInfo = nullptr
         };
 
-        vk_device->BeginCommandBuffer(vk_command_buffer, begin_info);
+        vk_device.BeginCommandBuffer(vk_command_buffer, begin_info);
 
         // Use VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT  -----------------------?
     }
 
     void RenderCommandBuffer::End()
     {
-        vk_device->EndCommandBuffer(vk_command_buffer);
+        vk_device.EndCommandBuffer(vk_command_buffer);
     }
 
     void RenderCommandBuffer::UseRenderingFramebuffer(RenderTargetView const& render_target)
@@ -75,7 +72,7 @@ namespace Rc::Render
             .pNext = nullptr,
             .srcAccessMask = VK_ACCESS_NONE,
             .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-            .oldLayout = render_target.m_layout,
+            .oldLayout = render_target.layout,
             .newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
             .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
             .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
@@ -83,7 +80,7 @@ namespace Rc::Render
             .subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}
         };
 
-        vk_device->CmdPipelineBarrier(
+        vk_device.CmdPipelineBarrier(
             vk_command_buffer,
             VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
             VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
@@ -93,7 +90,7 @@ namespace Rc::Render
             {&barrier, 1}
         );
 
-        render_target.m_layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        render_target.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
     }
 
     void RenderCommandBuffer::UsePresentingFramebuffer(RenderTargetView const& render_target)
@@ -104,7 +101,7 @@ namespace Rc::Render
             .pNext = nullptr,
             .srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
             .dstAccessMask = VK_ACCESS_NONE,
-            .oldLayout = render_target.m_layout,
+            .oldLayout = render_target.layout,
             .newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
             .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
             .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
@@ -112,7 +109,7 @@ namespace Rc::Render
             .subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}
         };
 
-        vk_device->CmdPipelineBarrier(
+        vk_device.CmdPipelineBarrier(
             vk_command_buffer,
             VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
             VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
@@ -122,7 +119,7 @@ namespace Rc::Render
             {&barrier, 1}
         );
 
-        render_target.m_layout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+        render_target.layout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
     }
 
     void RenderCommandBuffer::SetViewport(Viewport const& viewport)
@@ -136,7 +133,7 @@ namespace Rc::Render
             .maxDepth = viewport.max_depth
         };
 
-        vk_device->CmdSetViewport(vk_command_buffer, vp);  
+        vk_device.CmdSetViewport(vk_command_buffer, vp);  
     }
 
     void RenderCommandBuffer::SetScissor(Rectangle<int> const& rect)
@@ -153,7 +150,7 @@ namespace Rc::Render
             }
         };
 
-        vk_device->CmdSetScissor(vk_command_buffer, scissors);
+        vk_device.CmdSetScissor(vk_command_buffer, scissors);
     }
 
     void RenderCommandBuffer::BeginRendering(Rectangle<int> const& render_area, RenderTargetAttachments const& attachments)
@@ -174,17 +171,17 @@ namespace Rc::Render
             .pStencilAttachment = nullptr
         };
 
-        vk_device->CmdBeginRendering(vk_command_buffer, rendering_info);
+        vk_device.CmdBeginRendering(vk_command_buffer, rendering_info);
     }
 
     void RenderCommandBuffer::EndRendering()
     {
-        vk_device->CmdEndRendering(vk_command_buffer);
+        vk_device.CmdEndRendering(vk_command_buffer);
     }
 
     void RenderCommandBuffer::BindPipeline(Pipeline const& pipeline)
     {
-        vk_device->CmdBindPipeline(vk_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.Handle());
+        vk_device.CmdBindPipeline(vk_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.Handle());
     }
 
     void RenderCommandBuffer::TransferBuffer(BufferRegion const& src, BufferRegion& dst)
@@ -229,7 +226,7 @@ namespace Rc::Render
             .size = VkDeviceSize{src.Size()}
         };
         
-        vk_device->CmdCopyBuffer(vk_command_buffer, src.Handle(), dst.Handle(), {&region, 1});
+        vk_device.CmdCopyBuffer(vk_command_buffer, src.Handle(), dst.Handle(), {&region, 1});
     }
 
     void RenderCommandBuffer::UseVertexBuffer(BufferRegion& region)
@@ -300,7 +297,7 @@ namespace Rc::Render
             .pImageMemoryBarriers = nullptr
         };
 
-        vk_device->CmdPipelineBarrier2(vk_command_buffer, dependency_info);
+        vk_device.CmdPipelineBarrier2(vk_command_buffer, dependency_info);
 
         region.access_flags = VK_ACCESS_2_INDEX_READ_BIT;
         region.stage_flags = VK_PIPELINE_STAGE_2_VERTEX_INPUT_BIT;
@@ -338,7 +335,7 @@ namespace Rc::Render
             .pImageMemoryBarriers = nullptr
         };
 
-        vk_device->CmdPipelineBarrier2(vk_command_buffer, dependency_info);
+        vk_device.CmdPipelineBarrier2(vk_command_buffer, dependency_info);
 
         region.access_flags = VK_ACCESS_2_UNIFORM_READ_BIT;
         region.stage_flags = VK_PIPELINE_STAGE_2_VERTEX_INPUT_BIT;
@@ -376,7 +373,7 @@ namespace Rc::Render
             .pImageMemoryBarriers = nullptr
         };
 
-        vk_device->CmdPipelineBarrier2(vk_command_buffer, dependency_info);
+        vk_device.CmdPipelineBarrier2(vk_command_buffer, dependency_info);
 
         region.access_flags = VK_ACCESS_2_RESOURCE_HEAP_READ_BIT_EXT;
         region.stage_flags = VK_PIPELINE_STAGE_2_ALL_GRAPHICS_BIT;
@@ -388,7 +385,7 @@ namespace Rc::Render
         const std::array<VkDeviceSize, 1> vk_offset {offset};
         const std::array<VkBuffer, 1> vk_buffers {vb.Handle()};
 
-        vk_device->CmdBindVertexBuffers(vk_command_buffer, static_cast<uint32_t>(slot), 1, vk_buffers, vk_offset);
+        vk_device.CmdBindVertexBuffers(vk_command_buffer, static_cast<uint32_t>(slot), 1, vk_buffers, vk_offset);
     }
 
     void RenderCommandBuffer::BindIndexBuffer(Buffer const& ib, IndexType type, uint64_t offset)
@@ -398,11 +395,11 @@ namespace Rc::Render
         switch (type)
         {
             case IndexType::Uint16:
-                vk_device->CmdBindIndexBuffer(vk_command_buffer, ib.Handle(), offset, VK_INDEX_TYPE_UINT16);
+                vk_device.CmdBindIndexBuffer(vk_command_buffer, ib.Handle(), offset, VK_INDEX_TYPE_UINT16);
                 return;
 
             case IndexType::Uint32:
-                vk_device->CmdBindIndexBuffer(vk_command_buffer, ib.Handle(), offset, VK_INDEX_TYPE_UINT32);
+                vk_device.CmdBindIndexBuffer(vk_command_buffer, ib.Handle(), offset, VK_INDEX_TYPE_UINT32);
                 return;
 
             default:
@@ -412,12 +409,12 @@ namespace Rc::Render
 
     void RenderCommandBuffer::Draw(uint32_t vertex_count, uint32_t instance_count, uint32_t first_vertex, uint32_t first_instance)
     {
-        vk_device->CmdDraw(vk_command_buffer, vertex_count, instance_count, first_vertex, first_instance);
+        vk_device.CmdDraw(vk_command_buffer, vertex_count, instance_count, first_vertex, first_instance);
     }
 
     void RenderCommandBuffer::DrawIndexed(uint32_t index_count, uint32_t instance_count, uint32_t first_index, int32_t vertex_offset, uint32_t first_instance)
     {
-        vk_device->CmdDrawIndexed(vk_command_buffer, index_count, instance_count, first_index, vertex_offset, first_instance);
+        vk_device.CmdDrawIndexed(vk_command_buffer, index_count, instance_count, first_index, vertex_offset, first_instance);
     }
 
     void RenderCommandBuffer::BindResourceDescriptorHeap(ResourceDescriptorHeap const& heap)
@@ -432,13 +429,13 @@ namespace Rc::Render
             .reservedRangeSize = heap.Reserved()
         };
 
-        vk_device->CmdBindResourceHeapEXT(vk_command_buffer, bind_info);
+        vk_device.CmdBindResourceHeapEXT(vk_command_buffer, bind_info);
     }
 
     // TransferCommandBuffer
 
     TransferCommandBuffer::TransferCommandBuffer(VulkanDevice const& vk_device, uint32_t vk_family_index) :
-        vk_device{&vk_device}
+        vk_device{vk_device}
     {
         VkCommandPoolCreateInfo const command_pool_info
         {
@@ -448,7 +445,7 @@ namespace Rc::Render
             .queueFamilyIndex = vk_family_index
         };
 
-        vk_pool = this->vk_device->CreateCommandPool(command_pool_info);
+        vk_pool = vk_device.CreateCommandPool(command_pool_info);
 
         VkCommandBufferAllocateInfo const allocate_info
         {
@@ -459,21 +456,18 @@ namespace Rc::Render
             .commandBufferCount = 1
         };
 
-        vk_command_buffer = this->vk_device->AllocateCommandBuffer(allocate_info);
+        vk_command_buffer = vk_device.AllocateCommandBuffer(allocate_info);
     }
 
     TransferCommandBuffer::~TransferCommandBuffer()
     {
-        if (vk_device != nullptr)
-        {
-            vk_device->FreeCommandBuffer(vk_pool, vk_command_buffer);
-            vk_device->DestroyCommandPool(vk_pool);
-        }
+        vk_device.FreeCommandBuffer(vk_pool, vk_command_buffer);
+        vk_device.DestroyCommandPool(vk_pool);
     }
 
     void TransferCommandBuffer::Reset()
     {
-        vk_device->ResetCommandPool(vk_pool, VK_COMMAND_POOL_RESET_RELEASE_RESOURCES_BIT);
+        vk_device.ResetCommandPool(vk_pool, VK_COMMAND_POOL_RESET_RELEASE_RESOURCES_BIT);
     }
 
 
@@ -487,14 +481,14 @@ namespace Rc::Render
             .pInheritanceInfo = nullptr
         };
 
-        vk_device->BeginCommandBuffer(vk_command_buffer, begin_info);
+        vk_device.BeginCommandBuffer(vk_command_buffer, begin_info);
 
         // Use VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT  -----------------------?
     }
 
     void TransferCommandBuffer::End()
     {
-        vk_device->EndCommandBuffer(vk_command_buffer);
+        vk_device.EndCommandBuffer(vk_command_buffer);
     }
 
     void TransferCommandBuffer::TransferBuffer(BufferRegion const& src, BufferRegion& dst)
@@ -539,7 +533,7 @@ namespace Rc::Render
             .size = VkDeviceSize{src.Size()}
         };
         
-        vk_device->CmdCopyBuffer(vk_command_buffer, src.Handle(), dst.Handle(), {&region, 1});
+        vk_device.CmdCopyBuffer(vk_command_buffer, src.Handle(), dst.Handle(), {&region, 1});
     }
 
 } // Rc::Render

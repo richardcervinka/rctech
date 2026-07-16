@@ -2,7 +2,7 @@
 
 namespace Rc::Render
 {
-    Fence::Fence(VulkanDevice const& vk_device) : m_vk_device{&vk_device}
+    Fence::Fence(VulkanDevice const& vk_device) : vk_device{vk_device}
     {
         VkFenceCreateInfo const create_info
         {
@@ -11,26 +11,22 @@ namespace Rc::Render
             .flags = VK_FENCE_CREATE_SIGNALED_BIT
         };
 
-        m_vk_fence = m_vk_device->CreateFence(create_info);
+        vk_fence = vk_device.CreateFence(create_info);
     }
 
     Fence::~Fence()
     {
-        if (m_vk_device != nullptr)
-        {
-            m_vk_device->DestroyFence(m_vk_fence);
-        }
+        vk_device.DestroyFence(vk_fence);
     }
 
     void Fence::Wait() const
     {
-        m_vk_device->WaitForFence(m_vk_fence);
-        //m_vk_device->ResetFence(m_vk_fence);
+        vk_device.WaitForFence(vk_fence);
     }
 
     void Fence::Reset()
     {
-        m_vk_device->ResetFence(m_vk_fence);
+        vk_device.ResetFence(vk_fence);
     }
 
 } // Rc::Render

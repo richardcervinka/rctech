@@ -21,7 +21,7 @@ namespace Rc
 
         Rectangle<int> GetClientArea() const;
 
-        HWND Hwnd() const { return m_hwnd; }
+        HWND Hwnd() const { return hwnd; }
 
         void OnEventSize(EventSize::Handler& handler) { event_size.Add(handler); }
 
@@ -32,7 +32,7 @@ namespace Rc
         // Window procedure member function.
         LRESULT ProcessMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
-        HWND m_hwnd {NULL};
+        HWND hwnd {NULL};
 
         EventSize event_size;
     };

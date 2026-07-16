@@ -19,7 +19,7 @@ namespace Rc::Render
         Fence(Fence&& other) = delete;
         Fence& operator=(Fence&& other) = delete;
 
-        VkFence Handle() const { return m_vk_fence; }
+        VkFence Handle() const { return vk_fence; }
 
         void Wait() const;
 
@@ -28,8 +28,8 @@ namespace Rc::Render
     private:
         //friend class CommandQueue;
         
-        VulkanDevice const* m_vk_device {nullptr};
-        VkFence m_vk_fence {VK_NULL_HANDLE};
+        VulkanDevice const& vk_device;
+        VkFence vk_fence {VK_NULL_HANDLE};
     };
 
 } // Rc::Render

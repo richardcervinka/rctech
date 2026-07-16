@@ -76,18 +76,18 @@ namespace Rc::Render
         std::map<std::string, VulkanVersion> EnumerateExtensions() const;
         std::vector<QueueFamilyProperties> GetQueueFamilyProperties(Surface const& surface) const;
 
-        VulkanInstance const* m_instance {nullptr}; //------------------------- ref ?
-        std::unique_ptr<VulkanDevice> m_device;
+        VulkanInstance const* instance {nullptr}; //------------------------- ref ?
+        std::unique_ptr<VulkanDevice> device;
         
-        VkPhysicalDevice m_vk_physical_device {VK_NULL_HANDLE};
+        VkPhysicalDevice vk_physical_device {VK_NULL_HANDLE};
 
-        VmaAllocator m_vma_allocator {VK_NULL_HANDLE};
+        VmaAllocator vma_allocator {VK_NULL_HANDLE};
 
         // Rendering queue info <family index, queue index>
-        std::pair<uint32_t, uint32_t> m_vk_graphics_queue_family;
+        std::pair<uint32_t, uint32_t> vk_graphics_queue_family;
 
         // Transfer queue info <family index, queue index>
-        std::pair<uint32_t, uint32_t> m_vk_transfer_queue_family;
+        std::pair<uint32_t, uint32_t> vk_transfer_queue_family;
     };
 
 } // Rc::Render

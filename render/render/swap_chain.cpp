@@ -4,43 +4,43 @@
 namespace Rc::Render
 {
     SwapChain::SwapChain(VulkanDevice const& vk_device, VkSurfaceKHR surface, Window const& window) :
-        m_vk_device{&vk_device}
+        vk_device{&vk_device}
     {
         auto const extent = window.GetClientArea();
         
-        m_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-        m_info.surface = surface;
-        m_info.minImageCount = 3;
-        m_info.imageFormat = m_vk_format;
-        m_info.imageColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
-        m_info.imageExtent.width = extent.w;
-        m_info.imageExtent.height = extent.h;
-        m_info.imageArrayLayers = 1;
-        m_info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-        m_info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        m_info.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
-        m_info.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-        m_info.presentMode = VK_PRESENT_MODE_FIFO_KHR;
-        m_info.clipped = VK_TRUE;
+        vk_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+        vk_info.surface = surface;
+        vk_info.minImageCount = 3;
+        vk_info.imageFormat = vk_format;
+        vk_info.imageColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
+        vk_info.imageExtent.width = extent.w;
+        vk_info.imageExtent.height = extent.h;
+        vk_info.imageArrayLayers = 1;
+        vk_info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+        vk_info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        vk_info.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
+        vk_info.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+        vk_info.presentMode = VK_PRESENT_MODE_FIFO_KHR;
+        vk_info.clipped = VK_TRUE;
 
         Create();
     }
 
     SwapChain::~SwapChain()
     {
-        if (m_vk_device != nullptr)
+        if (vk_device != nullptr)
         {
-            m_vk_device->DestroySwapchainKHR(m_vk_swap_chain);
+            vk_device->DestroySwapchainKHR(vk_swap_chain);
         }
     }
 
     void SwapChain::Resize(int width, int height) // -------------------- add surface parameter
     {
-        if (m_vk_device != nullptr)
+        if (vk_device != nullptr)
         {
-            m_info.imageExtent.width = static_cast<uint32_t>(width);
-            m_info.imageExtent.height = static_cast<uint32_t>(height);
-            m_info.oldSwapchain = m_vk_swap_chain;
+            vk_info.imageExtent.width = static_cast<uint32_t>(width);
+            vk_info.imageExtent.height = static_cast<uint32_t>(height);
+            vk_info.oldSwapchain = vk_swap_chain;
 
             Create();
         }
@@ -48,41 +48,41 @@ namespace Rc::Render
 
     void SwapChain::Create()
     {
-        m_images.clear();
-        m_views.clear();
-        m_acquire_semaphores.clear();
+        images.clear();
+        views.clear();
+        acquire_semaphores.clear();
 
-        m_vk_swap_chain = m_vk_device->CreateSwapchainKHR(m_info);
+        vk_swap_chain = vk_device->CreateSwapchainKHR(vk_info);
 
-        auto const images_count = m_vk_device->GetSwapchainImagesKHRCount(m_vk_swap_chain);
+        auto const images_count = vk_device->GetSwapchainImagesKHRCount(vk_swap_chain);
 
-        std::vector<VkImage> images(images_count);
+        std::vector<VkImage> images_buffer(images_count);
 
-        for (auto image : m_vk_device->GetSwapchainImagesKHR(m_vk_swap_chain, images))
+        for (auto image : vk_device->GetSwapchainImagesKHR(vk_swap_chain, images_buffer))
         {
-            m_images.emplace_back(
-                *m_vk_device,
+            images.emplace_back(
+                *vk_device,
                 image,
-                m_vk_format,
-                m_info.imageExtent.width,
-                m_info.imageExtent.height
+                vk_format,
+                vk_info.imageExtent.width,
+                vk_info.imageExtent.height
             );
 
-            m_views.push_back( m_images.back().CreateView());
+            views.push_back(images.back().CreateView());
 
-            m_acquire_semaphores.push_back(std::make_unique<Semaphore>(*m_vk_device));
-            m_present_semaphores.push_back(std::make_unique<Semaphore>(*m_vk_device));
+            acquire_semaphores.push_back(std::make_unique<Semaphore>(*vk_device));
+            present_semaphores.push_back(std::make_unique<Semaphore>(*vk_device));
         }
 
-        m_info.oldSwapchain = nullptr;
+        vk_info.oldSwapchain = nullptr;
     }
 
     void SwapChain::AcquireNextImage()
     {
-        m_acquire_index = (m_acquire_index + 1) % Size();
+        acquire_index = (acquire_index + 1) % Size();
 
-        m_image_index = m_vk_device->AcquireNextImageKHR(
-            m_vk_swap_chain,
+        image_index = vk_device->AcquireNextImageKHR(
+            vk_swap_chain,
             UINT64_MAX,
             GetAcquireSemaphore().Handle(),
             VK_NULL_HANDLE
@@ -100,12 +100,12 @@ namespace Rc::Render
             .waitSemaphoreCount = 1,
             .pWaitSemaphores = &present_semaphore,
             .swapchainCount = 1,
-            .pSwapchains = &m_vk_swap_chain,
-            .pImageIndices = &m_image_index,
+            .pSwapchains = &vk_swap_chain,
+            .pImageIndices = &image_index,
             .pResults = nullptr
         };
 
-        auto const vk_result = m_vk_device->QueuePresentKHR(queue.Handle(), present_info);
+        auto const vk_result = vk_device->QueuePresentKHR(queue.Handle(), present_info);
 
         if ((vk_result == VK_ERROR_OUT_OF_DATE_KHR) ||
             (vk_result == VK_SUBOPTIMAL_KHR))

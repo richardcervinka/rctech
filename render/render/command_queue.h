@@ -45,7 +45,7 @@ namespace Rc::Render
         }
 
     private:
-        VulkanDevice const* vk_device {nullptr};
+        VulkanDevice const& vk_device;
         uint32_t vk_family {};
         VkQueue vk_queue {VK_NULL_HANDLE};
 
@@ -81,7 +81,7 @@ namespace Rc::Render
         }
 
     private:
-        VulkanDevice const* vk_device {nullptr};
+        VulkanDevice const& vk_device;
         uint32_t vk_family {};
         VkQueue vk_queue {VK_NULL_HANDLE};
     };

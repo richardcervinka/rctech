@@ -17,17 +17,17 @@ namespace Rc::Render
     {
     public:
         ResourceDescriptor(UniformBufferDescriptor const& descriptor) :
-            m_address{descriptor.address},
-            m_size(descriptor.size),
-            m_type{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER}
+            address{descriptor.address},
+            size(descriptor.size),
+            type{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER}
         {}
 
     private:
         friend class ResourceDescriptorHeap;
 
-        uint64_t m_address {};
-        uint64_t m_size {};
-        VkDescriptorType m_type {};
+        uint64_t address {};
+        uint64_t size {};
+        VkDescriptorType type {};
     };
 
     class ResourceDescriptorHeap
@@ -43,44 +43,44 @@ namespace Rc::Render
         // buffer - resource descriptor heap buffer
         void Attach(Buffer& descriptor_heap_buffer)
         {
-            m_address = descriptor_heap_buffer.Address();
+            address = descriptor_heap_buffer.Address();
         }
         
         // Get required Buffer size
         uint64_t SizeTotal() const //------------------------------- rename
         {
-            return m_reserved + m_buffer.size();
+            return reserved + buffer.size();
         }
 
         uint64_t Size() const //------------------------------- rename
         {
-            return m_buffer.size();
+            return buffer.size();
         }
 
         uint64_t Reserved() const
         {
-            return m_reserved;
+            return reserved;
         }
 
         uint64_t Address() const
         {
-            return m_address;
+            return address;
         }
 
         void Write(std::span<std::byte> dst) const;
 
     private:
-        VulkanDevice const* m_vk_device {nullptr};
+        VulkanDevice const& vk_device;
         
         // Size of descriptor slot.
-        std::size_t m_stride {0};
+        std::size_t stride {0};
 
-        uint64_t m_address {0};
+        uint64_t address {0};
 
         // Size of reserved region.
-        uint64_t m_reserved {0};
+        uint64_t reserved {0};
 
-        std::vector<std::byte> m_buffer;
+        std::vector<std::byte> buffer;
     };
 
     // class SamplerDescriptorHeap

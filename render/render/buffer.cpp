@@ -97,7 +97,7 @@ namespace Rc::Render
         VkBufferUsageFlags2 usage_flags,
         VmaAllocationCreateFlags vma_flags
     ) :
-        vk_device{&vk_device}
+        vk_device{vk_device}
     {
         VmaAllocationCreateInfo alloc_info {};
         alloc_info.usage = VMA_MEMORY_USAGE_AUTO;
@@ -183,7 +183,7 @@ namespace Rc::Render
             .buffer = vk_buffer
         };
 
-        return vk_device->GetBufferDeviceAddress(info);
+        return vk_device.GetBufferDeviceAddress(info);
     }
 
 } // Rc::Render

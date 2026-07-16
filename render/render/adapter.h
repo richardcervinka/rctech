@@ -48,8 +48,8 @@ namespace Rc::Render
 
     private:
         // Reference to a parent object.
-        VulkanContext const* context {nullptr};
-        VulkanInstance const* instance {nullptr};
+        VulkanContext const& context;
+        VulkanInstance const& instance;
 
         // Physical device handle.
         VkPhysicalDevice vk_physical_device {VK_NULL_HANDLE};

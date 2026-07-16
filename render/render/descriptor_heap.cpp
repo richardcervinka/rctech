@@ -9,14 +9,14 @@ namespace Rc::Render
         VkPhysicalDevice vk_physical_device,
         std::span<ResourceDescriptor const> descriptors
     ) :
-        m_vk_device{&device}
+        vk_device{device}
     {
         auto const heap_properties = instance.GetPhysicalDeviceDescriptorHeapProperties(vk_physical_device);
 
-        m_stride = heap_properties.bufferDescriptorSize;
-        m_reserved = heap_properties.minResourceHeapReservedRange;
+        stride = heap_properties.bufferDescriptorSize;
+        reserved = heap_properties.minResourceHeapReservedRange;
 
-        uint64_t buffer_size = descriptors.size() * m_stride;
+        uint64_t buffer_size = descriptors.size() * stride;
 
         // Align size to VkPhysicalDeviceDescriptorHeapPropertiesEXT::resourceHeapAlignment
         // It is required for alignment of the reserved offset.
@@ -25,7 +25,7 @@ namespace Rc::Render
             buffer_size += heap_properties.resourceHeapAlignment - tail;
         }
         
-        m_buffer.resize(buffer_size);
+        buffer.resize(buffer_size);
 
         uint64_t slot = 0;
 
@@ -35,24 +35,24 @@ namespace Rc::Render
             {
                 .sType = VK_STRUCTURE_TYPE_RESOURCE_DESCRIPTOR_INFO_EXT,
                 .pNext = nullptr,
-                .type = descriptor.m_type
+                .type = descriptor.type
             };
 
             VkDeviceAddressRangeEXT const device_address_range
             {
-                .address = descriptor.m_address,
-                .size = descriptor.m_size
+                .address = descriptor.address,
+                .size = descriptor.size
             };
 
             descriptor_info.data.pAddressRange = &device_address_range;
 
             VkHostAddressRangeEXT const host_address_range
             {
-                .address = m_buffer.data() + (m_stride * slot),
-                .size = m_stride
+                .address = buffer.data() + (stride * slot),
+                .size = stride
             };
 
-            m_vk_device->WriteResourceDescriptor(descriptor_info, host_address_range);
+            vk_device.WriteResourceDescriptor(descriptor_info, host_address_range);
 
             slot += 1;
         }
@@ -60,6 +60,6 @@ namespace Rc::Render
 
     void ResourceDescriptorHeap::Write(std::span<std::byte> dst) const
     {
-        std::copy(m_buffer.begin(), m_buffer.end(), dst.data());
+        std::copy(buffer.begin(), buffer.end(), dst.data());
     }
 }

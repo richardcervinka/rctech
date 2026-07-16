@@ -17,11 +17,11 @@ namespace Rc::Render
         Shader(Shader&& other) = delete;
         Shader& operator=(Shader&& other) = delete;
 
-        VkShaderModule Handle() const { return m_vk_shader_module; }
+        VkShaderModule Handle() const { return vk_shader_module; }
 
     private:
-        VulkanDevice const* m_vk_device {nullptr};
-        VkShaderModule m_vk_shader_module {VK_NULL_HANDLE};
+        VulkanDevice const& vk_device;
+        VkShaderModule vk_shader_module {VK_NULL_HANDLE};
     };
 
 } // Rc::Render

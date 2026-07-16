@@ -160,7 +160,7 @@ namespace Rc::Render
             VmaAllocationCreateFlags vma_flags
         );
 
-        VulkanDevice const* vk_device {nullptr};
+        VulkanDevice const& vk_device;
         VkBuffer vk_buffer {VK_NULL_HANDLE};
         VmaAllocator vma_allocator {VK_NULL_HANDLE};
         VmaAllocation vma_allocation {nullptr};

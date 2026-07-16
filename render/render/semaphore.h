@@ -22,12 +22,12 @@ namespace Rc::Render
 
         VkSemaphore Handle() const
         {
-            return m_vk_semaphore;
+            return vk_semaphore;
         }
 
     private:
-        VulkanDevice const* m_vk_device {nullptr};
-        VkSemaphore m_vk_semaphore {VK_NULL_HANDLE};
+        VulkanDevice const& vk_device;
+        VkSemaphore vk_semaphore {VK_NULL_HANDLE};
     };
 
     class TimelineSemaphore
@@ -44,24 +44,24 @@ namespace Rc::Render
 
         void Wait(std::chrono::nanoseconds timeout = std::chrono::nanoseconds::max()) const
         {
-            WaitFor(m_value, timeout);
+            WaitFor(value, timeout);
         }
 
         void WaitFor(uint64_t value, std::chrono::nanoseconds timeout = std::chrono::nanoseconds::max()) const;
 
         uint64_t Increment()
         {
-            return ++m_value;
+            return ++value;
         }
 
         void Set(uint64_t value)
         {
-            m_value = value;
+            this->value = value;
         }
 
         uint64_t Value() const
         {
-            return m_value;
+            return value;
         }
 
         // Query the current value.
@@ -69,13 +69,13 @@ namespace Rc::Render
 
         VkSemaphore Handle() const
         {
-            return m_vk_semaphore;
+            return vk_semaphore;
         }
 
     private:
-        VulkanDevice const* m_vk_device {nullptr};
-        VkSemaphore m_vk_semaphore {VK_NULL_HANDLE};
-        uint64_t m_value {0};
+        VulkanDevice const& vk_device;
+        VkSemaphore vk_semaphore {VK_NULL_HANDLE};
+        uint64_t value {0};
     };
 
 } // Rc::Render

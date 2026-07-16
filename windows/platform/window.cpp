@@ -27,7 +27,7 @@ namespace Rc
 
     LRESULT Window::ProcessMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     {
-        assert(this->m_hwnd == hwnd);
+        assert(this->hwnd == hwnd);
 
         switch (msg)
         {
@@ -75,7 +75,7 @@ namespace Rc
         RegisterClassW(&wc);
 
         // Create the window
-        m_hwnd = CreateWindowEx(
+        hwnd = CreateWindowEx(
             0,
             class_name.c_str(),
             reinterpret_cast<LPCWSTR>(ulabel.c_str()),
@@ -90,7 +90,7 @@ namespace Rc
             this
         );
 
-        if (m_hwnd == NULL)
+        if (hwnd == NULL)
         {
             throw std::runtime_error("CreateWindowEx error");
         }
@@ -98,20 +98,20 @@ namespace Rc
 
     void Window::Show()
     {
-        ShowWindow(m_hwnd, SW_SHOW);
-        UpdateWindow(m_hwnd);
+        ShowWindow(hwnd, SW_SHOW);
+        UpdateWindow(hwnd);
     }
 
     void Window::Hide()
     {
-        ShowWindow(m_hwnd, SW_HIDE);
+        ShowWindow(hwnd, SW_HIDE);
     }
 
     Rectangle<int> Window::GetClientArea() const
     {
         RECT rect {};
 
-        if (GetClientRect(m_hwnd, &rect) != TRUE)
+        if (GetClientRect(hwnd, &rect) != TRUE)
         {
             throw std::runtime_error("GetClientRect error");
         }

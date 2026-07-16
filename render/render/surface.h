@@ -19,14 +19,14 @@ namespace Rc::Render
 
         VkSurfaceKHR Handle() const
         {
-            return m_vk_surface;
+            return vk_surface;
         }
 
     private:
         friend class Device;
 
-        VulkanInstance const* m_vk_instance {nullptr};
-        VkSurfaceKHR m_vk_surface {VK_NULL_HANDLE};
+        VulkanInstance const& vk_instance;
+        VkSurfaceKHR vk_surface {VK_NULL_HANDLE};
     };
 
 } // Rc::Render

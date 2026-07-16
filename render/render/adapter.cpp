@@ -3,8 +3,8 @@
 namespace Rc::Render
 {
     Adapter::Adapter(VulkanContext const& context, VulkanInstance const& instance, VkPhysicalDevice vk_physical_device) :
-        context{&context},
-        instance{&instance},
+        context{context},
+        instance{instance},
         vk_physical_device{vk_physical_device}
     {
         vk_properties = instance.GetPhysicalDeviceProperties(vk_physical_device);
@@ -13,7 +13,7 @@ namespace Rc::Render
 
     std::unique_ptr<Device> Adapter::CreateDevice(Surface const& surface)
     {
-        return std::make_unique<Device>(*context, *instance, vk_physical_device, surface);
+        return std::make_unique<Device>(context, instance, vk_physical_device, surface);
     }
 
     Version Adapter::ApiVersion() const

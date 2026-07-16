@@ -43,10 +43,10 @@ namespace Rc::Render
             void* user_data
         );
 
-        std::unique_ptr<VulkanContext> m_context;
-        std::unique_ptr<VulkanInstance> m_instance;
+        std::unique_ptr<VulkanContext> context;
+        std::unique_ptr<VulkanInstance> instance;
 
-        VkDebugUtilsMessengerEXT m_vk_debug_msg {VK_NULL_HANDLE};
+        VkDebugUtilsMessengerEXT vk_debug_msg {VK_NULL_HANDLE};
     };
 
 } // Rc::Render

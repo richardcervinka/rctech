@@ -18,30 +18,30 @@ namespace Rc::Render
         VertexBufferHandle() = default;
 
         VertexBufferHandle(ResourceFamily family, uint64_t index, uint32_t generation) :
-            m_family{family},
-            m_index{index},
-            m_generation{generation}
+            family{family},
+            index{index},
+            generation{generation}
         {}
 
         ResourceFamily FamilyName() const
         {
-            return m_family;
+            return family;
         }
 
         uint64_t Index() const
         {
-            return m_index;
+            return index;
         }
 
         uint32_t Generation() const
         {
-            return m_generation;
+            return generation;
         }
         
     private:
-        ResourceFamily m_family {};
-        uint64_t m_index {};
-        uint32_t m_generation {};
+        ResourceFamily family {};
+        uint64_t index {};
+        uint32_t generation {};
     };
 
     class IndexBufferHandle
@@ -50,30 +50,30 @@ namespace Rc::Render
         IndexBufferHandle() = default;
 
         IndexBufferHandle(ResourceFamily family, uint64_t index, uint32_t generation) :
-            m_family{family},
-            m_index{index},
-            m_generation{generation}
+            family{family},
+            index{index},
+            generation{generation}
         {}
 
         ResourceFamily FamilyName() const
         {
-            return m_family;
+            return family;
         }
 
         uint64_t Index() const
         {
-            return m_index;
+            return index;
         }
 
         uint32_t Generation() const
         {
-            return m_generation;
+            return generation;
         }
 
     private:
-        ResourceFamily m_family {};
-        uint64_t m_index {};
-        uint32_t m_generation {};
+        ResourceFamily family {};
+        uint64_t index {};
+        uint32_t generation {};
     };
 
     class InstanceBufferHandle
@@ -82,30 +82,30 @@ namespace Rc::Render
         InstanceBufferHandle() = default;
 
         InstanceBufferHandle(ResourceFamily family, uint64_t index, uint32_t generation) : // ----- Private?
-            m_family{family},
-            m_index{index},
-            m_generation{generation}
+            family{family},
+            index{index},
+            generation{generation}
         {}
 
         ResourceFamily FamilyName() const
         {
-            return m_family;
+            return family;
         }
 
         uint64_t Index() const
         {
-            return m_index;
+            return index;
         }
 
         uint32_t Generation() const
         {
-            return m_generation;
+            return generation;
         }
 
     private:
-        ResourceFamily m_family {};
-        uint64_t m_index {};
-        uint32_t m_generation {};
+        ResourceFamily family {};
+        uint64_t index {};
+        uint32_t generation {};
     };
 
     template<typename Handle>
@@ -157,17 +157,17 @@ namespace Rc::Render
 
         Buffer const& GetVertexBuffer(ResourceFamily family)
         {
-            return m_pools[std::to_underlying(family)].vertex_buffer_allocator->GetBuffer();
+            return pools[std::to_underlying(family)].vertex_buffer_allocator->GetBuffer();
         }
 
         Buffer const& GetInstanceBuffer(ResourceFamily family)
         {
-            return m_pools[std::to_underlying(family)].instance_buffer_allocator->GetBuffer();
+            return pools[std::to_underlying(family)].instance_buffer_allocator->GetBuffer();
         }
 
         Buffer const& GetIndexBuffer(ResourceFamily family)
         {
-            return m_pools[std::to_underlying(family)].index_buffer_allocator->GetBuffer();
+            return pools[std::to_underlying(family)].index_buffer_allocator->GetBuffer();
         }
 
         VertexBufferHandle AllocateVertexBuffer(ResourceFamily name, uint64_t size);
@@ -209,47 +209,47 @@ namespace Rc::Render
         // Lockable interface
         bool try_lock()
         {
-            return m_mutex.try_lock();
+            return mutex.try_lock();
         }
 
         // Basic-Lockable interface
         void lock()
         {
-            m_mutex.lock();
+            mutex.lock();
         }
 
         // Basic-Lockable interface
         void unlock()
         {
-            m_mutex.unlock();
+            mutex.unlock();
         }
 
         bool PendingTransfer() const
         {
-            return m_pending;
+            return pending;
         }
 
     private:
         void Upload(BufferRegion region, std::function<void(BufferWriter&)>& writer_callback);
 
-        std::shared_ptr<Device> m_device;
+        std::shared_ptr<Device> device;
 
-        std::unique_ptr<TransferCommandQueue> m_transfer_queue;
-        std::unique_ptr<TransferCommandBuffer> m_transfer_commands;
+        std::unique_ptr<TransferCommandQueue> transfer_queue;
+        std::unique_ptr<TransferCommandBuffer> transfer_commands;
 
         // TODO: Mozna vice bufferu pro ruzne velikosti chunku allocatoru
-        std::unique_ptr<BufferRingAllocator> m_transfer_buffer;
+        std::unique_ptr<BufferRingAllocator> transfer_buffer;
 
-        std::unique_ptr<TimelineSemaphore> m_transfer_semaphore;
+        std::unique_ptr<TimelineSemaphore> transfer_semaphore;
 
         // Map family index to a verte buffer regions.
-        std::array<ResourcePool, 256> m_pools;
+        std::array<ResourcePool, 256> pools;
 
-        std::mutex m_mutex;
+        std::mutex mutex;
 
-        uint64_t m_counter {0};
+        uint64_t counter {0};
 
-        std::atomic<bool> m_pending {false};
+        std::atomic<bool> pending {false};
     };
 
 } // Rc::Render

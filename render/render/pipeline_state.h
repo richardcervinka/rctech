@@ -22,11 +22,11 @@ namespace Rc::Render
         Pipeline(Pipeline&& other) = delete;
         Pipeline& operator=(Pipeline&& other) = delete;
 
-        VkPipeline Handle() const { return m_vk_pipeline; }
+        VkPipeline Handle() const { return vk_pipeline; }
 
     private:
-        VulkanDevice const* m_vk_device {nullptr};
-        VkPipeline m_vk_pipeline {VK_NULL_HANDLE};
+        VulkanDevice const& vk_device;
+        VkPipeline vk_pipeline {VK_NULL_HANDLE};
     };
 
     class PipelineLayout
@@ -41,12 +41,12 @@ namespace Rc::Render
         PipelineLayout(PipelineLayout&& other) = delete;
         PipelineLayout& operator=(PipelineLayout&& other) = delete;
 
-        VkPipelineLayout Handle() const { return m_vk_pipeline_layout; }
+        VkPipelineLayout Handle() const { return vk_pipeline_layout; }
 
     private:
-        VulkanDevice const* m_vk_device {nullptr};
-        VkDescriptorSetLayout m_vk_descriptor_set_layout {VK_NULL_HANDLE};
-        VkPipelineLayout m_vk_pipeline_layout {VK_NULL_HANDLE};
+        VulkanDevice const& vk_device;
+        VkDescriptorSetLayout vk_descriptor_set_layout {VK_NULL_HANDLE};
+        VkPipelineLayout vk_pipeline_layout {VK_NULL_HANDLE};
     };
 
     // Setup vertex buffer:
@@ -62,17 +62,17 @@ namespace Rc::Render
 
         void SetVertexShader(VkShaderModule vs)
         {
-            m_vs = vs;
+            this->vs = vs;
         }
 
         void SetPixelShader(VkShaderModule ps)
         {
-            m_ps = ps;
+            this->ps = ps;
         }
 
         void SetPipelineLayout(std::shared_ptr<PipelineLayout> layout)
         {
-            m_pipeline_layout = std::move(layout);
+            pipeline_layout = std::move(layout);
         }
 
         //void SetVertexBinding()
@@ -88,19 +88,19 @@ namespace Rc::Render
         std::unique_ptr<Pipeline> Create();
         
     private:
-        VulkanDevice const* m_device {nullptr};
-        VkShaderModule m_vs {nullptr};
-        VkShaderModule m_ps {nullptr};
-        std::vector<VkVertexInputAttributeDescription> m_vertex_arrtibutes;
-        std::array<VkVertexInputBindingDescription, 2> m_vertex_binding_desc {};
-        VkPipelineInputAssemblyStateCreateInfo m_input_assembly {};
-        VkPipelineViewportStateCreateInfo m_viewport_state {};
-        VkPipelineRasterizationStateCreateInfo m_rasterizer_state {};
-        VkPipelineMultisampleStateCreateInfo m_multisampling {};
-        std::array<VkPipelineColorBlendAttachmentState, RenderTargetAttachments::slots_count> m_color_blend_attachments {};
-        VkPipelineColorBlendStateCreateInfo m_color_blend {};
-        VkPipelineRenderingCreateInfo m_pipeline_rendering {};
-        std::shared_ptr<PipelineLayout> m_pipeline_layout;
+        VulkanDevice const& vk_device;
+        VkShaderModule vs {nullptr};
+        VkShaderModule ps {nullptr};
+        std::vector<VkVertexInputAttributeDescription> vertex_arrtibutes;
+        std::array<VkVertexInputBindingDescription, 2> vertex_binding_desc {};
+        VkPipelineInputAssemblyStateCreateInfo input_assembly {};
+        VkPipelineViewportStateCreateInfo viewport_state {};
+        VkPipelineRasterizationStateCreateInfo rasterizer_state {};
+        VkPipelineMultisampleStateCreateInfo multisampling {};
+        std::array<VkPipelineColorBlendAttachmentState, RenderTargetAttachments::slots_count> color_blend_attachments {};
+        VkPipelineColorBlendStateCreateInfo color_blend {};
+        VkPipelineRenderingCreateInfo pipeline_rendering {};
+        std::shared_ptr<PipelineLayout> pipeline_layout;
     };
 
 } // Rc::Render

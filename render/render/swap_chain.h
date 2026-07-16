@@ -24,12 +24,12 @@ namespace Rc::Render
 
         int Width() const
         {
-            return m_info.imageExtent.width;
+            return static_cast<int>(vk_info.imageExtent.width);
         }
         
         int Height() const
         {
-            return m_info.imageExtent.height;
+            return static_cast<int>(vk_info.imageExtent.height);
         }
 
         Rectangle<int> RenderArea() const
@@ -40,14 +40,14 @@ namespace Rc::Render
         // Get number of images.
         int Size()
         {
-            return m_images.size();
+            return static_cast<int>(images.size());
         }
 
         void AcquireNextImage();
 
         RenderTargetView const& GetRenderTargetView() const
         {
-            return *m_views.at(m_image_index);
+            return *views.at(image_index);
         }
 
         // Texture2D const& GetTexture() const // ------------------------ rename to framebuffer
@@ -55,47 +55,53 @@ namespace Rc::Render
         //     return m_images.at(m_image_index);
         // }
 
-        uint32_t Index() const { return m_image_index; }
+        uint32_t Index() const
+        {
+            return image_index;
+        }
 
-        VkFormat GetFormat() const { return m_vk_format; }
+        VkFormat GetFormat() const
+        {
+            return vk_format;
+        }
 
         void Present(RenderCommandQueue const& queue) const;
 
         Semaphore const& GetAcquireSemaphore() const
         {
-            return *m_acquire_semaphores[m_acquire_index];
+            return *acquire_semaphores[acquire_index];
         }
 
         Semaphore const& GetPresentSemaphore() const
         {
-            return *m_present_semaphores[m_image_index];
+            return *present_semaphores[image_index];
         }
 
     private:
         void Create();
 
-        VulkanDevice const* m_vk_device {nullptr};
+        VulkanDevice const* vk_device {nullptr};
 
-        VkSwapchainCreateInfoKHR m_info {};
+        VkSwapchainCreateInfoKHR vk_info {};
 
-        VkFormat m_vk_format {VK_FORMAT_R8G8B8A8_SRGB}; // -------------------- determine!
+        VkFormat vk_format {VK_FORMAT_R8G8B8A8_SRGB}; // -------------------- determine!
 
-        VkSwapchainKHR m_vk_swap_chain {VK_NULL_HANDLE};
-
-        // Indexed by the m_index.
-        std::vector<Texture2D> m_images;
+        VkSwapchainKHR vk_swap_chain {VK_NULL_HANDLE};
 
         // Indexed by the m_index.
-        std::vector<std::unique_ptr<RenderTargetView>> m_views;
-
-        std::vector<std::unique_ptr<Semaphore>> m_acquire_semaphores;
+        std::vector<Texture2D> images;
 
         // Indexed by the m_index.
-        std::vector<std::unique_ptr<Semaphore>> m_present_semaphores;
+        std::vector<std::unique_ptr<RenderTargetView>> views;
 
-        int m_acquire_index {-1};
+        std::vector<std::unique_ptr<Semaphore>> acquire_semaphores;
 
-        uint32_t m_image_index {0};
+        // Indexed by the m_index.
+        std::vector<std::unique_ptr<Semaphore>> present_semaphores;
+
+        int acquire_index {-1};
+
+        uint32_t image_index {0};
     };
 
 } // Rc::Render

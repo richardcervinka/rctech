@@ -22,31 +22,31 @@ namespace Rc::Render
 
     Renderer::~Renderer()
     {
-        if (m_device)
+        if (device)
         {
-            m_device->WaitIdle();
+            device->WaitIdle();
         }
 
-        m_resource_manager = nullptr;
-        m_test_vertex_pipeline = nullptr;
-        m_test_pipeline = nullptr;
-        m_pipeline_layout = nullptr;
-        m_frames.clear();
+        resource_manager = nullptr;
+        test_vertex_pipeline = nullptr;
+        test_pipeline = nullptr;
+        pipeline_layout = nullptr;
+        frames.clear();
 
-        for (auto& shader : m_pixel_shaders)
-        {
-            shader = nullptr;
-        }
-        for (auto& shader : m_vertex_shaders)
+        for (auto& shader : pixel_shaders)
         {
             shader = nullptr;
         }
+        for (auto& shader : vertex_shaders)
+        {
+            shader = nullptr;
+        }
 
-        m_render_queue = nullptr;
-        m_swap_chain = nullptr;
-        m_surface = nullptr;
-        m_device = nullptr;
-        m_instance = nullptr;
+        render_queue = nullptr;
+        swap_chain = nullptr;
+        surface = nullptr;
+        device = nullptr;
+        instance = nullptr;
     }
 
     static void SortAdapters(std::span<std::unique_ptr<Adapter>> adapters)
@@ -69,13 +69,13 @@ namespace Rc::Render
     std::unique_ptr<Device> Renderer::CreateDevice()
     {
         // Get available GPUs
-        auto adapters = m_instance->EnumerateAdapters();
+        auto adapters = instance->EnumerateAdapters();
 
         SortAdapters(adapters);
         
         for (auto& adapter : adapters)
         {
-            if (adapter->ApiVersion() < m_instance->ApiVersion())
+            if (adapter->ApiVersion() < instance->ApiVersion())
             {
                 continue;
             }
@@ -83,7 +83,7 @@ namespace Rc::Render
             {
                 Log::Debug(std::format("Adapter {} vulkan {}\n", adapter->Name(), Str::From(adapter->ApiVersion())));
                 
-                auto device = adapter->CreateDevice(*m_surface);
+                auto device = adapter->CreateDevice(*surface);
 
                 return device;
             }
@@ -98,54 +98,54 @@ namespace Rc::Render
 
     void Renderer::Initialize(Window& window)
     {
-        m_instance = std::make_unique<Instance>();
-        m_instance->EnableValidation();
+        instance = std::make_unique<Instance>();
+        instance->EnableValidation();
         
         // Core objects.
-        m_surface = m_instance->CreateSurface(window);
-        m_device = CreateDevice();
-        m_swap_chain = m_device->CreateSwapChain(*m_surface, window);
-        m_render_queue = m_device->CreateGraphicsQueue();
-        m_pipeline_layout = m_device->CreatePipelineLayout();
+        surface = instance->CreateSurface(window);
+        device = CreateDevice();
+        swap_chain = device->CreateSwapChain(*surface, window);
+        render_queue = device->CreateGraphicsQueue();
+        pipeline_layout = device->CreatePipelineLayout();
 
         // Create frames in flight.
-        m_frames.resize(m_swap_chain->Size());
-        for (auto& frame : m_frames)
+        frames.resize(swap_chain->Size());
+        for (auto& frame : frames)
         {
-            frame.Create(*m_device);
-            frame.UpdateResourceDescriptorHeap(*m_device);
+            frame.Create(*device);
+            frame.UpdateResourceDescriptorHeap(*device);
         }
 
         // Create embedded shaders.
         InitializeShaders();
 
         // Handle window resizing.
-        window.OnEventSize(m_on_window_size);
+        window.OnEventSize(on_window_size);
 
-        m_resource_manager = std::make_unique<ResourceManager>(m_device);
+        resource_manager = std::make_unique<ResourceManager>(device);
         
         // ---------------------------- TEST ----------------------------
 
-        m_resource_manager->ReserveVertexBuffer(ResourceFamily{0}, 2048);
-        m_resource_manager->ReserveIndexBuffer(ResourceFamily{0}, 2048);
-        m_resource_manager->ReserveInstanceBuffer(ResourceFamily{0}, 2048);
+        resource_manager->ReserveVertexBuffer(ResourceFamily{0}, 2048);
+        resource_manager->ReserveIndexBuffer(ResourceFamily{0}, 2048);
+        resource_manager->ReserveInstanceBuffer(ResourceFamily{0}, 2048);
 
         {
-            auto factory = m_device->CreatePipelineFactory();
-            factory.SetPipelineLayout(m_pipeline_layout);
+            auto factory = device->CreatePipelineFactory();
+            factory.SetPipelineLayout(pipeline_layout);
             factory.SetVertexShader(GetVertexShader(VertexShaderSlot::Overlay));
             factory.SetPixelShader(GetPixelShader(PixelShaderSlot::Null));
-            m_test_pipeline = factory.Create();
+            test_pipeline = factory.Create();
         }
         {
-            auto factory = m_device->CreatePipelineFactory();
-            factory.SetPipelineLayout(m_pipeline_layout);
+            auto factory = device->CreatePipelineFactory();
+            factory.SetPipelineLayout(pipeline_layout);
             factory.SetVertexShader(GetVertexShader(VertexShaderSlot::Test));
             factory.SetPixelShader(GetPixelShader(PixelShaderSlot::Null));
             factory.SetVertexBinding(Gfx::VertexBinding::PerVertex, sizeof(Gfx::VertexBasic));
             factory.SetVertexBinding(Gfx::VertexBinding::PerInstance, sizeof(Gfx::VertexInstance));
             factory.SetVertexAttributes({Gfx::VertexBasic::attributes, Gfx::VertexInstance::attributes});
-            m_test_vertex_pipeline = factory.Create();
+            test_vertex_pipeline = factory.Create();
         }
 
         Log::Debug("Renderer initialized");
@@ -153,27 +153,27 @@ namespace Rc::Render
 
     void Renderer::InitializeShaders()
     {
-        SetVertexShader(VertexShaderSlot::Null, m_device->CreateShader(Res::Vs::Dummy()));
-        SetVertexShader(VertexShaderSlot::Test, m_device->CreateShader(Res::Vs::Test()));
-        SetVertexShader(VertexShaderSlot::Overlay, m_device->CreateShader(Res::Vs::Overlay()));
-        SetPixelShader(PixelShaderSlot::Null, m_device->CreateShader(Res::Ps::Dummy()));
+        SetVertexShader(VertexShaderSlot::Null, device->CreateShader(Res::Vs::Dummy()));
+        SetVertexShader(VertexShaderSlot::Test, device->CreateShader(Res::Vs::Test()));
+        SetVertexShader(VertexShaderSlot::Overlay, device->CreateShader(Res::Vs::Overlay()));
+        SetPixelShader(PixelShaderSlot::Null, device->CreateShader(Res::Ps::Dummy()));
     }
 
     void Renderer::Resize(int width, int height)
     {
-        m_device->WaitIdle();
-        m_swap_chain->Resize(width, height);
+        device->WaitIdle();
+        swap_chain->Resize(width, height);
     }
 
     void Renderer::BeginFrame()
     {
-        m_frame = &m_frames[m_frame_number % m_frames.size()];
+        frame = &frames[frame_number % frames.size()];
 
-        m_frame->Begin();
+        frame->Begin();
 
-        m_swap_chain->AcquireNextImage();
+        swap_chain->AcquireNextImage();
 
-        if (m_resource_manager->Complete(3))
+        if (resource_manager->Complete(3))
         {
             Test();
         }
@@ -181,16 +181,16 @@ namespace Rc::Render
 
     void Renderer::EndFrame()
     {
-        m_frame->commands->UsePresentingFramebuffer(m_swap_chain->GetRenderTargetView()); // ---------------
-        m_frame->commands->End();
+        frame->commands->UsePresentingFramebuffer(swap_chain->GetRenderTargetView()); // ---------------
+        frame->commands->End();
         
-        m_render_queue->WaitSemaphore(m_swap_chain->GetAcquireSemaphore());
-        m_render_queue->SignalSemaphore(m_swap_chain->GetPresentSemaphore());
-        m_render_queue->Submit(*m_frame->commands, *m_frame->fence);
+        render_queue->WaitSemaphore(swap_chain->GetAcquireSemaphore());
+        render_queue->SignalSemaphore(swap_chain->GetPresentSemaphore());
+        render_queue->Submit(*frame->commands, *frame->fence);
 
-        m_swap_chain->Present(*m_render_queue);
+        swap_chain->Present(*render_queue);
 
-        m_frame_number += 1;
+        frame_number += 1;
     }
 
     void Renderer::Test()
@@ -236,25 +236,25 @@ namespace Rc::Render
         RenderPassContext render_pass_context {};
         render_pass_context.camera = &camera;
 
-        m_frame->commands->UseVertexBuffer(m_resource_manager->GetBufferRegion(g_test_model.in_handle));
-        m_frame->commands->UseVertexBuffer(m_resource_manager->GetBufferRegion(g_test_model.vb_handle));
-        m_frame->commands->UseIndexBuffer(m_resource_manager->GetBufferRegion(g_test_model.ib_handle));
+        frame->commands->UseVertexBuffer(resource_manager->GetBufferRegion(g_test_model.in_handle));
+        frame->commands->UseVertexBuffer(resource_manager->GetBufferRegion(g_test_model.vb_handle));
+        frame->commands->UseIndexBuffer(resource_manager->GetBufferRegion(g_test_model.ib_handle));
 
         //m_swap_chain->AcquireNextImage();
 
-        m_frame->BeginTestRenderPass(
-            *m_test_vertex_pipeline,
-            m_swap_chain->GetRenderTargetView(),
+        frame->BeginTestRenderPass(
+            *test_vertex_pipeline,
+            swap_chain->GetRenderTargetView(),
             render_pass_context
         );
 
-        m_frame->BindVertexBuffer(m_resource_manager->GetVertexBuffer(ResourceFamily{0}), 0, 0); // ---------------------- Use VertexBinding !!!!!!!!
-        m_frame->BindVertexBuffer(m_resource_manager->GetInstanceBuffer(ResourceFamily{0}), 1, 0);
-        m_frame->BindIndexBuffer(m_resource_manager->GetIndexBuffer(ResourceFamily{0}), IndexType::Uint16, 0);
+        frame->BindVertexBuffer(resource_manager->GetVertexBuffer(ResourceFamily{0}), 0, 0); // ---------------------- Use VertexBinding !!!!!!!!
+        frame->BindVertexBuffer(resource_manager->GetInstanceBuffer(ResourceFamily{0}), 1, 0);
+        frame->BindIndexBuffer(resource_manager->GetIndexBuffer(ResourceFamily{0}), IndexType::Uint16, 0);
 
-        m_frame->Draw(36, 1, 0, 0, 0);
+        frame->Draw(36, 1, 0, 0, 0);
 
-        m_frame->EndRenderPass();
+        frame->EndRenderPass();
     }
 
 } // Rc::Render

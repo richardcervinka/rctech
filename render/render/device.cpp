@@ -45,8 +45,8 @@ namespace Rc::Render
         VkPhysicalDevice vk_physical_device,
         Surface const& surface
     ) :
-        m_instance{&instance},
-        m_vk_physical_device{vk_physical_device}
+        instance{&instance},
+        vk_physical_device{vk_physical_device}
     {
         // Setup extensions
 
@@ -154,8 +154,8 @@ namespace Rc::Render
 
         if (transfer_queue_family_index)
         {
-            m_vk_graphics_queue_family = {*graphics_queue_family_index, 0};
-            m_vk_transfer_queue_family = {*transfer_queue_family_index, 0};
+            vk_graphics_queue_family = {*graphics_queue_family_index, 0};
+            vk_transfer_queue_family = {*transfer_queue_family_index, 0};
 
             queue_info = {
                 {
@@ -178,8 +178,8 @@ namespace Rc::Render
         }
         else if (family_properties[*graphics_queue_family_index].count > 1)
         {
-            m_vk_graphics_queue_family = {*graphics_queue_family_index, 0};
-            m_vk_transfer_queue_family = {*graphics_queue_family_index, 1};
+            vk_graphics_queue_family = {*graphics_queue_family_index, 0};
+            vk_transfer_queue_family = {*graphics_queue_family_index, 1};
 
             queue_info = {
                 {
@@ -194,8 +194,8 @@ namespace Rc::Render
         }
         else
         {
-            m_vk_graphics_queue_family = {*graphics_queue_family_index, 0};
-            m_vk_transfer_queue_family = {*graphics_queue_family_index, 0};
+            vk_graphics_queue_family = {*graphics_queue_family_index, 0};
+            vk_transfer_queue_family = {*graphics_queue_family_index, 0};
 
             queue_info = {
                 {
@@ -298,19 +298,19 @@ namespace Rc::Render
             .ppEnabledExtensionNames = enable_extensions.data()
         };
 
-        m_device = m_instance->CreateDevice(vk_physical_device, info);
+        device = this->instance->CreateDevice(vk_physical_device, info);
 
-        auto const vma_functions = context.GetVmaFunctions(instance, *m_device);
+        auto const vma_functions = context.GetVmaFunctions(instance, *device);
 
         VmaAllocatorCreateInfo allocator_info {};
-        allocator_info.instance = m_instance->Handle();
-        allocator_info.device = m_device->Handle();
-        allocator_info.physicalDevice = m_vk_physical_device;
+        allocator_info.instance = this->instance->Handle();
+        allocator_info.device = device->Handle();
+        allocator_info.physicalDevice = this->vk_physical_device;
         allocator_info.vulkanApiVersion = VK_API_VERSION_1_4; //------------------------------- Precist z instance
         allocator_info.pVulkanFunctions = &vma_functions;
         allocator_info.flags = allocator_ext_flags;
 
-        if (auto vk_result = vmaCreateAllocator(&allocator_info, &m_vma_allocator); vk_result != VK_SUCCESS)
+        if (auto vk_result = vmaCreateAllocator(&allocator_info, &vma_allocator); vk_result != VK_SUCCESS)
         {
             throw VulkanException(vk_result);
         }
@@ -320,11 +320,11 @@ namespace Rc::Render
     {
         std::map<std::string, VulkanVersion> result;
 
-        auto const count = m_instance->EnumerateDeviceExtensionPropertiesCount(m_vk_physical_device, {});
+        auto const count = instance->EnumerateDeviceExtensionPropertiesCount(vk_physical_device, {});
 
         std::vector<VkExtensionProperties> properties(count);
 
-        for (auto const& extension : m_instance->EnumerateDeviceExtensionProperties(m_vk_physical_device, {}, properties))
+        for (auto const& extension : instance->EnumerateDeviceExtensionProperties(vk_physical_device, {}, properties))
         {
             result[extension.extensionName] = {extension.specVersion};
         }
@@ -334,9 +334,9 @@ namespace Rc::Render
 
     std::vector<QueueFamilyProperties> Device::GetQueueFamilyProperties(Surface const& surface) const
     {
-        auto const count = m_instance->GetPhysicalDeviceQueueFamilyPropertiesCount(m_vk_physical_device);
+        auto const count = instance->GetPhysicalDeviceQueueFamilyPropertiesCount(vk_physical_device);
         std::vector<VkQueueFamilyProperties> properties(count);
-        m_instance->GetPhysicalDeviceQueueFamilyProperties(m_vk_physical_device, properties);
+        instance->GetPhysicalDeviceQueueFamilyProperties(vk_physical_device, properties);
 
         std::vector<QueueFamilyProperties> result;
         result.reserve(count);
@@ -349,8 +349,8 @@ namespace Rc::Render
                 .graphics = (properties[index].queueFlags & VK_QUEUE_GRAPHICS_BIT) != 0,
                 .transfer = (properties[index].queueFlags & VK_QUEUE_TRANSFER_BIT) != 0,
                 .compute = (properties[index].queueFlags & VK_QUEUE_COMPUTE_BIT) != 0,
-                .presentation = m_instance->GetPhysicalDevicePresentationSupport(m_vk_physical_device, index),
-                .surface = m_instance->GetPhysicalDeviceSurfaceSupportKHR(m_vk_physical_device, index, surface.Handle())
+                .presentation = instance->GetPhysicalDevicePresentationSupport(vk_physical_device, index),
+                .surface = instance->GetPhysicalDeviceSurfaceSupportKHR(vk_physical_device, index, surface.Handle())
             });
         }
 
@@ -361,93 +361,93 @@ namespace Rc::Render
     {
         WaitIdle();
 
-        if (m_vma_allocator != VK_NULL_HANDLE)
+        if (vma_allocator != VK_NULL_HANDLE)
         {
-            vmaDestroyAllocator(m_vma_allocator);
+            vmaDestroyAllocator(vma_allocator);
         }
     }
 
     std::unique_ptr<SwapChain> Device::CreateSwapChain(Surface const& surface, Window const& window)
     {
-        return std::make_unique<SwapChain>(*m_device, surface.m_vk_surface, window);
+        return std::make_unique<SwapChain>(*device, surface.vk_surface, window);
     }
 
     std::unique_ptr<Shader> Device::CreateShader(std::span<uint32_t const> spirv)
     {
-        return std::make_unique<Shader>(*m_device, spirv);
+        return std::make_unique<Shader>(*device, spirv);
     }
 
     std::unique_ptr<RenderCommandQueue> Device::CreateGraphicsQueue() const
     {
-        return std::make_unique<RenderCommandQueue>(*m_device, m_vk_graphics_queue_family.first, m_vk_graphics_queue_family.second);
+        return std::make_unique<RenderCommandQueue>(*device, vk_graphics_queue_family.first, vk_graphics_queue_family.second);
     }
 
     std::unique_ptr<TransferCommandQueue> Device::CreateTransferQueue() const
     {
-        return std::make_unique<TransferCommandQueue>(*m_device, m_vk_transfer_queue_family.first, m_vk_transfer_queue_family.second);
+        return std::make_unique<TransferCommandQueue>(*device, vk_transfer_queue_family.first, vk_transfer_queue_family.second);
     }
 
     std::unique_ptr<Fence> Device::CreateFence() const
     {
-        return std::make_unique<Fence>(*m_device);
+        return std::make_unique<Fence>(*device);
     }
 
     std::unique_ptr<Semaphore> Device::CreateSemaphore() const
     {
-        return std::make_unique<Semaphore>(*m_device);
+        return std::make_unique<Semaphore>(*device);
     }
 
     std::unique_ptr<TimelineSemaphore> Device::CreateTimelineSemaphore() const
     {
-        return std::make_unique<TimelineSemaphore>(*m_device);
+        return std::make_unique<TimelineSemaphore>(*device);
     }
 
     void Device::WaitIdle() const noexcept
     {
-        if (m_device)
+        if (device)
         {
-            m_device->WaitIdle();
+            device->WaitIdle();
         }
     }
 
     std::shared_ptr<PipelineLayout> Device::CreatePipelineLayout()
     {
-        return std::make_shared<PipelineLayout>(*m_device);
+        return std::make_shared<PipelineLayout>(*device);
     }
 
     PipelineFactory Device::CreatePipelineFactory()
     {
-        return PipelineFactory(*m_device);
+        return PipelineFactory(*device);
     }
 
     std::unique_ptr<ResourceDescriptorHeap> Device::CreateResourceDescriptorHeap(std::span<ResourceDescriptor const> descriptors) const
     {
-        return std::make_unique<ResourceDescriptorHeap>(*m_instance, *m_device, m_vk_physical_device, descriptors);
+        return std::make_unique<ResourceDescriptorHeap>(*instance, *device, vk_physical_device, descriptors);
     }
 
     std::unique_ptr<Buffer> Device::AllocateBuffer(VertexBufferInfo const& info) const
     {
-        return std::make_unique<Buffer>(*m_device, info, m_vma_allocator);
+        return std::make_unique<Buffer>(*device, info, vma_allocator);
     }
 
     std::unique_ptr<Buffer> Device::AllocateBuffer(IndexBufferInfo const& info) const
     {
-        return std::make_unique<Buffer>(*m_device, info, m_vma_allocator);
+        return std::make_unique<Buffer>(*device, info, vma_allocator);
     }
 
     std::unique_ptr<Buffer> Device::AllocateBuffer(StagingBufferInfo const& info) const
     {
-        return std::make_unique<Buffer>(*m_device, info, m_vma_allocator);
+        return std::make_unique<Buffer>(*device, info, vma_allocator);
     }
 
     std::unique_ptr<Buffer> Device::AllocateBuffer(UniformBufferInfo const& info) const
     {
-        return std::make_unique<Buffer>(*m_device, info, m_vma_allocator);
+        return std::make_unique<Buffer>(*device, info, vma_allocator);
     }
 
     std::unique_ptr<Buffer> Device::AllocateBuffer(DescriptorHeapBufferInfo const& info) const
     {
-        return std::make_unique<Buffer>(*m_device, info, m_vma_allocator);
+        return std::make_unique<Buffer>(*device, info, vma_allocator);
     }
 
 } // Rc::Render

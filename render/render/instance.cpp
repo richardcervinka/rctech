@@ -6,14 +6,14 @@ namespace Rc::Render
 {
     Instance::~Instance()
     {
-        m_instance->DestroyDebugUtilsMessengerEXT(m_vk_debug_msg);
+        instance->DestroyDebugUtilsMessengerEXT(vk_debug_msg);
     }
 
     Instance::Instance()
     {
-        m_context = std::make_unique<VulkanContext>("vulkan-1.dll");
+        context = std::make_unique<VulkanContext>("vulkan-1.dll");
 
-        auto const api_version = m_context->EnumerateInstanceVersion();
+        auto const api_version = context->EnumerateInstanceVersion();
 
         auto const extensions = EnumerateExtensions();
 
@@ -72,18 +72,18 @@ namespace Rc::Render
             .ppEnabledExtensionNames = enable_extensions.data()
         };
 
-        m_instance = m_context->CreateInstance(instance_info);
+        instance = context->CreateInstance(instance_info);
     }
 
     std::map<std::string, VulkanVersion> Instance::EnumerateExtensions() const
     { 
-        auto const count = m_context->EnumerateInstanceExtensionPropertiesCount();
+        auto const count = context->EnumerateInstanceExtensionPropertiesCount();
 
         std::vector<VkExtensionProperties> buffer(count);
 
         std::map<std::string, VulkanVersion> result;
 
-        for (auto const& p : m_context->EnumerateInstanceExtensionProperties(buffer))
+        for (auto const& p : context->EnumerateInstanceExtensionProperties(buffer))
         {
             result[p.extensionName] = {p.specVersion};
         }
@@ -112,17 +112,17 @@ namespace Rc::Render
             .pUserData = nullptr
         };
         
-        m_vk_debug_msg = m_instance->CreateDebugUtilsMessengerEXT(create_info);
+        vk_debug_msg = instance->CreateDebugUtilsMessengerEXT(create_info);
     }
 
     std::vector<std::unique_ptr<Adapter>> Instance::EnumerateAdapters()
     {
-        std::vector<VkPhysicalDevice> devices(m_instance->EnumeratePhysicalDevicesCount());
+        std::vector<VkPhysicalDevice> devices(instance->EnumeratePhysicalDevicesCount());
         std::vector<std::unique_ptr<Adapter>> adapters;
 
-        for (auto& device : m_instance->EnumeratePhysicalDevices(devices))
+        for (auto& device : instance->EnumeratePhysicalDevices(devices))
         {
-            adapters.push_back(std::make_unique<Adapter>(*m_context, *m_instance, device));
+            adapters.push_back(std::make_unique<Adapter>(*context, *instance, device));
         }
 
         return adapters;
@@ -131,7 +131,7 @@ namespace Rc::Render
     std::unique_ptr<Surface> Instance::CreateSurface(Window const& window)
     {
         #ifdef VK_USE_PLATFORM_WIN32_KHR
-        return std::make_unique<Surface>(*m_instance, window);
+        return std::make_unique<Surface>(*instance, window);
         #endif
     }
 

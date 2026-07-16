@@ -79,13 +79,13 @@ namespace Rc::Render
         // Get width of the associated swap chain.
         int Width() const
         {
-            return m_swap_chain->Width();
+            return swap_chain->Width();
         }
 
         // Get height of the associated swap chain.
         int Height() const
         {
-            return m_swap_chain->Height();
+            return swap_chain->Height();
         }
 
         // BeginFrame -> render commands -> EndFrame
@@ -96,30 +96,30 @@ namespace Rc::Render
 
         std::shared_ptr<ResourceManager> GetResourceManager()
         {
-            return m_resource_manager;
+            return resource_manager;
         }
 
     private:
         // Assign vertex shader to the slot.
         void SetVertexShader(VertexShaderSlot slot, std::unique_ptr<Shader> shader)
         {
-            m_vertex_shaders[static_cast<std::size_t>(slot)] = std::move(shader);
+            vertex_shaders[static_cast<std::size_t>(slot)] = std::move(shader);
         }
 
         // Assign pixel shader to the slot.
         void SetPixelShader(PixelShaderSlot slot, std::unique_ptr<Shader> shader)
         {
-            m_pixel_shaders[static_cast<std::size_t>(slot)] = std::move(shader);
+            pixel_shaders[static_cast<std::size_t>(slot)] = std::move(shader);
         }
 
         VkShaderModule GetVertexShader(VertexShaderSlot slot)
         {
-            return m_vertex_shaders[static_cast<std::size_t>(slot)]->Handle();
+            return vertex_shaders[static_cast<std::size_t>(slot)]->Handle();
         }
 
         VkShaderModule GetPixelShader(PixelShaderSlot slot)
         {
-            return m_pixel_shaders[static_cast<std::size_t>(slot)]->Handle();
+            return pixel_shaders[static_cast<std::size_t>(slot)]->Handle();
         }
 
         void OnWindowSize(Window::EventSize::Payload const& e)
@@ -127,36 +127,36 @@ namespace Rc::Render
             Resize(e.w, e.h);
         }
 
-        std::unique_ptr<Instance> m_instance;
+        std::unique_ptr<Instance> instance;
         
-        std::shared_ptr<Device> m_device;
+        std::shared_ptr<Device> device;
 
-        std::unique_ptr<Surface> m_surface;
+        std::unique_ptr<Surface> surface;
 
-        std::unique_ptr<SwapChain> m_swap_chain;
+        std::unique_ptr<SwapChain> swap_chain;
 
-        std::unique_ptr<RenderCommandQueue> m_render_queue;
+        std::unique_ptr<RenderCommandQueue> render_queue;
 
-        std::array<std::unique_ptr<Shader>, std::to_underlying(VertexShaderSlot::Count)> m_vertex_shaders;
-        std::array<std::unique_ptr<Shader>, std::to_underlying(PixelShaderSlot::Count)> m_pixel_shaders;
+        std::array<std::unique_ptr<Shader>, std::to_underlying(VertexShaderSlot::Count)> vertex_shaders;
+        std::array<std::unique_ptr<Shader>, std::to_underlying(PixelShaderSlot::Count)> pixel_shaders;
 
         // Frames-In-Flight
-        std::vector<Frame> m_frames;
+        std::vector<Frame> frames;
 
         // Current render frame, updated by the BeginFrame()
-        Frame* m_frame {nullptr};
+        Frame* frame {nullptr};
 
         // Position in the m_frames. Updated by the EndFrame()
-        uint64_t m_frame_number {0};
+        uint64_t frame_number {0};
 
-        std::shared_ptr<PipelineLayout> m_pipeline_layout;
+        std::shared_ptr<PipelineLayout> pipeline_layout;
 
-        std::unique_ptr<Pipeline> m_test_pipeline;
-        std::unique_ptr<Pipeline> m_test_vertex_pipeline;
+        std::unique_ptr<Pipeline> test_pipeline;
+        std::unique_ptr<Pipeline> test_vertex_pipeline;
 
-        std::shared_ptr<ResourceManager> m_resource_manager;
+        std::shared_ptr<ResourceManager> resource_manager;
 
-        Window::EventSize::Handler m_on_window_size {this, &Renderer::OnWindowSize};
+        Window::EventSize::Handler on_window_size {this, &Renderer::OnWindowSize};
 
         // Create embedded shaders.
         void InitializeShaders();

@@ -22,43 +22,43 @@ namespace Rc::Render
 
         VkImageView View() const
         {
-            return m_view;
+            return view;
         }
 
         VkImage Image() const
         {
-            return m_image;
+            return image;
         }
 
         VkImageLayout Layout() const
         {
-            return m_layout;
+            return layout;
         }
 
         int Width() const
         {
-            return m_width;
+            return width;
         }
 
         int Height() const
         {
-            return m_height;
+            return height;
         }
 
     private:
         friend class RenderCommandBuffer;
 
-        VulkanDevice const* m_vk_device {nullptr};
+        VulkanDevice const* vk_device {nullptr};
 
         // Non-owned vk image.
-        VkImage m_image {VK_NULL_HANDLE};
+        VkImage image {VK_NULL_HANDLE};
         
-        VkImageView m_view {VK_NULL_HANDLE};
+        VkImageView view {VK_NULL_HANDLE};
 
-        mutable VkImageLayout m_layout {VK_IMAGE_LAYOUT_UNDEFINED};
+        mutable VkImageLayout layout {VK_IMAGE_LAYOUT_UNDEFINED};
 
-        int m_width {0};
-        int m_height {0};
+        int width {0};
+        int height {0};
     };
 
 
@@ -73,31 +73,37 @@ namespace Rc::Render
             VkFormat vk_format,
             int width,
             int height)
-            :   m_vk_device{&vk_device},
-                m_vk_image{vk_image},
-                m_vk_format{vk_format},
-                m_width{width},
-                m_height{height}
+            :   vk_device{&vk_device},
+                vk_image{vk_image},
+                vk_format{vk_format},
+                width{width},
+                height{height}
         {}
 
-        VkImage const& GetImage() const { return m_vk_image; }
+        VkImage const& GetImage() const
+        {
+            return vk_image;
+        }
 
-        VkFormat const& GetFormat() const { return m_vk_format; }
+        VkFormat const& GetFormat() const
+        {
+            return vk_format;
+        }
 
         std::unique_ptr<RenderTargetView> CreateView() const;
 
     private:
         friend class RenderTargetView;
 
-        VulkanDevice const* m_vk_device {nullptr};
+        VulkanDevice const* vk_device {nullptr};
 
         // Non-owning image handle.
-        VkImage m_vk_image {VK_NULL_HANDLE};
+        VkImage vk_image {VK_NULL_HANDLE};
         
-        VkFormat m_vk_format {VK_FORMAT_UNDEFINED};
+        VkFormat vk_format {VK_FORMAT_UNDEFINED};
 
-        int m_width {0};
-        int m_height {0};
+        int width {0};
+        int height {0};
     };
 
 } // Rc::Render
