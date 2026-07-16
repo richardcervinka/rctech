@@ -80,7 +80,7 @@ namespace Rc::Render
     private:
         void Create();
 
-        VulkanDevice const* vk_device {nullptr};
+        VulkanDevice const& vk_device;
 
         VkSwapchainCreateInfoKHR vk_info {};
 

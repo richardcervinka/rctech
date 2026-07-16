@@ -4,7 +4,7 @@
 namespace Rc::Render
 {
     SwapChain::SwapChain(VulkanDevice const& vk_device, VkSurfaceKHR surface, Window const& window) :
-        vk_device{&vk_device}
+        vk_device{vk_device}
     {
         auto const extent = window.GetClientArea();
         
@@ -28,22 +28,16 @@ namespace Rc::Render
 
     SwapChain::~SwapChain()
     {
-        if (vk_device != nullptr)
-        {
-            vk_device->DestroySwapchainKHR(vk_swap_chain);
-        }
+        vk_device.DestroySwapchainKHR(vk_swap_chain);
     }
 
     void SwapChain::Resize(int width, int height) // -------------------- add surface parameter
     {
-        if (vk_device != nullptr)
-        {
-            vk_info.imageExtent.width = static_cast<uint32_t>(width);
-            vk_info.imageExtent.height = static_cast<uint32_t>(height);
-            vk_info.oldSwapchain = vk_swap_chain;
+        vk_info.imageExtent.width = static_cast<uint32_t>(width);
+        vk_info.imageExtent.height = static_cast<uint32_t>(height);
+        vk_info.oldSwapchain = vk_swap_chain;
 
-            Create();
-        }
+        Create();
     }
 
     void SwapChain::Create()
@@ -52,16 +46,16 @@ namespace Rc::Render
         views.clear();
         acquire_semaphores.clear();
 
-        vk_swap_chain = vk_device->CreateSwapchainKHR(vk_info);
+        vk_swap_chain = vk_device.CreateSwapchainKHR(vk_info);
 
-        auto const images_count = vk_device->GetSwapchainImagesKHRCount(vk_swap_chain);
+        auto const images_count = vk_device.GetSwapchainImagesKHRCount(vk_swap_chain);
 
         std::vector<VkImage> images_buffer(images_count);
 
-        for (auto image : vk_device->GetSwapchainImagesKHR(vk_swap_chain, images_buffer))
+        for (auto image : vk_device.GetSwapchainImagesKHR(vk_swap_chain, images_buffer))
         {
             images.emplace_back(
-                *vk_device,
+                vk_device,
                 image,
                 vk_format,
                 vk_info.imageExtent.width,
@@ -70,8 +64,8 @@ namespace Rc::Render
 
             views.push_back(images.back().CreateView());
 
-            acquire_semaphores.push_back(std::make_unique<Semaphore>(*vk_device));
-            present_semaphores.push_back(std::make_unique<Semaphore>(*vk_device));
+            acquire_semaphores.push_back(std::make_unique<Semaphore>(vk_device));
+            present_semaphores.push_back(std::make_unique<Semaphore>(vk_device));
         }
 
         vk_info.oldSwapchain = nullptr;
@@ -81,7 +75,7 @@ namespace Rc::Render
     {
         acquire_index = (acquire_index + 1) % Size();
 
-        image_index = vk_device->AcquireNextImageKHR(
+        image_index = vk_device.AcquireNextImageKHR(
             vk_swap_chain,
             UINT64_MAX,
             GetAcquireSemaphore().Handle(),
@@ -105,7 +99,7 @@ namespace Rc::Render
             .pResults = nullptr
         };
 
-        auto const vk_result = vk_device->QueuePresentKHR(queue.Handle(), present_info);
+        auto const vk_result = vk_device.QueuePresentKHR(queue.Handle(), present_info);
 
         if ((vk_result == VK_ERROR_OUT_OF_DATE_KHR) ||
             (vk_result == VK_SUBOPTIMAL_KHR))

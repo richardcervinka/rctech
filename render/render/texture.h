@@ -48,7 +48,7 @@ namespace Rc::Render
     private:
         friend class RenderCommandBuffer;
 
-        VulkanDevice const* vk_device {nullptr};
+        VulkanDevice const& vk_device;
 
         // Non-owned vk image.
         VkImage image {VK_NULL_HANDLE};
@@ -73,7 +73,7 @@ namespace Rc::Render
             VkFormat vk_format,
             int width,
             int height)
-            :   vk_device{&vk_device},
+            :   vk_device{vk_device},
                 vk_image{vk_image},
                 vk_format{vk_format},
                 width{width},
@@ -95,7 +95,7 @@ namespace Rc::Render
     private:
         friend class RenderTargetView;
 
-        VulkanDevice const* vk_device {nullptr};
+        VulkanDevice const& vk_device;
 
         // Non-owning image handle.
         VkImage vk_image {VK_NULL_HANDLE};
