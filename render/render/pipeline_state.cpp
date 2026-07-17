@@ -130,8 +130,8 @@ namespace Rc::Render
         pipeline_rendering.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
         pipeline_rendering.pNext = nullptr;
         pipeline_rendering.viewMask = 0;
-        pipeline_rendering.colorAttachmentCount = RenderTargetAttachments::slots_format.size();
-        pipeline_rendering.pColorAttachmentFormats = RenderTargetAttachments::slots_format.data();
+        pipeline_rendering.colorAttachmentCount = color_attachment_formats.size();
+        pipeline_rendering.pColorAttachmentFormats = color_attachment_formats.data();
         pipeline_rendering.depthAttachmentFormat = VK_FORMAT_UNDEFINED;
         pipeline_rendering.stencilAttachmentFormat = VK_FORMAT_UNDEFINED;
 

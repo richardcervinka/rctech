@@ -20,8 +20,6 @@ struct TestModel
     Rc::Render::IndexBufferHandle ib_handle; 
 };
 
-inline TestModel g_test_model;
-
 namespace Rc::Render
 {
     enum class VertexShaderSlot
@@ -61,7 +59,9 @@ namespace Rc::Render
     public:
 
         // TEST rendering -----------------------
-        uint64_t transfer_timeline {0};
+
+        std::unique_ptr<TestModel> test_model;
+
         // --------------------------------------
 
         Renderer();

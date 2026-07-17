@@ -57,11 +57,72 @@ namespace Rc::Render
         vk_device.BeginCommandBuffer(vk_command_buffer, begin_info);
 
         // Use VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT  -----------------------?
+
+        color_attachments.fill({
+            .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
+            .pNext = nullptr,
+            .imageView = VK_NULL_HANDLE,
+            .imageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+            .resolveMode = VK_RESOLVE_MODE_NONE,
+            .resolveImageView = VK_NULL_HANDLE,
+            .resolveImageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+            .loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+            .storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+            .clearValue = {}
+        });
     }
 
     void RenderCommandBuffer::End()
     {
         vk_device.EndCommandBuffer(vk_command_buffer);
+    }
+
+    void RenderCommandBuffer::EnableColorAttachment(RenderTargetSlot slot, RenderTargetView const& render_target)
+    {
+        color_attachments[std::to_underlying(slot)] = {
+            .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
+            .pNext = nullptr,
+            .imageView = render_target.View(),
+            .imageLayout = render_target.Layout(),
+            .resolveMode = VK_RESOLVE_MODE_NONE,
+            .resolveImageView = VK_NULL_HANDLE,
+            .resolveImageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+            .loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+            .storeOp = VK_ATTACHMENT_STORE_OP_STORE
+        };
+    }
+
+    void RenderCommandBuffer::DisableColorAttachment(RenderTargetSlot slot)
+    {
+        color_attachments[std::to_underlying(slot)] = {
+            .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
+            .pNext = nullptr,
+            .imageView = VK_NULL_HANDLE,
+            .imageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+            .resolveMode = VK_RESOLVE_MODE_NONE,
+            .resolveImageView = VK_NULL_HANDLE,
+            .resolveImageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+            .loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+            .storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+            .clearValue = {}
+        };
+    }
+
+    void RenderCommandBuffer::ClearRenderTarget(RenderTargetSlot slot, Color const& color)
+    {
+        auto& attachment = color_attachments[std::to_underlying(slot)];
+
+        attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        attachment.clearValue.color.float32[0] = color.r;
+        attachment.clearValue.color.float32[1] = color.g;
+        attachment.clearValue.color.float32[2] = color.b;
+        attachment.clearValue.color.float32[3] = color.a;
+    }
+
+    void RenderCommandBuffer::LoadRenderTarget(RenderTargetSlot slot)
+    {
+        color_attachments[std::to_underlying(slot)].loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
     }
 
     void RenderCommandBuffer::UseRenderingFramebuffer(RenderTargetView const& render_target)
@@ -153,9 +214,21 @@ namespace Rc::Render
         vk_device.CmdSetScissor(vk_command_buffer, scissors);
     }
 
-    void RenderCommandBuffer::BeginRendering(Rectangle<int> const& render_area, RenderTargetAttachments const& attachments)
+    void RenderCommandBuffer::BeginRendering(Rectangle<int> const& render_area)
     {
-        auto const& color_attachments = attachments.ColorAttachmentsInfo();
+        constexpr std::array<VkFormat, 4> attachments_format // ------------------- 4
+        {
+            // RenderTargetSlot::FrameBuffer
+            VK_FORMAT_R8G8B8A8_SRGB,
+            //
+            VK_FORMAT_UNDEFINED,
+            //
+            VK_FORMAT_UNDEFINED,
+            //
+            VK_FORMAT_UNDEFINED
+        };
+
+        //auto const& color_attachments = attachments.ColorAttachmentsInfo();
 
         VkRenderingInfo const rendering_info
         {

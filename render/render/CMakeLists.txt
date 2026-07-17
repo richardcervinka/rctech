@@ -1,7 +1,6 @@
 ﻿find_package(Vulkan REQUIRED)
 
 add_library(render STATIC
-    "attachment.h"
     "buffer.h"
     "buffer.cpp"
     "buffer_linear_allocator.h"
@@ -38,7 +37,6 @@ add_library(render STATIC
     "shader.cpp"
     "texture.h"
     "texture.cpp"
-    "vertex_traits.h"
     "index_buffer.h"
     "index_buffer.cpp"
     "surface.h"

@@ -191,19 +191,19 @@ namespace Rc::Render
         // Call in render loop
         bool Complete(uint64_t counter) const;
 
-        void Upload(VertexBufferHandle handle, std::function<void(BufferWriter&)> writer_callback)
+        uint64_t Upload(VertexBufferHandle handle, std::function<void(BufferWriter&)> writer_callback)
         {
-            Upload(GetBufferRegion(handle), writer_callback);
+            return Upload(GetBufferRegion(handle), writer_callback);
         }
 
-        void Upload(IndexBufferHandle handle, std::function<void(BufferWriter&)> writer_callback)
+        uint64_t Upload(IndexBufferHandle handle, std::function<void(BufferWriter&)> writer_callback)
         {
-            Upload(GetBufferRegion(handle), writer_callback);
+            return Upload(GetBufferRegion(handle), writer_callback);
         }
 
-        void Upload(InstanceBufferHandle handle, std::function<void(BufferWriter&)> writer_callback)
+        uint64_t Upload(InstanceBufferHandle handle, std::function<void(BufferWriter&)> writer_callback)
         {
-            Upload(GetBufferRegion(handle), writer_callback);
+            return Upload(GetBufferRegion(handle), writer_callback);
         }
 
         // Lockable interface
@@ -230,7 +230,7 @@ namespace Rc::Render
         }
 
     private:
-        void Upload(BufferRegion region, std::function<void(BufferWriter&)>& writer_callback);
+        uint64_t Upload(BufferRegion region, std::function<void(BufferWriter&)>& writer_callback);
 
         std::shared_ptr<Device> device;
 

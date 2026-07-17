@@ -1,8 +1,4 @@
 ﻿#include "generic/application.h"
-#include "generic/char_input.h"
-#include "generic/input.h"
-#include <print>
-#include <iostream>
 #include "base/float.h"
 
 using namespace Rc;
@@ -13,19 +9,39 @@ public:
     using Generic::Application::Application;
 
     void Initialize() override;
+
+    void BeginFrame() override
+    {
+        if (test_model != nullptr)
+        {
+            if (GetResourceManager().Complete(resource_timeline))
+            {
+                GetRenderer().test_model = std::move(test_model);
+                test_model = nullptr;
+            }
+        }
+
+        Generic::Application::BeginFrame();
+    }
+
+    std::unique_ptr<TestModel> test_model;
+    uint64_t resource_timeline {0};
 };
 
 void TestApplication::Initialize()
 {
     Generic::Application::Initialize();
 
+    //auto& renderer = GetRenderer();
     auto& rm = GetResourceManager();
+
+    test_model = std::make_unique<TestModel>();
 
     rm.BeginUpload();
 
-    g_test_model.vb_handle = rm.AllocateVertexBuffer(Render::ResourceFamily{0}, sizeof(Gfx::VertexBasic) * 8);
+    test_model->vb_handle = rm.AllocateVertexBuffer(Render::ResourceFamily{0}, sizeof(Gfx::VertexBasic) * 8);
 
-    rm.Upload(g_test_model.vb_handle, [](Render::BufferWriter& writer) {
+    resource_timeline = rm.Upload(test_model->vb_handle, [](Render::BufferWriter& writer) {
         // front-left-bottom
         writer << Float3{-1, -1,  1};
         writer << Float3{1, 0, 0};
@@ -51,10 +67,10 @@ void TestApplication::Initialize()
         writer << Float3{1, -1, -1};
         writer << Float3{0, 0, 1};
     });
-        
-    g_test_model.ib_handle = rm.AllocateIndexBuffer(Render::ResourceFamily{0}, sizeof(uint16_t) * 36);
+    
+    test_model->ib_handle = rm.AllocateIndexBuffer(Render::ResourceFamily{0}, sizeof(uint16_t) * 36);
 
-    rm.Upload(g_test_model.ib_handle, [](Render::BufferWriter& writer) {
+    resource_timeline = rm.Upload(test_model->ib_handle, [](Render::BufferWriter& writer) {
         writer << std::array<uint16_t, 36>{
             // front
             0, 1, 2, 0, 3, 1,
@@ -70,15 +86,12 @@ void TestApplication::Initialize()
             4, 3, 0, 4, 7, 3
         };
     });
-
-    // Instance data test
     
-    g_test_model.in_handle = rm.AllocateInstanceBuffer(Render::ResourceFamily{0}, sizeof(float) * 4 * 4);
+    test_model->in_handle = rm.AllocateInstanceBuffer(Render::ResourceFamily{0}, sizeof(float) * 4 * 4);
     
-    rm.Upload(g_test_model.in_handle, [](Render::BufferWriter& writer) {
+    resource_timeline = rm.Upload(test_model->in_handle, [](Render::BufferWriter& writer) {
         Gfx::Transformations tm;
         tm.yaw = Math::pi + (Math::pi / 4.0);
-
         writer << tm.GetTransformations().To<float>();
     });
 

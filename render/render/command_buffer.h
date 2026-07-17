@@ -4,11 +4,11 @@
 #include "vulkan/device.h"
 #include "buffer.h"
 #include "base/geometry.h"
+#include "base/color.h"
 #include <cstdint>
 #include "texture.h"
 #include "pipeline_state.h"
 #include "descriptor_heap.h"
-#include "attachment.h"
 
 namespace Rc::Render
 {
@@ -20,6 +20,11 @@ namespace Rc::Render
         float height;
         float min_depth;
         float max_depth;
+    };
+
+    enum class RenderTargetSlot
+    {
+        FrameBuffer = 0
     };
 
     class RenderCommandBuffer
@@ -40,6 +45,14 @@ namespace Rc::Render
         void Begin();
 
         void End();
+
+        void EnableColorAttachment(RenderTargetSlot slot, RenderTargetView const& render_target);
+
+        void DisableColorAttachment(RenderTargetSlot slot);
+
+        void ClearRenderTarget(RenderTargetSlot slot, Color const& color);
+
+        void LoadRenderTarget(RenderTargetSlot slot);
 
         // Swap chain render target barrier
         void UseRenderingFramebuffer(RenderTargetView const& render_target);
@@ -64,7 +77,7 @@ namespace Rc::Render
 
         void BindIndexBuffer(Buffer const& ib, IndexType type, uint64_t offset);
 
-        void BeginRendering(Rectangle<int> const& render_area, RenderTargetAttachments const& attachments);
+        void BeginRendering(Rectangle<int> const& render_area);
         void EndRendering();
 
         // No pipeline, no draws — clear done by loadOp
@@ -95,6 +108,13 @@ namespace Rc::Render
         VkCommandBuffer vk_command_buffer {VK_NULL_HANDLE};
 
         // seconday command buffers...
+
+        //static constexpr int attachments_count = 4;
+
+        // Dynamic rendering color attachments (outputs)
+        std::array<VkRenderingAttachmentInfo, 4> color_attachments {};
+
+        // std::optional<VkRenderingAttachmentInfo> depth_attachment;
     };
 
     class TransferCommandBuffer

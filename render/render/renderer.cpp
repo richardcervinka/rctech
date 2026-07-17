@@ -173,7 +173,7 @@ namespace Rc::Render
 
         swap_chain->AcquireNextImage();
 
-        if (resource_manager->Complete(3))
+        if (test_model != nullptr)
         {
             Test();
         }
@@ -236,9 +236,9 @@ namespace Rc::Render
         RenderPassContext render_pass_context {};
         render_pass_context.camera = &camera;
 
-        frame->commands->UseVertexBuffer(resource_manager->GetBufferRegion(g_test_model.in_handle));
-        frame->commands->UseVertexBuffer(resource_manager->GetBufferRegion(g_test_model.vb_handle));
-        frame->commands->UseIndexBuffer(resource_manager->GetBufferRegion(g_test_model.ib_handle));
+        frame->commands->UseVertexBuffer(resource_manager->GetBufferRegion(test_model->in_handle));
+        frame->commands->UseVertexBuffer(resource_manager->GetBufferRegion(test_model->vb_handle));
+        frame->commands->UseIndexBuffer(resource_manager->GetBufferRegion(test_model->ib_handle));
 
         //m_swap_chain->AcquireNextImage();
 

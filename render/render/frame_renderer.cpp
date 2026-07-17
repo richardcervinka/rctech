@@ -80,10 +80,6 @@ namespace Rc::Render
         // Framebuffer memory barrier.
         commands->UseRenderingFramebuffer(framebuffer);
 
-        RenderTargetAttachments attachments;
-        attachments.EnableColorAttachment(RenderTargetSlot::FrameBuffer, framebuffer);
-        attachments.ClearRenderTarget(RenderTargetSlot::FrameBuffer, Color(0, 0, 0, 1));
-
         Rectangle<int> const framebuffer_area {0, 0, framebuffer.Width(), framebuffer.Height()};
 
         // Update uniform buffer
@@ -116,8 +112,10 @@ namespace Rc::Render
             .h = framebuffer_area.h
         });
 
+        commands->EnableColorAttachment(RenderTargetSlot::FrameBuffer, framebuffer);
+        commands->ClearRenderTarget(RenderTargetSlot::FrameBuffer, Color(0, 0, 0, 1));
         commands->BindPipeline(pipeline);
-        commands->BeginRendering(framebuffer_area, attachments);
+        commands->BeginRendering(framebuffer_area);
     }
 
     void Frame::EndRenderPass()

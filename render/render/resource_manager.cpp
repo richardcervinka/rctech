@@ -96,7 +96,7 @@ namespace Rc::Render
         return pools[family].instance_buffer_allocator->regions[index];
     }
 
-    void ResourceManager::Upload(BufferRegion region, std::function<void(BufferWriter&)>& writer_callback)
+    uint64_t ResourceManager::Upload(BufferRegion region, std::function<void(BufferWriter&)>& writer_callback)
     {
         assert(writer_callback != nullptr);
 
@@ -111,11 +111,12 @@ namespace Rc::Render
 
         transfer_commands->TransferBuffer(*staging_region, region);
 
-        //m_transfer_buffer->TimelineValue()
+        return transfer_buffer->TimelineValue();
     }
 
     void ResourceManager::BeginUpload()
     {
+        pending = false;
         transfer_commands->Reset();
         transfer_commands->Begin();
     }
