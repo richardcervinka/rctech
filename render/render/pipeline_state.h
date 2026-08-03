@@ -89,7 +89,7 @@ namespace Rc::Render
     private:
         static constexpr std::size_t color_attachment_count = 4;
 
-        static inline std::array<VkFormat, color_attachment_count> color_attachment_formats //------------------------ 4
+        static inline std::array<VkFormat, color_attachment_count> color_attachment_formats
         {
             // RenderTargetSlot::FrameBuffer
             VK_FORMAT_R8G8B8A8_SRGB,

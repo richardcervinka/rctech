@@ -79,6 +79,32 @@ namespace Rc::Render
 
     void RenderCommandBuffer::EnableColorAttachment(RenderTargetSlot slot, RenderTargetView const& render_target)
     {
+        VkImageMemoryBarrier const barrier
+        {
+            .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+            .pNext = nullptr,
+            .srcAccessMask = VK_ACCESS_NONE,
+            .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+            .oldLayout = render_target.layout,
+            .newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+            .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+            .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+            .image = render_target.Image(),
+            .subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}
+        };
+
+        vk_device.CmdPipelineBarrier(
+            vk_command_buffer,
+            VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+            {},
+            {},
+            {},
+            {&barrier, 1}
+        );
+
+        render_target.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
         color_attachments[std::to_underlying(slot)] = {
             .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
             .pNext = nullptr,
@@ -123,35 +149,6 @@ namespace Rc::Render
     void RenderCommandBuffer::LoadRenderTarget(RenderTargetSlot slot)
     {
         color_attachments[std::to_underlying(slot)].loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
-    }
-
-    void RenderCommandBuffer::UseRenderingFramebuffer(RenderTargetView const& render_target)
-    {
-        VkImageMemoryBarrier const barrier
-        {
-            .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-            .pNext = nullptr,
-            .srcAccessMask = VK_ACCESS_NONE,
-            .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-            .oldLayout = render_target.layout,
-            .newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-            .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-            .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-            .image = render_target.Image(),
-            .subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}
-        };
-
-        vk_device.CmdPipelineBarrier(
-            vk_command_buffer,
-            VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-            {},
-            {},
-            {},
-            {&barrier, 1}
-        );
-
-        render_target.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
     }
 
     void RenderCommandBuffer::UsePresentingFramebuffer(RenderTargetView const& render_target)

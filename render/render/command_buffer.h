@@ -54,9 +54,6 @@ namespace Rc::Render
 
         void LoadRenderTarget(RenderTargetSlot slot);
 
-        // Swap chain render target barrier
-        void UseRenderingFramebuffer(RenderTargetView const& render_target);
-
         // Swap chain present target barrier
         void UsePresentingFramebuffer(RenderTargetView const& render_target);
 

@@ -77,9 +77,6 @@ namespace Rc::Render
         RenderTargetView const& framebuffer,
         RenderPassContext const& context)
     {
-        // Framebuffer memory barrier.
-        commands->UseRenderingFramebuffer(framebuffer);
-
         Rectangle<int> const framebuffer_area {0, 0, framebuffer.Width(), framebuffer.Height()};
 
         // Update uniform buffer
