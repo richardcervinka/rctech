@@ -1,7 +1,6 @@
 #include "renderer.h"
 #include "index_buffer.h"
 #include "resources.h"
-#include <cstdint>
 #include <cassert>
 #include <algorithm>
 #include <span>
@@ -193,20 +192,26 @@ namespace Rc::Render
         frame_number += 1;
     }
 
+    static Gfx::PerspectiveCamera CreateTestCamera()
+    {
+        Gfx::PerspectiveCamera camera;
+        camera.transformations.z = 3.0; // TODO: ------------ world_to_view=translate(−cameraPosition)
+        //camera.transformations.yaw = Math::pi;
+        camera.fov = Math::DegToRad(75.0);
+        return camera;
+    }
+
     void Renderer::Test()
     {
-        static Gfx::PerspectiveCamera camera;
-
-        camera.transformations.z = -3.0;
-        camera.fov = Math::DegToRad(75.0);
+        static Gfx::PerspectiveCamera camera = CreateTestCamera();
 
         if (Input::Pushed(Input::KeyCode::LeftArrow))
         {
-            camera.transformations.x += 0.01; 
+            camera.transformations.x -= 0.01; 
         }
         if (Input::Pushed(Input::KeyCode::RightArrow))
         {
-            camera.transformations.x -= 0.01; 
+            camera.transformations.x += 0.01; 
         }
         if (Input::Pushed(Input::KeyCode::UpArrow))
         {
@@ -252,7 +257,7 @@ namespace Rc::Render
         frame->BindVertexBuffer(resource_manager->GetInstanceBuffer(ResourceFamily{0}), 1, 0);
         frame->BindIndexBuffer(resource_manager->GetIndexBuffer(ResourceFamily{0}), IndexType::Uint16, 0);
 
-        frame->Draw(36, 1, 0, 0, 0);
+        frame->Draw(36, 2, 0, 0, 0);
 
         frame->EndRenderPass();
     }

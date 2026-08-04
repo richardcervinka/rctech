@@ -87,12 +87,22 @@ void TestApplication::Initialize()
         };
     });
     
-    test_model->in_handle = rm.AllocateInstanceBuffer(Render::ResourceFamily{0}, sizeof(float) * 4 * 4);
+    test_model->in_handle = rm.AllocateInstanceBuffer(Render::ResourceFamily{0}, 2 * sizeof(Gfx::VertexInstance));
     
     resource_timeline = rm.Upload(test_model->in_handle, [](Render::BufferWriter& writer) {
         Gfx::Transformations tm;
         tm.yaw = Math::pi + (Math::pi / 4.0);
-        writer << tm.GetTransformations().To<float>();
+        tm.scale = 1.0;
+
+        writer << tm.Local().To<float>();
+        writer << tm.World().To<float>();
+
+        tm.yaw = Math::pi;
+        tm.scale = 0.9;
+        tm.z = -2;
+        
+        writer << tm.Local().To<float>();
+        writer << tm.World().To<float>();
     });
 
     rm.EndUpload();
@@ -101,9 +111,9 @@ void TestApplication::Initialize()
 
 int APIENTRY wWinMain(
     [[maybe_unused]] HINSTANCE hInst,
-    [[maybe_unused]] HINSTANCE hInstPrev,
+    [[maybe_unused]] HINSTANCE hPrevInstance,
     [[maybe_unused]] PWSTR cmdline,
-    [[maybe_unused]] int cmdshow)
+    [[maybe_unused]] int nShowCmd)
 {
     TestApplication app({
         .name = "RcTech"

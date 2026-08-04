@@ -13,6 +13,26 @@ namespace Rc::Gfx
         return q;
     }
 
+    Matrix4<double> Transformations::Local() const noexcept
+    {
+        assert(scale > 0);
+
+        // 1. scale
+        // 2. translate pivot
+        // 3. rotate
+
+        auto m = Matrix4<double>::Scale(scale, scale, scale);
+        m.PrependTranslation(pivot_x, pivot_y, pivot_z);
+        m.PrependTransformations(GetRotations().ToMatrix<double>());
+
+        return m;
+    }
+
+    Matrix4<double> Transformations::World() const noexcept
+    {
+        return Matrix4<double>::Translation(x, y, z);
+    }
+
     Matrix4<double> Transformations::GetTransformations() const noexcept
     {
         assert(scale > 0);
@@ -21,9 +41,9 @@ namespace Rc::Gfx
         // 2. rotate
         // 3. translate
 
-        auto m = Matrix4<double>::Translation(x, y, z);
-        m.AppendTransformations(GetRotations().ToMatrix<double>());
-        m.AppendScaling(scale, scale, scale);
+        auto m = Matrix4<double>::Scale(scale, scale, scale);
+        m.PrependTransformations(GetRotations().ToMatrix<double>());
+        m.PrependTranslation(x, y, z);
 
         return m;
     }
@@ -45,10 +65,10 @@ namespace Rc::Gfx
             std::lerp(z, to.z, ratio)
         );
 
-        m.AppendTransformations(rotations.ToMatrix<double>());
+        m.PrependTransformations(rotations.ToMatrix<double>());
 
         const auto s = std::lerp(scale, to.scale, ratio);
-        m.AppendScaling(s, s, s);
+        m.PrependScaling(s, s, s);
 
         return m;
     }

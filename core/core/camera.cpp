@@ -71,7 +71,9 @@ namespace Rc::Gfx
         transformations_norm.scale = 1.0;
 
         auto result = transformations_norm.GetTransformations();
-        result.AppendTransformations(projection_matrix);
+        result.Invert();
+
+        result.PrependTransformations(projection_matrix);
 
         return result;
     }

@@ -264,17 +264,17 @@ namespace Rc
             return (*this) * v;
         }
 
-        void AppendTransformations(Matrix4 const& t) noexcept
+        void PrependTransformations(Matrix4 const& t) noexcept
         {
             *this = t * (*this);
         }
 
-        void PrependTransformations(Matrix4 const& t) noexcept
+        void AppendTransformations(Matrix4 const& t) noexcept
         {
             *this = (*this) * t;
         }
 
-        void AppendTranslation(T x, T y, T z) noexcept
+        void PrependTranslation(T x, T y, T z) noexcept
         {
             At(0, 3) += (At(0, 0) * x) + (At(0, 1) * y) + (At(0, 2) * z);
             At(1, 3) += (At(1, 0) * x) + (At(1, 1) * y) + (At(1, 2) * z);
@@ -282,7 +282,7 @@ namespace Rc
             At(3, 3) += (At(3, 0) * x) + (At(3, 1) * y) + (At(3, 2) * z);
         }
 
-        void PrependTranslation(T x, T y, T z) noexcept
+        void AppendTranslation(T x, T y, T z) noexcept
         {
             At(0, 0) += x * At(3, 0);
             At(0, 1) += x * At(3, 1);
@@ -298,7 +298,7 @@ namespace Rc
             At(2, 3) += z * At(3, 3);
         }
 
-        void AppendScaling(T x, T y, T z) noexcept
+        void PrependScaling(T x, T y, T z) noexcept
         {
             At(0, 0) *= x;
             At(1, 0) *= x;
@@ -311,7 +311,7 @@ namespace Rc
             At(2, 2) *= z;
         }
 
-        void PrependScaling(T x, T y, T z) noexcept
+        void AppendScaling(T x, T y, T z) noexcept
         {
             At(0, 0) *= x;
             At(0, 1) *= x;

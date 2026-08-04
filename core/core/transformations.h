@@ -7,6 +7,10 @@ namespace Rc::Gfx
     class Transformations
     {
     public:
+        double pivot_x {0};
+        double pivot_y {0};
+        double pivot_z {0};
+
         double x {0};
         double y {0};
         double z {0};
@@ -23,10 +27,16 @@ namespace Rc::Gfx
         // Uniform scale; must be greater than 0
         double scale {1};
 
+        Matrix4<double> Local() const noexcept;
+        Matrix4<double> World() const noexcept;
+
+        // ...
+
         Quaternion GetRotations() const noexcept;
 
         Matrix4<double> GetTransformations() const noexcept;
 
+        // TODO: Static with parameters from, to, ratio
         Matrix4<double> LerpTransformations(Transformations const& to, double ratio) const noexcept;
 
         // Lock()
