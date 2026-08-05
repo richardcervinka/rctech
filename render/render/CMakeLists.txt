@@ -31,8 +31,6 @@ add_library(render STATIC
     "command_buffer.cpp"
     "fence.h"
     "fence.cpp"
-    "image.h" ######################x delete
-    "image.cpp"
     "shader.h"
     "shader.cpp"
     "texture.h"
