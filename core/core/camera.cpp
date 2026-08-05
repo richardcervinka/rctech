@@ -1,5 +1,6 @@
 #include "camera.h"
 #include <cassert>
+#include <iostream>
 
 namespace Rc::Gfx
 {
@@ -40,7 +41,7 @@ namespace Rc::Gfx
             0,
             0,
             0,
-            1.0 / tanfov,
+            -1.0 / tanfov,
             0,
             0,
             0,
@@ -67,11 +68,22 @@ namespace Rc::Gfx
             z_far
         );
 
-        auto transformations_norm = transformations;
-        transformations_norm.scale = 1.0;
+        //auto transformations_norm = transformations;
+        //transformations_norm.scale = 1.0;
 
-        auto result = transformations_norm.GetTransformations();
-        result.Invert();
+        //Matrix4<double> result; // = transformations_norm.GetTransformations();
+
+        
+        auto result = transformations.GetRotations().ToMatrix<double>();
+        result.Transpose();
+std::cout << transformations.y << std::endl;
+        result.AppendTranslation(
+            -transformations.x,
+            -transformations.y,
+            -transformations.z
+        );
+
+        //result.Invert();
 
         result.PrependTransformations(projection_matrix);
 

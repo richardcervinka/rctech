@@ -173,7 +173,7 @@ TEST(MatrixTest, SwapRows)
 TEST(MatrixTest, Transform)
 {
     auto m = Matrix4<double>::Identity();
-    m.PrependTranslation(2, 3, 1);
+    m.AppendTranslation(2, 3, 1);
     m.PrependScaling(2, 2, 1);
     
     auto v = m.Transform({1, 2, 0, 1});
@@ -194,10 +194,10 @@ TEST(MatrixTest, Translation)
     EXPECT_DOUBLE_EQ(v.w, 1);
 }
 
-TEST(MatrixTest, PrependTranslation)
+TEST(MatrixTest, AppendTranslation)
 {
     auto m = Matrix4<double>::RotationZ(Math::pi / 2.f);
-    m.PrependTranslation(4, 5, 6);
+    m.AppendTranslation(4, 5, 6);
     auto const v = m.Transform({1, 2, 3, 1});
 
     EXPECT_NEAR(v.x, -7, 1e-6);
@@ -206,7 +206,7 @@ TEST(MatrixTest, PrependTranslation)
     EXPECT_NEAR(v.w, 1, 1e-6);
 }
 
-TEST(MatrixTest, AppendTranslation)
+TEST(MatrixTest, PrependTranslation)
 {
     auto m = Matrix4<double>::RotationZ(Math::pi / 2.f);
 
@@ -214,7 +214,7 @@ TEST(MatrixTest, AppendTranslation)
     // m.At(0, 3) = 4;
     // m.At(1, 3) = 5;
     // m.At(2, 3) = 6;
-    m.AppendTranslation(4, 5, 6);
+    m.PrependTranslation(4, 5, 6);
 
     auto const v = m.Transform({1, 2, 3, 1});
 

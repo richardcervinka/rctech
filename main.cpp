@@ -100,6 +100,7 @@ void TestApplication::Initialize()
         tm.yaw = Math::pi;
         tm.scale = 0.9;
         tm.z = -2;
+        tm.y = 1;
         
         writer << tm.Local().To<float>();
         writer << tm.World().To<float>();

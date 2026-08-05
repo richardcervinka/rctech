@@ -22,7 +22,7 @@ namespace Rc::Gfx
         // 3. rotate
 
         auto m = Matrix4<double>::Scale(scale, scale, scale);
-        m.PrependTranslation(pivot_x, pivot_y, pivot_z);
+        m.AppendTranslation(pivot_x, pivot_y, pivot_z);
         m.PrependTransformations(GetRotations().ToMatrix<double>());
 
         return m;
@@ -43,7 +43,7 @@ namespace Rc::Gfx
 
         auto m = Matrix4<double>::Scale(scale, scale, scale);
         m.PrependTransformations(GetRotations().ToMatrix<double>());
-        m.PrependTranslation(x, y, z);
+        m.AppendTranslation(x, y, z);
 
         return m;
     }

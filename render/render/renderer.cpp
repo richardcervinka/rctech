@@ -223,11 +223,11 @@ namespace Rc::Render
         }
         if (Input::Pushed(Input::KeyCode::D))
         {
-            camera.transformations.yaw += 0.005; 
+            camera.transformations.yaw -= 0.005; 
         }
         if (Input::Pushed(Input::KeyCode::A))
         {
-            camera.transformations.yaw -= 0.005; 
+            camera.transformations.yaw += 0.005; 
         }
         if (Input::Pushed(Input::KeyCode::W))
         {
