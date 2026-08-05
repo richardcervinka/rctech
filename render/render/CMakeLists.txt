@@ -46,6 +46,8 @@ add_library(render STATIC
     "version.h"
     "descriptor_heap.h"
     "descriptor_heap.cpp"
+    "render_target.h"
+    "render_target.cpp"
 )
 
 target_link_libraries(render

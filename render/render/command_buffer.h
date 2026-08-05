@@ -50,6 +50,9 @@ namespace Rc::Render
 
         void DisableColorAttachment(RenderTargetSlot slot);
 
+        void EnableDepthBuffer(RenderTargetView const& render_target);
+        // void DisableDepthBuffer();
+
         void ClearRenderTarget(RenderTargetSlot slot, Color const& color);
 
         void LoadRenderTarget(RenderTargetSlot slot);
@@ -111,7 +114,7 @@ namespace Rc::Render
         // Dynamic rendering color attachments (outputs)
         std::array<VkRenderingAttachmentInfo, 4> color_attachments {};
 
-        // std::optional<VkRenderingAttachmentInfo> depth_attachment;
+        std::optional<VkRenderingAttachmentInfo> depth_attachment;
     };
 
     class TransferCommandBuffer

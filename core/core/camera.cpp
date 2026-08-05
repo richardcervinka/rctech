@@ -76,7 +76,7 @@ namespace Rc::Gfx
         
         auto result = transformations.GetRotations().ToMatrix<double>();
         result.Transpose();
-std::cout << transformations.y << std::endl;
+
         result.AppendTranslation(
             -transformations.x,
             -transformations.y,

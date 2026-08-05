@@ -33,20 +33,20 @@ namespace Rc::Gfx
         return Matrix4<double>::Translation(x, y, z);
     }
 
-    Matrix4<double> Transformations::GetTransformations() const noexcept
-    {
-        assert(scale > 0);
+    // Matrix4<double> Transformations::GetTransformations() const noexcept
+    // {
+    //     assert(scale > 0);
 
-        // 1. scale
-        // 2. rotate
-        // 3. translate
+    //     // 1. scale
+    //     // 2. rotate
+    //     // 3. translate
 
-        auto m = Matrix4<double>::Scale(scale, scale, scale);
-        m.PrependTransformations(GetRotations().ToMatrix<double>());
-        m.AppendTranslation(x, y, z);
+    //     auto m = Matrix4<double>::Scale(scale, scale, scale);
+    //     m.PrependTransformations(GetRotations().ToMatrix<double>());
+    //     m.AppendTranslation(x, y, z);
 
-        return m;
-    }
+    //     return m;
+    // }
 
     Matrix4<double> Transformations::LerpTransformations(Transformations const& to, double ratio) const noexcept
     {

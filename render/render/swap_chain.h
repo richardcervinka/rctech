@@ -2,7 +2,7 @@
 
 #include "vulkan/device.h"
 #include "platform/window.h"
-#include "texture.h"
+#include "render_target.h"
 #include "semaphore.h"
 #include "command_queue.h"
 
@@ -89,7 +89,8 @@ namespace Rc::Render
         VkSwapchainKHR vk_swap_chain {VK_NULL_HANDLE};
 
         // Indexed by the m_index.
-        std::vector<Texture2D> images;
+        //std::vector<Texture2D> images;
+        std::vector<VkImage> images;
 
         // Indexed by the m_index.
         std::vector<std::unique_ptr<RenderTargetView>> views;

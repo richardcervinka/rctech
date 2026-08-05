@@ -34,7 +34,7 @@ namespace Rc::Gfx
 
         Quaternion GetRotations() const noexcept;
 
-        Matrix4<double> GetTransformations() const noexcept;
+        //Matrix4<double> GetTransformations() const noexcept;
 
         // TODO: Static with parameters from, to, ratio
         Matrix4<double> LerpTransformations(Transformations const& to, double ratio) const noexcept;

@@ -54,15 +54,17 @@ namespace Rc::Render
 
         for (auto image : vk_device.GetSwapchainImagesKHR(vk_swap_chain, images_buffer))
         {
-            images.emplace_back(
-                vk_device,
-                image,
-                vk_format,
-                vk_info.imageExtent.width,
-                vk_info.imageExtent.height
-            );
+            images.emplace_back(image);
 
-            views.push_back(images.back().CreateView());
+            views.push_back(
+                std::make_unique<RenderTargetView>(
+                    vk_device,
+                    image,
+                    vk_format,
+                    vk_info.imageExtent.width,
+                    vk_info.imageExtent.height
+                )
+            );
 
             acquire_semaphores.push_back(std::make_unique<Semaphore>(vk_device));
             present_semaphores.push_back(std::make_unique<Semaphore>(vk_device));

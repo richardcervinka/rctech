@@ -134,6 +134,11 @@ namespace Rc::Render
         };
     }
 
+    void RenderCommandBuffer::EnableDepthBuffer(RenderTargetView const& render_target)
+    {
+        //...
+    }
+
     void RenderCommandBuffer::ClearRenderTarget(RenderTargetSlot slot, Color const& color)
     {
         auto& attachment = color_attachments[std::to_underlying(slot)];
@@ -227,7 +232,7 @@ namespace Rc::Render
 
         //auto const& color_attachments = attachments.ColorAttachmentsInfo();
 
-        VkRenderingInfo const rendering_info
+        VkRenderingInfo rendering_info
         {
             .sType = VK_STRUCTURE_TYPE_RENDERING_INFO,
             .pNext = nullptr,
@@ -240,6 +245,11 @@ namespace Rc::Render
             .pDepthAttachment = nullptr,
             .pStencilAttachment = nullptr
         };
+
+        if (depth_attachment)
+        {
+            rendering_info.pDepthAttachment = &depth_attachment.value();
+        }
 
         vk_device.CmdBeginRendering(vk_command_buffer, rendering_info);
     }
