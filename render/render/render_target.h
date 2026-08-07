@@ -10,7 +10,14 @@ namespace Rc::Render
         RenderTargetView() = default;
         ~RenderTargetView();
 
-        RenderTargetView(VulkanDevice const& vk_device, VkImage vk_image, VkFormat vk_format, int width, int height);
+        RenderTargetView(
+            VulkanDevice const& vk_device,
+            VkImage vk_image,
+            VkFormat vk_format,
+            VkImageAspectFlags aspect,
+            int width,
+            int height
+        );
 
         RenderTargetView(RenderTargetView const&) = delete;
         RenderTargetView& operator=(RenderTargetView const&) = delete;
@@ -53,6 +60,7 @@ namespace Rc::Render
         VkImageView view {VK_NULL_HANDLE};
 
         mutable VkImageLayout layout {VK_IMAGE_LAYOUT_UNDEFINED};
+        VkImageAspectFlags vk_aspect {VK_IMAGE_ASPECT_NONE};
 
         int width {0};
         int height {0};

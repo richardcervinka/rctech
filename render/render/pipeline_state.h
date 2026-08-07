@@ -83,6 +83,8 @@ namespace Rc::Render
 
         void SetVertexBinding(Gfx::VertexBinding binding, std::size_t stride);
 
+        void EnableDepthTest();
+
         // TODO: Do not return raw Vk object
         std::unique_ptr<Pipeline> Create();
         
@@ -114,6 +116,7 @@ namespace Rc::Render
         VkPipelineColorBlendStateCreateInfo color_blend {};
         VkPipelineRenderingCreateInfo pipeline_rendering {};
         std::shared_ptr<PipelineLayout> pipeline_layout;
+        VkPipelineDepthStencilStateCreateInfo depth_stencil_state {};
     };
 
 } // Rc::Render

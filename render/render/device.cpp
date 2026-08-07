@@ -425,29 +425,100 @@ namespace Rc::Render
         return std::make_unique<ResourceDescriptorHeap>(*instance, *device, vk_physical_device, descriptors);
     }
 
-    std::unique_ptr<Buffer> Device::AllocateBuffer(VertexBufferInfo const& info) const
+    std::unique_ptr<Buffer> Device::AllocateVertexBuffer(uint64_t size) const
     {
-        return std::make_unique<Buffer>(*device, info, vma_allocator);
+        return std::make_unique<Buffer>(
+            *device,
+            size,
+            vma_allocator,
+            VkBufferUsageFlags2
+            {
+                VK_BUFFER_USAGE_2_TRANSFER_DST_BIT |
+                VK_BUFFER_USAGE_2_VERTEX_BUFFER_BIT
+            },
+            VmaAllocationCreateFlags{}
+        );
     }
 
-    std::unique_ptr<Buffer> Device::AllocateBuffer(IndexBufferInfo const& info) const
+    std::unique_ptr<Buffer> Device::AllocateIndexBuffer(uint64_t size) const
     {
-        return std::make_unique<Buffer>(*device, info, vma_allocator);
+        return std::make_unique<Buffer>(
+            *device,
+            size,
+            vma_allocator,
+            VkBufferUsageFlags2
+            {
+                VK_BUFFER_USAGE_2_TRANSFER_DST_BIT |
+                VK_BUFFER_USAGE_2_INDEX_BUFFER_BIT
+            },
+            VmaAllocationCreateFlags{}
+        );
     }
 
-    std::unique_ptr<Buffer> Device::AllocateBuffer(StagingBufferInfo const& info) const
+    std::unique_ptr<Buffer> Device::AllocateStagingBuffer(uint64_t size) const
     {
-        return std::make_unique<Buffer>(*device, info, vma_allocator);
+        return std::make_unique<Buffer>(
+            *device,
+            size,
+            vma_allocator,
+            VkBufferUsageFlags2
+            {
+                VK_BUFFER_USAGE_TRANSFER_SRC_BIT
+            },
+            VmaAllocationCreateFlags
+            {
+                VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT |
+                VMA_ALLOCATION_CREATE_MAPPED_BIT
+            }
+        );
     }
 
-    std::unique_ptr<Buffer> Device::AllocateBuffer(UniformBufferInfo const& info) const
+    std::unique_ptr<Buffer> Device::AllocateUniformBuffer(uint64_t size) const
     {
-        return std::make_unique<Buffer>(*device, info, vma_allocator);
+        return std::make_unique<Buffer>(
+            *device,
+            size,
+            vma_allocator,
+            VkBufferUsageFlags2
+            {
+                VK_BUFFER_USAGE_2_UNIFORM_BUFFER_BIT |
+                VK_BUFFER_USAGE_2_SHADER_DEVICE_ADDRESS_BIT
+            },
+            VmaAllocationCreateFlags
+            {
+                VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT |
+                VMA_ALLOCATION_CREATE_MAPPED_BIT
+            }
+        );
     }
 
-    std::unique_ptr<Buffer> Device::AllocateBuffer(DescriptorHeapBufferInfo const& info) const
+    std::unique_ptr<Buffer> Device::AllocateDescriptorHeapBuffer(uint64_t size) const
     {
-        return std::make_unique<Buffer>(*device, info, vma_allocator);
+        return std::make_unique<Buffer>(
+            *device,
+            size,
+            vma_allocator,
+            VkBufferUsageFlags2
+            {
+                VK_BUFFER_USAGE_DESCRIPTOR_HEAP_BIT_EXT |
+                VK_BUFFER_USAGE_2_TRANSFER_DST_BIT |
+                VK_BUFFER_USAGE_2_SHADER_DEVICE_ADDRESS_BIT
+            },
+            VmaAllocationCreateFlags{}
+        );
+    }
+
+    std::unique_ptr<Texture2D> Device::AllocateDepthBuffer(uint32_t width, uint32_t height) const
+    {
+        return std::make_unique<Texture2D>(
+            *device,
+            vma_allocator,
+            PixelFormat::DepthBuffer,
+            width,
+            height,
+            VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+            VK_IMAGE_LAYOUT_UNDEFINED
+        );
     }
 
 } // Rc::Render

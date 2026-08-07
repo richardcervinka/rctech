@@ -3,13 +3,15 @@
 
 namespace Rc::Render
 {
-    void Frame::Create(Device const& device)
+    void Frame::Create(Device const& device, uint32_t width, uint32_t height)
     {
         queue = device.CreateGraphicsQueue();
         fence = device.CreateFence();
         commands = queue->CreateCommandBuffer();
-        staging_buffer = std::make_unique<BufferLinearAllocator>(device.AllocateBuffer(StagingBufferInfo{.size = staging_buffer_size}));
-        render_pass_uniform_buffer = device.AllocateBuffer(UniformBufferInfo{.size = RenderPassConstants::size});
+        staging_buffer = std::make_unique<BufferLinearAllocator>(device.AllocateStagingBuffer(staging_buffer_size));
+        render_pass_uniform_buffer = device.AllocateUniformBuffer(RenderPassConstants::size);
+        depth_buffer = device.AllocateDepthBuffer(width, height);
+        depth_buffer_view = depth_buffer->CreateDepthBufferView();
 
         std::array<ResourceDescriptor, 1> const resource_descriptors
         {
@@ -21,13 +23,19 @@ namespace Rc::Render
         };
 
         resource_descriptor_heap = device.CreateResourceDescriptorHeap(resource_descriptors);
-        resource_descriptor_heap_buffer = device.AllocateBuffer(DescriptorHeapBufferInfo{.size = resource_descriptor_heap->SizeTotal()});
+        resource_descriptor_heap_buffer = device.AllocateDescriptorHeapBuffer(resource_descriptor_heap->SizeTotal());
         resource_descriptor_heap->Attach(*resource_descriptor_heap_buffer);
+    }
+
+    void Frame::Resize(Device const& device, uint32_t width, uint32_t height)
+    {
+        depth_buffer = device.AllocateDepthBuffer(width, height);
+        depth_buffer_view = depth_buffer->CreateDepthBufferView();
     }
 
     void Frame::UpdateResourceDescriptorHeap(Device const& device)
     {
-        auto transfer_buffer = device.AllocateBuffer(StagingBufferInfo{.size = resource_descriptor_heap->Size()});
+        auto transfer_buffer = device.AllocateStagingBuffer(resource_descriptor_heap->Size());
 
         const auto staging_region = transfer_buffer->GetRegion(0, resource_descriptor_heap->Size());
         // TODO: Throw when vb_region is nullopt? --------------------------------------------------------
@@ -110,6 +118,7 @@ namespace Rc::Render
         });
 
         commands->EnableColorAttachment(RenderTargetSlot::FrameBuffer, framebuffer);
+        commands->EnableDepthBuffer(*depth_buffer_view);
         commands->ClearRenderTarget(RenderTargetSlot::FrameBuffer, Color(0, 0, 0, 1));
         commands->BindPipeline(pipeline);
         commands->BeginRendering(framebuffer_area);

@@ -111,7 +111,7 @@ namespace Rc::Render
         frames.resize(swap_chain->Size());
         for (auto& frame : frames)
         {
-            frame.Create(*device);
+            frame.Create(*device, swap_chain->Width(), swap_chain->Height());
             frame.UpdateResourceDescriptorHeap(*device);
         }
 
@@ -144,6 +144,7 @@ namespace Rc::Render
             factory.SetVertexBinding(Gfx::VertexBinding::PerVertex, sizeof(Gfx::VertexBasic));
             factory.SetVertexBinding(Gfx::VertexBinding::PerInstance, sizeof(Gfx::VertexInstance));
             factory.SetVertexAttributes({Gfx::VertexBasic::attributes, Gfx::VertexInstance::attributes});
+            factory.EnableDepthTest();
             test_vertex_pipeline = factory.Create();
         }
 
@@ -162,6 +163,11 @@ namespace Rc::Render
     {
         device->WaitIdle();
         swap_chain->Resize(width, height);
+
+        for (auto& frame : frames)
+        {
+            frame.Resize(*device, width, height);
+        }
     }
 
     void Renderer::BeginFrame()

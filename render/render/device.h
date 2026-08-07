@@ -66,11 +66,15 @@ namespace Rc::Render
 
         std::unique_ptr<ResourceDescriptorHeap> CreateResourceDescriptorHeap(std::span<ResourceDescriptor const> descriptors) const;
 
-        std::unique_ptr<Buffer> AllocateBuffer(VertexBufferInfo const& info) const;
-        std::unique_ptr<Buffer> AllocateBuffer(IndexBufferInfo const& info) const;
-        std::unique_ptr<Buffer> AllocateBuffer(StagingBufferInfo const& info) const;
-        std::unique_ptr<Buffer> AllocateBuffer(UniformBufferInfo const& info) const;
-        std::unique_ptr<Buffer> AllocateBuffer(DescriptorHeapBufferInfo const& info) const;
+        std::unique_ptr<Buffer> AllocateVertexBuffer(uint64_t size) const;
+        std::unique_ptr<Buffer> AllocateIndexBuffer(uint64_t size) const;
+        std::unique_ptr<Buffer> AllocateStagingBuffer(uint64_t size) const;
+        std::unique_ptr<Buffer> AllocateUniformBuffer(uint64_t size) const;
+        std::unique_ptr<Buffer> AllocateDescriptorHeapBuffer(uint64_t size) const;
+
+        std::unique_ptr<Texture2D> AllocateDepthBuffer(uint32_t width, uint32_t height) const;
+
+        // std::unique_ptr<Texture2D> CreateTexture2D();
 
     private:
         std::map<std::string, VulkanVersion> EnumerateExtensions() const;

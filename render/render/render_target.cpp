@@ -3,8 +3,16 @@
 namespace Rc::Render
 {
 
-    RenderTargetView::RenderTargetView(VulkanDevice const& vk_device, VkImage vk_image, VkFormat vk_format, int width, int height) :
+    RenderTargetView::RenderTargetView(
+        VulkanDevice const& vk_device,
+        VkImage vk_image,
+        VkFormat vk_format,
+        VkImageAspectFlags aspect,
+        int width,
+        int height
+    ) :
         vk_device{vk_device},
+        vk_aspect{aspect},
         width{width},
         height{height}
     {
@@ -23,7 +31,7 @@ namespace Rc::Render
                 VK_COMPONENT_SWIZZLE_IDENTITY
             },
             .subresourceRange = {
-                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                .aspectMask = vk_aspect,
                 .baseMipLevel = 0,
                 .levelCount = 1,
                 .baseArrayLayer = 0,

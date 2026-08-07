@@ -35,7 +35,9 @@ namespace Rc::Render
         static constexpr uint64_t staging_buffer_size = 2048;
         //static constexpr uint64_t render_pass_uniform_buffer_size = 16 * 4;
 
-        void Create(Device const& device);
+        void Create(Device const& device, uint32_t width, uint32_t height);
+
+        void Resize(Device const& device, uint32_t width, uint32_t height);
 
         void UpdateResourceDescriptorHeap(Device const& device);
 
@@ -81,6 +83,9 @@ namespace Rc::Render
         std::unique_ptr<Buffer> resource_descriptor_heap_buffer;
 
         std::unique_ptr<ResourceDescriptorHeap> resource_descriptor_heap;
+
+        std::unique_ptr<Texture2D> depth_buffer;
+        std::unique_ptr<RenderTargetView> depth_buffer_view;
     };
 
 } // Rc::Render

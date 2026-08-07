@@ -6,8 +6,10 @@
 
 namespace Rc::Render
 {    
-    class Texture2D;
-
+    enum class PixelFormat
+    {
+        DepthBuffer
+    };
 
     class Texture2D
     {
@@ -16,16 +18,15 @@ namespace Rc::Render
 
         Texture2D(
             VulkanDevice const& vk_device,
-            VkImage vk_image,
-            VkFormat vk_format,
-            int width,
-            int height)
-            :   vk_device{vk_device},
-                vk_image{vk_image},
-                vk_format{vk_format},
-                width{width},
-                height{height}
-        {}
+            VmaAllocator vma_allocator,
+            PixelFormat format,
+            uint32_t width,
+            uint32_t height,
+            VkImageUsageFlags usage,
+            VkImageLayout layout
+        );
+
+        ~Texture2D();
 
         VkImage const& GetImage() const
         {
@@ -37,20 +38,23 @@ namespace Rc::Render
             return vk_format;
         }
 
-        std::unique_ptr<RenderTargetView> CreateView() const;
+        std::unique_ptr<RenderTargetView> CreateDepthBufferView() const;
 
     private:
         friend class RenderTargetView;
 
         VulkanDevice const& vk_device;
+        VmaAllocator vma_allocator {VK_NULL_HANDLE};
+        VmaAllocation vma_allocation {nullptr};
+        VmaAllocationInfo vma_allocation_info {};
 
-        // Non-owning image handle.
-        VkImage vk_image {VK_NULL_HANDLE};
-        
         VkFormat vk_format {VK_FORMAT_UNDEFINED};
+        uint32_t width {0};
+        uint32_t height {0};
 
-        int width {0};
-        int height {0};
+        VkImage vk_image {VK_NULL_HANDLE};
+
+        
     };
 
 } // Rc::Render

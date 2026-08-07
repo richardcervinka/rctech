@@ -141,6 +141,30 @@ namespace Rc::Render
             desc.binding = 0;
             desc.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
         }
+
+        depth_stencil_state.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+        depth_stencil_state.pNext = nullptr;
+        depth_stencil_state.flags = 0;
+
+        // Depth
+        depth_stencil_state.depthTestEnable = VK_FALSE;
+        depth_stencil_state.depthWriteEnable = VK_FALSE;
+        depth_stencil_state.depthCompareOp = VK_COMPARE_OP_ALWAYS;
+        depth_stencil_state.depthBoundsTestEnable = VK_FALSE;
+        depth_stencil_state.minDepthBounds = 0.0f;   // ignored unless depthBoundsTestEnable = VK_TRUE
+        depth_stencil_state.maxDepthBounds = 1.0f;   // ignored unless depthBoundsTestEnable = VK_TRUE
+
+        // Stencil
+        depth_stencil_state.stencilTestEnable = VK_FALSE;
+        depth_stencil_state.front.failOp = VK_STENCIL_OP_KEEP;
+        depth_stencil_state.front.passOp = VK_STENCIL_OP_KEEP;
+        depth_stencil_state.front.depthFailOp = VK_STENCIL_OP_KEEP;
+        depth_stencil_state.front.compareOp = VK_COMPARE_OP_ALWAYS;
+        depth_stencil_state.front.compareMask = 0xffffffff;
+        depth_stencil_state.front.writeMask = 0xffffffff;
+        depth_stencil_state.front.reference = 0;
+
+        depth_stencil_state.back = depth_stencil_state.front; // stejné defaulty pro back face
     }
 
     std::unique_ptr<Pipeline> PipelineFactory::Create()
@@ -236,7 +260,7 @@ namespace Rc::Render
 
         //VK_PIPELINE_CREATE_2_DESCRIPTOR_HEAP_BIT_EXT
         // If VkPipelineCreateFlags2CreateInfoKHR::flags does not include VK_PIPELINE_CREATE_2_DESCRIPTOR_HEAP_BIT_EXT
-        VkGraphicsPipelineCreateInfo const pipeline_info
+        VkGraphicsPipelineCreateInfo pipeline_info
         {
             .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
             .pNext = &flags_2,
@@ -249,7 +273,7 @@ namespace Rc::Render
             .pViewportState = &viewport_state,
             .pRasterizationState = &rasterizer_state,
             .pMultisampleState = &multisampling,
-            .pDepthStencilState = nullptr,
+            .pDepthStencilState = &depth_stencil_state,
             .pColorBlendState = &color_blend,
             .pDynamicState = &dynamic_state_info,
             .layout = VK_NULL_HANDLE, // m_pipeline_layout->Handle(),
@@ -368,6 +392,14 @@ namespace Rc::Render
                 });
             }
         }
+    }
+
+    void PipelineFactory::EnableDepthTest()
+    {
+        depth_stencil_state.depthTestEnable = VK_TRUE;
+        depth_stencil_state.depthWriteEnable = VK_TRUE;
+        depth_stencil_state.depthCompareOp = VK_COMPARE_OP_GREATER;
+        pipeline_rendering.depthAttachmentFormat = VK_FORMAT_D32_SFLOAT; //----------------------- Odnekud vzit (see texture.cpp)
     }
 
 } // Rc::Render

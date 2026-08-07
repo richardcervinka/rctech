@@ -136,7 +136,50 @@ namespace Rc::Render
 
     void RenderCommandBuffer::EnableDepthBuffer(RenderTargetView const& render_target)
     {
-        //...
+        VkImageMemoryBarrier const barrier
+        {
+            .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+            .pNext = nullptr,
+            .srcAccessMask = VK_ACCESS_NONE, // render_target?
+            .dstAccessMask = {
+                VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
+                VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT
+            },
+            .oldLayout = render_target.layout,
+            .newLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL,
+            .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+            .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+            .image = render_target.Image(),
+            .subresourceRange = {VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1}
+        };
+
+        vk_device.CmdPipelineBarrier(
+            vk_command_buffer,
+            VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+            {
+                VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT |
+                VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT
+            },
+            {},
+            {},
+            {},
+            {&barrier, 1}
+        );
+
+        render_target.layout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
+
+        depth_attachment = {
+            .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
+            .pNext = nullptr,
+            .imageView = render_target.View(),
+            .imageLayout = render_target.Layout(),
+            .resolveMode = VK_RESOLVE_MODE_NONE,
+            .resolveImageView = VK_NULL_HANDLE,
+            .resolveImageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+            .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+            .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+            .clearValue = {.depthStencil = {0, 0}}
+        };
     }
 
     void RenderCommandBuffer::ClearRenderTarget(RenderTargetSlot slot, Color const& color)

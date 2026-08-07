@@ -8,13 +8,8 @@ namespace Rc::Render
         transfer_queue = this->device->CreateTransferQueue();
         transfer_commands = transfer_queue->CreateCommandBuffer();
 
-        StagingBufferInfo const transfer_buffer_info
-        {
-            .size = BufferRingAllocator::default_chunk_size * 16
-        };
-        
         transfer_buffer = std::make_unique<BufferRingAllocator>(
-            this->device->AllocateBuffer(transfer_buffer_info),
+            this->device->AllocateStagingBuffer(BufferRingAllocator::default_chunk_size * 16),
             BufferRingAllocator::default_chunk_size
         );
 
@@ -26,7 +21,7 @@ namespace Rc::Render
         auto const family_index = std::to_underlying(family);
         assert(family_index < pools.size());
 
-        auto buffer = device->AllocateBuffer(VertexBufferInfo{.size = capacity});
+        auto buffer = device->AllocateVertexBuffer(capacity);
         pools[family_index].vertex_buffer_allocator = std::make_unique<ResourceAllocator<VertexBufferHandle>>(std::move(buffer));
     }
 
@@ -35,7 +30,7 @@ namespace Rc::Render
         auto const family_index = std::to_underlying(family);
         assert(family_index < pools.size());
 
-        auto buffer = device->AllocateBuffer(VertexBufferInfo{.size = capacity});
+        auto buffer = device->AllocateVertexBuffer(capacity);
         pools[family_index].instance_buffer_allocator = std::make_unique<ResourceAllocator<InstanceBufferHandle>>(std::move(buffer));
     }
 
@@ -44,7 +39,7 @@ namespace Rc::Render
         auto const family_index = std::to_underlying(family);
         assert(family_index < pools.size());
 
-        auto buffer = device->AllocateBuffer(IndexBufferInfo{.size = capacity});
+        auto buffer = device->AllocateIndexBuffer(capacity);
         pools[family_index].index_buffer_allocator = std::make_unique<ResourceAllocator<IndexBufferHandle>>(std::move(buffer));
     }
     

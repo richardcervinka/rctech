@@ -61,6 +61,7 @@ namespace Rc::Render
                     vk_device,
                     image,
                     vk_format,
+                    VK_IMAGE_ASPECT_COLOR_BIT,
                     vk_info.imageExtent.width,
                     vk_info.imageExtent.height
                 )

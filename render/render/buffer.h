@@ -61,43 +61,19 @@ namespace Rc::Render
         VkPipelineStageFlags stage_flags {VK_PIPELINE_STAGE_NONE};
     };
 
-    struct VertexBufferInfo
-    {
-        uint64_t size;
-    };
-
-    struct IndexBufferInfo
-    {
-        uint64_t size;
-    };
-
-    struct StagingBufferInfo
-    {
-        uint64_t size;
-    };
-
-    struct UniformBufferInfo
-    {
-        uint64_t size;
-    };
-
-    struct DescriptorHeapBufferInfo
-    {
-        uint64_t size;
-    };
-
     //
     // GPU buffer
     //
     class Buffer
     {
     public:
-        
-        Buffer(VulkanDevice const& vk_device, VertexBufferInfo const& info, VmaAllocator vma_allocator);
-        Buffer(VulkanDevice const& vk_device, IndexBufferInfo const& info, VmaAllocator vma_allocator);
-        Buffer(VulkanDevice const& vk_device, StagingBufferInfo const& info, VmaAllocator vma_allocator);
-        Buffer(VulkanDevice const& vk_device, UniformBufferInfo const& info, VmaAllocator vma_allocator);
-        Buffer(VulkanDevice const& vk_device, DescriptorHeapBufferInfo const& info, VmaAllocator vma_allocator);
+        Buffer(
+            VulkanDevice const& vk_device,
+            uint64_t size,
+            VmaAllocator vma_allocator,
+            VkBufferUsageFlags2 usage_flags,
+            VmaAllocationCreateFlags vma_flags
+        );
 
         ~Buffer();
 
@@ -152,13 +128,7 @@ namespace Rc::Render
         // }
 
     private:
-        Buffer(
-            VulkanDevice const& vk_device,
-            uint64_t size,
-            VmaAllocator vma_allocator,
-            VkBufferUsageFlags2 usage_flags,
-            VmaAllocationCreateFlags vma_flags
-        );
+
 
         VulkanDevice const& vk_device;
         VkBuffer vk_buffer {VK_NULL_HANDLE};
