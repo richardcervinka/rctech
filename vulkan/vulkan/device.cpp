@@ -62,6 +62,7 @@ namespace Rc
         Load("vkCmdSetDepthTestEnableEXT", m_vkCmdSetDepthTestEnableEXT);
         Load("vkCmdSetDepthWriteEnableEXT", m_vkCmdSetDepthWriteEnableEXT);
         Load("vkCmdSetDepthCompareOpEXT", m_vkCmdSetDepthCompareOpEXT);
+        Load("vkCmdSetStencilTestEnableEXT", m_vkCmdSetStencilTestEnableEXT);
     }
 
     VulkanDevice::~VulkanDevice()
@@ -521,28 +522,9 @@ namespace Rc
        m_vkCmdSetDepthCompareOpEXT(command_buffer, compare_op);
     }
 
+    void VulkanDevice::CmdSetStencilTestEnableEXT(VkCommandBuffer command_buffer, VkBool32 enable) const
+    {
+        m_vkCmdSetStencilTestEnableEXT(command_buffer, enable);
+    }
     
-// epth/stencil nastavíš v command bufferu
-// Tohle je pointa celé extension.
-
-// Depth test ON/OFF
-// cpp
-// vkCmdSetDepthTestEnableEXT(cmd, VK_TRUE);
-// Depth write ON/OFF
-// cpp
-// vkCmdSetDepthWriteEnableEXT(cmd, VK_TRUE);
-// Compare op (LESS / GREATER / ALWAYS / …)
-// cpp
-// vkCmdSetDepthCompareOpEXT(cmd, VK_COMPARE_OP_GREATER); // reverse‑Z
-// Stencil ON/OFF
-// cpp
-// vkCmdSetStencilTestEnableEXT(cmd, VK_FALSE);
-// Stencil operace
-// cpp
-// vkCmdSetStencilOpEXT(cmd,
-//     VK_STENCIL_FACE_FRONT_BIT,
-//     VK_STENCIL_OP_KEEP,
-//     VK_STENCIL_OP_KEEP,
-//     VK_STENCIL_OP_KEEP,
-//     VK_COMPARE_OP_ALWAYS);
 } // Rc

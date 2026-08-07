@@ -48,8 +48,6 @@ namespace Rc::Render
         instance{&instance},
         vk_physical_device{vk_physical_device}
     {
-        // Setup extensions
-
         auto const extensions = EnumerateExtensions();
 
         // Mandatory extensions...
@@ -70,13 +68,17 @@ namespace Rc::Render
         {
             throw std::runtime_error("Required " VK_KHR_SHADER_UNTYPED_POINTERS_EXTENSION_NAME);
         }
-        // if (!extensions.contains(VK_EXT_DYNAMIC_RENDERING_UNUSED_ATTACHMENTS_EXTENSION_NAME))
-        // {
-        //     throw std::runtime_error("Required " VK_EXT_DYNAMIC_RENDERING_UNUSED_ATTACHMENTS_EXTENSION_NAME);
-        // }
+        if (!extensions.contains(VK_EXT_DYNAMIC_RENDERING_UNUSED_ATTACHMENTS_EXTENSION_NAME))
+        {
+            throw std::runtime_error("Required " VK_EXT_DYNAMIC_RENDERING_UNUSED_ATTACHMENTS_EXTENSION_NAME);
+        }
         if (!extensions.contains(VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME))
         {
             throw std::runtime_error("Required " VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME);
+        }
+        if (!extensions.contains(VK_EXT_EXTENDED_DYNAMIC_STATE_3_EXTENSION_NAME))
+        {
+            throw std::runtime_error("Required " VK_EXT_EXTENDED_DYNAMIC_STATE_3_EXTENSION_NAME);
         }
 
         std::vector<char const*> enable_extensions
@@ -85,8 +87,9 @@ namespace Rc::Render
             VK_EXT_DESCRIPTOR_HEAP_EXTENSION_NAME,
             VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME,
             VK_KHR_SHADER_UNTYPED_POINTERS_EXTENSION_NAME,
-            //VK_EXT_DYNAMIC_RENDERING_UNUSED_ATTACHMENTS_EXTENSION_NAME,
-            VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME
+            VK_EXT_DYNAMIC_RENDERING_UNUSED_ATTACHMENTS_EXTENSION_NAME,
+            VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME,
+            VK_EXT_EXTENDED_DYNAMIC_STATE_3_EXTENSION_NAME
         };
 
         // Optional extensions...
@@ -138,6 +141,91 @@ namespace Rc::Render
             enable_extensions.push_back(VK_KHR_EXTERNAL_MEMORY_WIN32_EXTENSION_NAME);
             allocator_ext_flags |= VMA_ALLOCATOR_CREATE_KHR_EXTERNAL_MEMORY_WIN32_BIT;
         }
+
+        // Device features...
+
+        VkPhysicalDeviceExtendedDynamicState3FeaturesEXT dynamic_state_3_features
+        {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_3_FEATURES_EXT,
+            .pNext = nullptr
+        };
+        VkPhysicalDeviceExtendedDynamicStateFeaturesEXT dynamic_state_features
+        {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_FEATURES_EXT,
+            .pNext = &dynamic_state_3_features,
+            .extendedDynamicState = VK_TRUE
+        };
+        VkPhysicalDeviceBufferDeviceAddressFeatures device_address_features
+        {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES,
+            .pNext = &dynamic_state_features,
+            .bufferDeviceAddress = VK_TRUE
+        };
+        VkPhysicalDeviceDynamicRenderingFeatures dynamic_rendering_features
+        {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES,
+            .pNext = &device_address_features,
+            .dynamicRendering = VK_TRUE
+        };
+        VkPhysicalDeviceSynchronization2Features synchronization2_features
+        {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES,
+            .pNext = &dynamic_rendering_features,
+            .synchronization2 = VK_TRUE
+        };
+        VkPhysicalDeviceDescriptorHeapFeaturesEXT descriptor_heap_features_ext
+        {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_HEAP_FEATURES_EXT,
+            .pNext = &synchronization2_features,
+            .descriptorHeap = VK_TRUE,
+            .descriptorHeapCaptureReplay = VK_FALSE
+        };
+        VkPhysicalDeviceTimelineSemaphoreFeatures timeline_semaphore_features
+        {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES,
+            .pNext = &descriptor_heap_features_ext,
+            .timelineSemaphore = VK_TRUE
+        };
+        VkPhysicalDeviceDynamicRenderingUnusedAttachmentsFeaturesEXT unused_attachments_features
+        {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_UNUSED_ATTACHMENTS_FEATURES_EXT,
+            .pNext = &timeline_semaphore_features,
+            .dynamicRenderingUnusedAttachments = VK_TRUE
+        };
+        VkPhysicalDeviceVulkan14Features features_14
+        {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_4_FEATURES,
+            .pNext = &unused_attachments_features,
+            .globalPriorityQuery = VK_FALSE,
+            .shaderSubgroupRotate = VK_FALSE,
+            .shaderSubgroupRotateClustered = VK_FALSE,
+            .shaderFloatControls2 = VK_FALSE,
+            .shaderExpectAssume = VK_FALSE,
+            .rectangularLines = VK_FALSE,
+            .bresenhamLines = VK_FALSE,
+            .smoothLines = VK_FALSE,
+            .stippledRectangularLines = VK_FALSE,
+            .stippledBresenhamLines = VK_FALSE,
+            .stippledSmoothLines = VK_FALSE,
+            .vertexAttributeInstanceRateDivisor = VK_FALSE,
+            .vertexAttributeInstanceRateZeroDivisor = VK_FALSE,
+            .indexTypeUint8 = VK_FALSE,
+            .dynamicRenderingLocalRead = VK_FALSE,
+            .maintenance5 = VK_FALSE,
+            .maintenance6 = VK_FALSE,
+            .pipelineProtectedAccess = VK_FALSE,
+            .pipelineRobustness = VK_FALSE,
+            .hostImageCopy = VK_FALSE,
+            .pushDescriptor  = VK_FALSE
+        };
+        VkPhysicalDeviceShaderUntypedPointersFeaturesKHR shader_untyped_pointers_features
+        {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_UNTYPED_POINTERS_FEATURES_KHR,
+            .pNext = &features_14,
+            .shaderUntypedPointers = VK_TRUE
+        };
+
+        void* features = &shader_untyped_pointers_features;
 
         auto const family_properties = GetQueueFamilyProperties(surface);
 
@@ -216,87 +304,6 @@ namespace Rc::Render
 
             assert(false && "fallback!");
         }
-
-        // Device features...
-
-        VkPhysicalDeviceExtendedDynamicStateFeaturesEXT dynamic_state_features
-        {
-            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_FEATURES_EXT,
-            .pNext = nullptr,
-            .extendedDynamicState = VK_TRUE
-        };
-
-        VkPhysicalDeviceBufferDeviceAddressFeatures device_address_features
-        {
-            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES,
-            .pNext = &dynamic_state_features,
-            .bufferDeviceAddress = VK_TRUE
-        };
-        VkPhysicalDeviceDynamicRenderingFeatures dynamic_rendering_features
-        {
-            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES,
-            .pNext = &device_address_features,
-            .dynamicRendering = VK_TRUE
-        };
-        VkPhysicalDeviceSynchronization2Features synchronization2_features
-        {
-            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES,
-            .pNext = &dynamic_rendering_features,
-            .synchronization2 = VK_TRUE
-        };
-        VkPhysicalDeviceDescriptorHeapFeaturesEXT descriptor_heap_features_ext
-        {
-            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_HEAP_FEATURES_EXT,
-            .pNext = &synchronization2_features,
-            .descriptorHeap = VK_TRUE,
-            .descriptorHeapCaptureReplay = VK_FALSE
-        };
-        VkPhysicalDeviceTimelineSemaphoreFeatures timeline_semaphore_features
-        {
-            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES,
-            .pNext = &descriptor_heap_features_ext,
-            .timelineSemaphore = VK_TRUE
-        };
-        VkPhysicalDeviceDynamicRenderingUnusedAttachmentsFeaturesEXT unused_attachments_features
-        {
-            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_UNUSED_ATTACHMENTS_FEATURES_EXT,
-            .pNext = &timeline_semaphore_features,
-            .dynamicRenderingUnusedAttachments = VK_TRUE
-        };
-        VkPhysicalDeviceVulkan14Features features_1_4
-        {
-            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_4_FEATURES,
-            .pNext = &unused_attachments_features,
-            .globalPriorityQuery = VK_FALSE,
-            .shaderSubgroupRotate = VK_FALSE,
-            .shaderSubgroupRotateClustered = VK_FALSE,
-            .shaderFloatControls2 = VK_FALSE,
-            .shaderExpectAssume = VK_FALSE,
-            .rectangularLines = VK_FALSE,
-            .bresenhamLines = VK_FALSE,
-            .smoothLines = VK_FALSE,
-            .stippledRectangularLines = VK_FALSE,
-            .stippledBresenhamLines = VK_FALSE,
-            .stippledSmoothLines = VK_FALSE,
-            .vertexAttributeInstanceRateDivisor = VK_FALSE,
-            .vertexAttributeInstanceRateZeroDivisor = VK_FALSE,
-            .indexTypeUint8 = VK_FALSE,
-            .dynamicRenderingLocalRead = VK_FALSE,
-            .maintenance5 = VK_FALSE,
-            .maintenance6 = VK_FALSE,
-            .pipelineProtectedAccess = VK_FALSE,
-            .pipelineRobustness = VK_FALSE,
-            .hostImageCopy = VK_FALSE,
-            .pushDescriptor  = VK_FALSE
-        };
-        VkPhysicalDeviceShaderUntypedPointersFeaturesKHR shader_untyped_pointers_features
-        {
-            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_UNTYPED_POINTERS_FEATURES_KHR,
-            .pNext = &features_1_4,
-            .shaderUntypedPointers = VK_TRUE
-        };
-
-        void* features = &shader_untyped_pointers_features;
 
         VkDeviceCreateInfo info
         {

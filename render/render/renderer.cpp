@@ -125,9 +125,9 @@ namespace Rc::Render
         
         // ---------------------------- TEST ----------------------------
 
-        resource_manager->ReserveVertexBuffer(ResourceFamily{0}, 2048);
-        resource_manager->ReserveIndexBuffer(ResourceFamily{0}, 2048);
-        resource_manager->ReserveInstanceBuffer(ResourceFamily{0}, 2048);
+        resource_manager->ReserveVertexBuffer(ResourceFamily{0}, 2048 * 32);
+        resource_manager->ReserveIndexBuffer(ResourceFamily{0}, 2048 * 32);
+        resource_manager->ReserveInstanceBuffer(ResourceFamily{0}, 2048 * 32);
 
         {
             auto factory = device->CreatePipelineFactory();
@@ -262,7 +262,7 @@ namespace Rc::Render
         frame->BindVertexBuffer(resource_manager->GetInstanceBuffer(ResourceFamily{0}), 1, 0);
         frame->BindIndexBuffer(resource_manager->GetIndexBuffer(ResourceFamily{0}), IndexType::Uint16, 0);
 
-        frame->Draw(36, 2, 0, 0, 0);
+        frame->Draw(36, 10 * 10, 0, 0, 0);
 
         frame->EndRenderPass();
     }

@@ -99,8 +99,8 @@ namespace Rc::Render
         void DisableDepthWrite();
         void SetDepthCompareGreater();
         void SetDepthCompareLess();
-
-        //void EnableDepthTest();
+        void EnableStencilTest();
+        void DisableStencilTest();
 
         VkCommandBuffer Handle() const
         {

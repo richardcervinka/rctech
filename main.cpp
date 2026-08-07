@@ -87,23 +87,23 @@ void TestApplication::Initialize()
         };
     });
     
-    test_model->in_handle = rm.AllocateInstanceBuffer(Render::ResourceFamily{0}, 2 * sizeof(Gfx::VertexInstance));
+    test_model->in_handle = rm.AllocateInstanceBuffer(Render::ResourceFamily{0}, 10 * 10 * sizeof(Gfx::VertexInstance));
     
     resource_timeline = rm.Upload(test_model->in_handle, [](Render::BufferWriter& writer) {
-        Gfx::Transformations tm;
-        tm.yaw = Math::pi + (Math::pi / 4.0);
-        tm.scale = 1.0;
 
-        writer << tm.Local().To<float>();
-        writer << tm.World().To<float>();
+        for (int r = 0; r < 10; r++)
+        {
+            for (int c = 0; c < 10; c++)
+            {
+                Gfx::Transformations tm;
+                tm.scale = 0.35;
+                tm.x = -4.5 + r;
+                tm.z = -4.5 + c;
 
-        tm.yaw = Math::pi;
-        tm.scale = 0.9;
-        tm.z = -2;
-        tm.y = 1;
-        
-        writer << tm.Local().To<float>();
-        writer << tm.World().To<float>();
+                writer << tm.Local().To<float>();
+                writer << tm.World().To<float>();
+            }
+        }
     });
 
     rm.EndUpload();

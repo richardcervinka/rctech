@@ -217,6 +217,8 @@ namespace Rc
         // vkCmdSetDepthCompareOpEXT
         void CmdSetDepthCompareOpEXT(VkCommandBuffer command_buffer, VkCompareOp compare_op) const;
 
+        // vkCmdSetStencilTestEnableEXT
+        void CmdSetStencilTestEnableEXT(VkCommandBuffer command_buffer, VkBool32 enable) const;
 
     private:
         friend class VulkanContext;
@@ -290,6 +292,7 @@ namespace Rc
         PFN_vkCmdSetDepthTestEnableEXT m_vkCmdSetDepthTestEnableEXT {nullptr};
         PFN_vkCmdSetDepthWriteEnableEXT m_vkCmdSetDepthWriteEnableEXT {nullptr};
         PFN_vkCmdSetDepthCompareOpEXT m_vkCmdSetDepthCompareOpEXT {nullptr};
+        PFN_vkCmdSetStencilTestEnableEXT m_vkCmdSetStencilTestEnableEXT {nullptr};
     };
 
 } // Rc

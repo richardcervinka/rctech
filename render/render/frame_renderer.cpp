@@ -118,6 +118,7 @@ namespace Rc::Render
         });
 
         commands->EnableColorAttachment(RenderTargetSlot::FrameBuffer, framebuffer);
+        commands->DisableStencilTest();
         commands->EnableDepthTest();
         commands->EnableDepthWrite();
         commands->SetDepthCompareGreater();

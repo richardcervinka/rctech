@@ -132,7 +132,7 @@ namespace Rc::Render
         pipeline_rendering.viewMask = 0;
         pipeline_rendering.colorAttachmentCount = color_attachment_formats.size();
         pipeline_rendering.pColorAttachmentFormats = color_attachment_formats.data();
-        pipeline_rendering.depthAttachmentFormat = VK_FORMAT_UNDEFINED;
+        pipeline_rendering.depthAttachmentFormat = VK_FORMAT_D32_SFLOAT; //----------------------- Odnekud vzit (see texture.cpp)
         pipeline_rendering.stencilAttachmentFormat = VK_FORMAT_UNDEFINED;
 
         for (auto& desc : vertex_binding_desc)
@@ -265,7 +265,6 @@ namespace Rc::Render
             .basePipelineIndex = 0
         };
 
-        
         return std::make_unique<Pipeline>(vk_device, pipeline_info);
     }
 

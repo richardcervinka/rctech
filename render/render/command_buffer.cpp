@@ -585,6 +585,16 @@ namespace Rc::Render
         vk_device.CmdSetDepthCompareOpEXT(vk_command_buffer, VK_COMPARE_OP_LESS);
     }
 
+    void RenderCommandBuffer::EnableStencilTest()
+    {
+        vk_device.CmdSetStencilTestEnableEXT(vk_command_buffer, VK_TRUE);
+    }
+
+    void RenderCommandBuffer::DisableStencilTest()
+    {
+        vk_device.CmdSetStencilTestEnableEXT(vk_command_buffer, VK_FALSE);
+    }
+
     // TransferCommandBuffer
 
     TransferCommandBuffer::TransferCommandBuffer(VulkanDevice const& vk_device, uint32_t vk_family_index) :
