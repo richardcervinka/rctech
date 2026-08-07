@@ -144,7 +144,6 @@ namespace Rc::Render
             factory.SetVertexBinding(Gfx::VertexBinding::PerVertex, sizeof(Gfx::VertexBasic));
             factory.SetVertexBinding(Gfx::VertexBinding::PerInstance, sizeof(Gfx::VertexInstance));
             factory.SetVertexAttributes({Gfx::VertexBasic::attributes, Gfx::VertexInstance::attributes});
-            factory.EnableDepthTest();
             test_vertex_pipeline = factory.Create();
         }
 

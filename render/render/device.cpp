@@ -70,9 +70,13 @@ namespace Rc::Render
         {
             throw std::runtime_error("Required " VK_KHR_SHADER_UNTYPED_POINTERS_EXTENSION_NAME);
         }
-        if (!extensions.contains(VK_EXT_DYNAMIC_RENDERING_UNUSED_ATTACHMENTS_EXTENSION_NAME))
+        // if (!extensions.contains(VK_EXT_DYNAMIC_RENDERING_UNUSED_ATTACHMENTS_EXTENSION_NAME))
+        // {
+        //     throw std::runtime_error("Required " VK_EXT_DYNAMIC_RENDERING_UNUSED_ATTACHMENTS_EXTENSION_NAME);
+        // }
+        if (!extensions.contains(VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME))
         {
-            throw std::runtime_error("Required " VK_EXT_DYNAMIC_RENDERING_UNUSED_ATTACHMENTS_EXTENSION_NAME);
+            throw std::runtime_error("Required " VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME);
         }
 
         std::vector<char const*> enable_extensions
@@ -80,7 +84,9 @@ namespace Rc::Render
             VK_KHR_SWAPCHAIN_EXTENSION_NAME,
             VK_EXT_DESCRIPTOR_HEAP_EXTENSION_NAME,
             VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME,
-            VK_KHR_SHADER_UNTYPED_POINTERS_EXTENSION_NAME
+            VK_KHR_SHADER_UNTYPED_POINTERS_EXTENSION_NAME,
+            //VK_EXT_DYNAMIC_RENDERING_UNUSED_ATTACHMENTS_EXTENSION_NAME,
+            VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME
         };
 
         // Optional extensions...
@@ -213,10 +219,17 @@ namespace Rc::Render
 
         // Device features...
 
+        VkPhysicalDeviceExtendedDynamicStateFeaturesEXT dynamic_state_features
+        {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_FEATURES_EXT,
+            .pNext = nullptr,
+            .extendedDynamicState = VK_TRUE
+        };
+
         VkPhysicalDeviceBufferDeviceAddressFeatures device_address_features
         {
             .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES,
-            .pNext = nullptr,
+            .pNext = &dynamic_state_features,
             .bufferDeviceAddress = VK_TRUE
         };
         VkPhysicalDeviceDynamicRenderingFeatures dynamic_rendering_features

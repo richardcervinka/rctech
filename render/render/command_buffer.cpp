@@ -134,7 +134,7 @@ namespace Rc::Render
         };
     }
 
-    void RenderCommandBuffer::EnableDepthBuffer(RenderTargetView const& render_target)
+    void RenderCommandBuffer::AttachDepthBuffer(RenderTargetView const& render_target)
     {
         VkImageMemoryBarrier const barrier
         {
@@ -553,6 +553,36 @@ namespace Rc::Render
         };
 
         vk_device.CmdBindResourceHeapEXT(vk_command_buffer, bind_info);
+    }
+
+    void RenderCommandBuffer::EnableDepthTest()
+    {
+        vk_device.CmdSetDepthTestEnableEXT(vk_command_buffer, VK_TRUE);
+    }
+
+    void RenderCommandBuffer::DisableDepthTest()
+    {
+        vk_device.CmdSetDepthTestEnableEXT(vk_command_buffer, VK_FALSE);
+    }
+
+    void RenderCommandBuffer::EnableDepthWrite()
+    {
+        vk_device.CmdSetDepthWriteEnableEXT(vk_command_buffer, VK_TRUE);
+    }
+
+    void RenderCommandBuffer::DisableDepthWrite()
+    {
+        vk_device.CmdSetDepthWriteEnableEXT(vk_command_buffer, VK_FALSE);
+    }
+
+    void RenderCommandBuffer::SetDepthCompareGreater()
+    {
+        vk_device.CmdSetDepthCompareOpEXT(vk_command_buffer, VK_COMPARE_OP_GREATER);
+    }
+
+    void RenderCommandBuffer::SetDepthCompareLess()
+    {
+        vk_device.CmdSetDepthCompareOpEXT(vk_command_buffer, VK_COMPARE_OP_LESS);
     }
 
     // TransferCommandBuffer

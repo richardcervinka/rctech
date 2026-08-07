@@ -50,7 +50,7 @@ namespace Rc::Render
 
         void DisableColorAttachment(RenderTargetSlot slot);
 
-        void EnableDepthBuffer(RenderTargetView const& render_target);
+        void AttachDepthBuffer(RenderTargetView const& render_target);
         // void DisableDepthBuffer();
 
         void ClearRenderTarget(RenderTargetSlot slot, Color const& color);
@@ -92,6 +92,15 @@ namespace Rc::Render
         void DrawIndexed(uint32_t index_count, uint32_t instance_count, uint32_t first_index, int32_t vertex_offset, uint32_t first_instance);
 
         void BindResourceDescriptorHeap(ResourceDescriptorHeap const& heap);
+
+        void EnableDepthTest();
+        void DisableDepthTest();
+        void EnableDepthWrite();
+        void DisableDepthWrite();
+        void SetDepthCompareGreater();
+        void SetDepthCompareLess();
+
+        //void EnableDepthTest();
 
         VkCommandBuffer Handle() const
         {

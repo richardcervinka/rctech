@@ -208,6 +208,16 @@ namespace Rc
         // vkCmdBindSamplerHeapEXT
         void CmdBindSamplerHeapEXT(VkCommandBuffer command_buffer, VkBindHeapInfoEXT const& bind_info) const;
 
+        // vkCmdSetDepthTestEnableEXT
+        void CmdSetDepthTestEnableEXT(VkCommandBuffer command_buffer, VkBool32 enable) const;
+
+        // vkCmdSetDepthWriteEnableEXT
+        void CmdSetDepthWriteEnableEXT(VkCommandBuffer command_buffer, VkBool32 enable) const;
+
+        // vkCmdSetDepthCompareOpEXT
+        void CmdSetDepthCompareOpEXT(VkCommandBuffer command_buffer, VkCompareOp compare_op) const;
+
+
     private:
         friend class VulkanContext;
 
@@ -277,6 +287,9 @@ namespace Rc
         PFN_vkGetSemaphoreCounterValue m_vkGetSemaphoreCounterValue {nullptr};
         PFN_vkCmdBindResourceHeapEXT m_vkCmdBindResourceHeapEXT {nullptr};
         PFN_vkCmdBindSamplerHeapEXT m_vkCmdBindSamplerHeapEXT {nullptr};
+        PFN_vkCmdSetDepthTestEnableEXT m_vkCmdSetDepthTestEnableEXT {nullptr};
+        PFN_vkCmdSetDepthWriteEnableEXT m_vkCmdSetDepthWriteEnableEXT {nullptr};
+        PFN_vkCmdSetDepthCompareOpEXT m_vkCmdSetDepthCompareOpEXT {nullptr};
     };
 
 } // Rc

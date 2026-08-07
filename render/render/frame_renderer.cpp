@@ -118,7 +118,10 @@ namespace Rc::Render
         });
 
         commands->EnableColorAttachment(RenderTargetSlot::FrameBuffer, framebuffer);
-        commands->EnableDepthBuffer(*depth_buffer_view);
+        commands->EnableDepthTest();
+        commands->EnableDepthWrite();
+        commands->SetDepthCompareGreater();
+        commands->AttachDepthBuffer(*depth_buffer_view);
         commands->ClearRenderTarget(RenderTargetSlot::FrameBuffer, Color(0, 0, 0, 1));
         commands->BindPipeline(pipeline);
         commands->BeginRendering(framebuffer_area);
