@@ -74,7 +74,6 @@ namespace Rc::Render
         commands->Begin();
         commands->BindResourceDescriptorHeap(*resource_descriptor_heap);
 
-        //instance_map = instance_buffer->Map();
         instance_writer = BufferWriter(instance_buffer->Map());
     }
 

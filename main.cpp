@@ -21,6 +21,23 @@ public:
             }
         }
 
+        static double step = 0;
+        step += 0.005;
+
+        // Test animation
+        if (auto& tm = GetRenderer().test_model)
+        {
+            for (int r = 0; r < 10; r++)
+            {
+                for (int c = 0; c < 10; c++)
+                {
+                    tm->instances[r * 10 + c].y = std::sin(step + ((Math::pi * r) / 10.0) + ((Math::pi * c) / 10.0)) * 0.2;
+                    tm->instances[r * 10 + c].scale = 0.35 + std::sin(step + ((Math::pi * r) / 10.0) + ((Math::pi * c) / 10.0)) * 0.05;
+                }
+            }
+        }
+
+
         Generic::Application::BeginFrame();
     }
 
@@ -89,6 +106,20 @@ void TestApplication::Initialize()
 
     rm.EndUpload();
     //GetRenderer().transfer_timeline = rm.Transfer();
+
+    for (int r = 0; r < 10; r++)
+        {
+            for (int c = 0; c < 10; c++)
+            {
+                Gfx::Transformations tm;
+                tm.scale = 0.35;
+                tm.x = -4.5 + r;
+                tm.z = -4.5 + c;
+                tm.y = std::sin(((Math::pi * r) / 10.0) + ((Math::pi * c) / 10.0)) * 0.2;
+
+                test_model->instances.push_back(tm);
+            }
+        }
 }
 
 int APIENTRY wWinMain(

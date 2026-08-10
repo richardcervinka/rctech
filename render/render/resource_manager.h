@@ -12,6 +12,7 @@ namespace Rc::Render
 {
     enum class ResourceFamily : uint32_t {};
 
+    //
     // Public handle to a vertex buffer region.
     // Visible out of renderer.
     //
@@ -47,6 +48,7 @@ namespace Rc::Render
         uint32_t generation {};
     };
 
+    //
     // Public handle to a index buffer region.
     // Visible out of renderer.
     //
@@ -82,6 +84,7 @@ namespace Rc::Render
         uint32_t generation {};
     };
 
+    //
     // Linear subresource handle allocator.
     //
     template<typename Handle>
@@ -122,6 +125,7 @@ namespace Rc::Render
         // TODO: Generation
     };
 
+    //
     // Resource pool associated with a resource family.
     //
     struct ResourcePool

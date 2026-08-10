@@ -127,7 +127,6 @@ namespace Rc::Render
 
         resource_manager->ReserveVertexBuffer(ResourceFamily{0}, 2048 * 32);
         resource_manager->ReserveIndexBuffer(ResourceFamily{0}, 2048 * 32);
-        //resource_manager->ReserveInstanceBuffer(ResourceFamily{0}, 2048 * 32);
 
         {
             auto factory = device->CreatePipelineFactory();
@@ -246,29 +245,14 @@ namespace Rc::Render
         RenderPassContext render_pass_context {};
         render_pass_context.camera = &camera;
 
-        /////////////////
-        
-        static double step = 0;
-        step += 0.005;
-
-        for (int r = 0; r < 10; r++)
+        // Build instance buffer.
+        for (auto& instnace : test_model->instances)
         {
-            for (int c = 0; c < 10; c++)
-            {
-                Gfx::Transformations tm;
-                tm.scale = 0.35;
-                tm.x = -4.5 + r;
-                tm.z = -4.5 + c;
-                tm.y = std::sin(step + ((Math::pi * r) / 10.0) + ((Math::pi * c) / 10.0)) * 0.2;
-
-                frame->WriteInstance({
-                    .local_transformations = tm.Local().To<float>(),
-                    .world_transformations = tm.World().To<float>()
-                });
-            }
+            frame->WriteInstance({
+                .local_transformations = instnace.Local().To<float>(),
+                .world_transformations = instnace.World().To<float>()
+            });
         }
-
-        //////////////////
 
         frame->commands->UseVertexBuffer(resource_manager->GetBufferRegion(test_model->vb_handle));
         frame->commands->UseIndexBuffer(resource_manager->GetBufferRegion(test_model->ib_handle));

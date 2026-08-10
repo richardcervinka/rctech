@@ -8,6 +8,7 @@
 #include "shader.h"
 #include "descriptor_heap.h"
 #include "core/camera.h"
+#include "core/vertex.h"
 #include "frame_renderer.h"
 #include "buffer_linear_allocator.h"
 #include "buffer_ring_allocator.h"
@@ -17,6 +18,8 @@ struct TestModel
 {
     Rc::Render::VertexBufferHandle vb_handle;
     Rc::Render::IndexBufferHandle ib_handle; 
+
+    std::vector<Rc::Gfx::Transformations> instances;
 };
 
 namespace Rc::Render

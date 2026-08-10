@@ -470,6 +470,19 @@ namespace Rc::Input
             pb += raw->header.dwSize;
         }
 
+        // TODO:
+        //     // Procházíme JEN klávesy, o kterých si engine myslí, že jsou STISKNUTÉ
+        //     for (uint32_t scanCode : m_activePressedKeys) {
+        //         int vKey = MapVirtualKey(scanCode, MAPVK_VSC_TO_VK);
+                
+        //         // GetAsyncKeyState zjišťuje stav přímo u ovladače/OS bypassnutím zpráv
+        //         // Pokud nejvyšší bit NIJE 1 (0x8000), klávesa je Fyzicky uvolněná!
+        //         if (vKey != 0 && !(GetAsyncKeyState(vKey) & 0x8000)) {
+        //             // HW/OS ztratil UP zprávu -> engine stav ručně opraví
+        //             SetKeyReleasedInternal(scanCode); 
+        //         }
+        //     }
+
         if ((mx != 0) || (my != 0))
         {
             g_event_mouse_move.Dispatch({mx, my});
