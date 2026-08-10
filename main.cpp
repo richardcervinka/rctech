@@ -86,25 +86,6 @@ void TestApplication::Initialize()
             4, 3, 0, 4, 7, 3
         };
     });
-    
-    test_model->in_handle = rm.AllocateInstanceBuffer(Render::ResourceFamily{0}, 10 * 10 * sizeof(Gfx::VertexInstance));
-    
-    resource_timeline = rm.Upload(test_model->in_handle, [](Render::BufferWriter& writer) {
-
-        for (int r = 0; r < 10; r++)
-        {
-            for (int c = 0; c < 10; c++)
-            {
-                Gfx::Transformations tm;
-                tm.scale = 0.35;
-                tm.x = -4.5 + r;
-                tm.z = -4.5 + c;
-
-                writer << tm.Local().To<float>();
-                writer << tm.World().To<float>();
-            }
-        }
-    });
 
     rm.EndUpload();
     //GetRenderer().transfer_timeline = rm.Transfer();

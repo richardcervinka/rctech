@@ -8,6 +8,7 @@
 #include "command_buffer.h"
 #include "device.h"
 #include "core/camera.h"
+#include "core/vertex.h"
 #include "constants.h"
 
 namespace Rc::Render
@@ -51,12 +52,19 @@ namespace Rc::Render
             RenderPassContext const& context
         );
 
-        void BindVertexBuffer(Buffer const& buffer, int slot, uint64_t offset);
+        void BindVertexBuffer(Buffer const& buffer, uint64_t offset);
+        void BindInstanceBuffer(uint64_t offset);
         void BindIndexBuffer(Buffer const& buffer, IndexType type, uint64_t offset);
 
         void Draw(uint32_t index_count, uint32_t instance_count, uint32_t first_index, int32_t vertex_offset, uint32_t first_instance);
 
         void EndRenderPass();
+
+        void WriteInstance(Gfx::VertexInstance const& data)
+        {
+            instance_writer << data.local_transformations;
+            instance_writer << data.world_transformations;
+        }
 
         // void Draw(
         //     uint32_t vertex_input_binding,
@@ -75,6 +83,12 @@ namespace Rc::Render
         std::unique_ptr<RenderCommandBuffer> commands;
 
         std::unique_ptr<BufferLinearAllocator> staging_buffer;
+
+        std::unique_ptr<Buffer> instance_buffer;
+
+        std::span<std::byte> instance_map;
+
+        BufferWriter instance_writer;
 
         std::unique_ptr<Buffer> render_pass_uniform_buffer;
 

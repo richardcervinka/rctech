@@ -9,6 +9,7 @@ namespace Rc::Render
         fence = device.CreateFence();
         commands = queue->CreateCommandBuffer();
         staging_buffer = std::make_unique<BufferLinearAllocator>(device.AllocateStagingBuffer(staging_buffer_size));
+        instance_buffer = device.AllocateInstanceBuffer(2048 * 32); // ---------------------------------------------------------------- Size?
         render_pass_uniform_buffer = device.AllocateUniformBuffer(RenderPassConstants::size);
         depth_buffer = device.AllocateDepthBuffer(width, height);
         depth_buffer_view = depth_buffer->CreateDepthBufferView();
@@ -72,6 +73,9 @@ namespace Rc::Render
         commands->Reset();
         commands->Begin();
         commands->BindResourceDescriptorHeap(*resource_descriptor_heap);
+
+        //instance_map = instance_buffer->Map();
+        instance_writer = BufferWriter(instance_buffer->Map());
     }
 
     // void End(SwapChain const& swap_chain)
@@ -133,9 +137,14 @@ namespace Rc::Render
         commands->EndRendering();
     }
 
-    void Frame::BindVertexBuffer(Buffer const& buffer, int slot, uint64_t offset)
+    void Frame::BindVertexBuffer(Buffer const& buffer, uint64_t offset)
     {
-        commands->BindVertexBuffer(buffer, slot, offset);
+        commands->BindVertexBuffer(buffer, 0, offset);
+    }
+
+    void Frame::BindInstanceBuffer(uint64_t offset)
+    {
+        commands->BindVertexBuffer(*instance_buffer, 1, offset);
     }
 
     void Frame::BindIndexBuffer(Buffer const& buffer, IndexType type, uint64_t offset)

@@ -97,7 +97,7 @@ namespace Rc::Render
         BufferRegion GetRegion() const;
         BufferRegion GetRegion(uint64_t offset, uint64_t size) const;
 
-        // Available only for stagging buffer.
+        // Available only for mappable buffers.
         std::span<std::byte> Buffer::Map(uint64_t offset, uint64_t size);
         std::span<std::byte const> Buffer::Map(uint64_t offset, uint64_t size) const;
 
@@ -140,6 +140,8 @@ namespace Rc::Render
     class BufferWriter
     {
     public:
+        BufferWriter() = default;
+        
         explicit BufferWriter(std::span<std::byte> dst) :
             ptr{dst.data()}
             //m_end{dst.end()}

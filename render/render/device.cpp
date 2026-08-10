@@ -475,6 +475,24 @@ namespace Rc::Render
         );
     }
 
+    std::unique_ptr<Buffer> Device::AllocateInstanceBuffer(uint64_t size) const
+    {
+        return std::make_unique<Buffer>(
+            *device,
+            size,
+            vma_allocator,
+            VkBufferUsageFlags2
+            {
+                VK_BUFFER_USAGE_2_VERTEX_BUFFER_BIT
+            },
+            VmaAllocationCreateFlags
+            {
+                VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT |
+                VMA_ALLOCATION_CREATE_MAPPED_BIT
+            }
+        );
+    }
+
     std::unique_ptr<Buffer> Device::AllocateStagingBuffer(uint64_t size) const
     {
         return std::make_unique<Buffer>(

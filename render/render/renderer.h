@@ -16,7 +16,6 @@
 struct TestModel
 {
     Rc::Render::VertexBufferHandle vb_handle;
-    Rc::Render::InstanceBufferHandle in_handle;
     Rc::Render::IndexBufferHandle ib_handle; 
 };
 

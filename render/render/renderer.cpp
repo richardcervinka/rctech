@@ -127,7 +127,7 @@ namespace Rc::Render
 
         resource_manager->ReserveVertexBuffer(ResourceFamily{0}, 2048 * 32);
         resource_manager->ReserveIndexBuffer(ResourceFamily{0}, 2048 * 32);
-        resource_manager->ReserveInstanceBuffer(ResourceFamily{0}, 2048 * 32);
+        //resource_manager->ReserveInstanceBuffer(ResourceFamily{0}, 2048 * 32);
 
         {
             auto factory = device->CreatePipelineFactory();
@@ -246,7 +246,30 @@ namespace Rc::Render
         RenderPassContext render_pass_context {};
         render_pass_context.camera = &camera;
 
-        frame->commands->UseVertexBuffer(resource_manager->GetBufferRegion(test_model->in_handle));
+        /////////////////
+        
+        static double step = 0;
+        step += 0.005;
+
+        for (int r = 0; r < 10; r++)
+        {
+            for (int c = 0; c < 10; c++)
+            {
+                Gfx::Transformations tm;
+                tm.scale = 0.35;
+                tm.x = -4.5 + r;
+                tm.z = -4.5 + c;
+                tm.y = std::sin(step + ((Math::pi * r) / 10.0) + ((Math::pi * c) / 10.0)) * 0.2;
+
+                frame->WriteInstance({
+                    .local_transformations = tm.Local().To<float>(),
+                    .world_transformations = tm.World().To<float>()
+                });
+            }
+        }
+
+        //////////////////
+
         frame->commands->UseVertexBuffer(resource_manager->GetBufferRegion(test_model->vb_handle));
         frame->commands->UseIndexBuffer(resource_manager->GetBufferRegion(test_model->ib_handle));
 
@@ -258,8 +281,8 @@ namespace Rc::Render
             render_pass_context
         );
 
-        frame->BindVertexBuffer(resource_manager->GetVertexBuffer(ResourceFamily{0}), 0, 0); // ---------------------- Use VertexBinding !!!!!!!!
-        frame->BindVertexBuffer(resource_manager->GetInstanceBuffer(ResourceFamily{0}), 1, 0);
+        frame->BindVertexBuffer(resource_manager->GetVertexBuffer(ResourceFamily{0}), 0); // ---------------------- Use VertexBinding !!!!!!!!
+        frame->BindInstanceBuffer(0);
         frame->BindIndexBuffer(resource_manager->GetIndexBuffer(ResourceFamily{0}), IndexType::Uint16, 0);
 
         frame->Draw(36, 10 * 10, 0, 0, 0);

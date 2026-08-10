@@ -12,6 +12,9 @@ namespace Rc::Render
 {
     enum class ResourceFamily : uint32_t {};
 
+    // Public handle to a vertex buffer region.
+    // Visible out of renderer.
+    //
     class VertexBufferHandle
     {
     public:
@@ -44,6 +47,9 @@ namespace Rc::Render
         uint32_t generation {};
     };
 
+    // Public handle to a index buffer region.
+    // Visible out of renderer.
+    //
     class IndexBufferHandle
     {
     public:
@@ -76,38 +82,8 @@ namespace Rc::Render
         uint32_t generation {};
     };
 
-    class InstanceBufferHandle
-    {
-    public:
-        InstanceBufferHandle() = default;
-
-        InstanceBufferHandle(ResourceFamily family, uint64_t index, uint32_t generation) : // ----- Private?
-            family{family},
-            index{index},
-            generation{generation}
-        {}
-
-        ResourceFamily FamilyName() const
-        {
-            return family;
-        }
-
-        uint64_t Index() const
-        {
-            return index;
-        }
-
-        uint32_t Generation() const
-        {
-            return generation;
-        }
-
-    private:
-        ResourceFamily family {};
-        uint64_t index {};
-        uint32_t generation {};
-    };
-
+    // Linear subresource handle allocator.
+    //
     template<typename Handle>
     class ResourceAllocator
     {
@@ -128,21 +104,29 @@ namespace Rc::Render
             return allocator.GetBuffer();
         }
 
-        // Map handle index to a buffer region.
-        std::array<BufferRegion, UINT16_MAX> regions;
+        BufferRegion& GetRegion(Handle handle)
+        {
+            assert(regions.size() >= handle.Index());
+
+            return regions[handle.Index()];
+        }
 
     private:
         BufferLinearAllocator allocator;
 
         std::atomic<std::size_t> count {0};
 
+        // Map handle index to a buffer region.
+        std::array<BufferRegion, UINT16_MAX> regions;
+
         // TODO: Generation
     };
 
+    // Resource pool associated with a resource family.
+    //
     struct ResourcePool
     {
         std::unique_ptr<ResourceAllocator<VertexBufferHandle>> vertex_buffer_allocator;
-        std::unique_ptr<ResourceAllocator<InstanceBufferHandle>> instance_buffer_allocator;
         std::unique_ptr<ResourceAllocator<IndexBufferHandle>> index_buffer_allocator;
     };
 
@@ -155,14 +139,12 @@ namespace Rc::Render
         void ReserveInstanceBuffer(ResourceFamily family, uint64_t capacity); // usage parameter?
         void ReserveIndexBuffer(ResourceFamily family, uint64_t capacity); // usage parameter?
 
+        VertexBufferHandle AllocateVertexBuffer(ResourceFamily name, uint64_t size);
+        IndexBufferHandle AllocateIndexBuffer(ResourceFamily name, uint64_t size);
+
         Buffer const& GetVertexBuffer(ResourceFamily family)
         {
             return pools[std::to_underlying(family)].vertex_buffer_allocator->GetBuffer();
-        }
-
-        Buffer const& GetInstanceBuffer(ResourceFamily family)
-        {
-            return pools[std::to_underlying(family)].instance_buffer_allocator->GetBuffer();
         }
 
         Buffer const& GetIndexBuffer(ResourceFamily family)
@@ -170,13 +152,8 @@ namespace Rc::Render
             return pools[std::to_underlying(family)].index_buffer_allocator->GetBuffer();
         }
 
-        VertexBufferHandle AllocateVertexBuffer(ResourceFamily name, uint64_t size);
-        IndexBufferHandle AllocateIndexBuffer(ResourceFamily name, uint64_t size);
-        InstanceBufferHandle AllocateInstanceBuffer(ResourceFamily name, uint64_t size);
-
         BufferRegion& GetBufferRegion(VertexBufferHandle handle);
         BufferRegion& GetBufferRegion(IndexBufferHandle handle);
-        BufferRegion& GetBufferRegion(InstanceBufferHandle handle);
 
         void BeginUpload();
 
@@ -197,11 +174,6 @@ namespace Rc::Render
         }
 
         uint64_t Upload(IndexBufferHandle handle, std::function<void(BufferWriter&)> writer_callback)
-        {
-            return Upload(GetBufferRegion(handle), writer_callback);
-        }
-
-        uint64_t Upload(InstanceBufferHandle handle, std::function<void(BufferWriter&)> writer_callback)
         {
             return Upload(GetBufferRegion(handle), writer_callback);
         }

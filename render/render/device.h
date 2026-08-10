@@ -66,6 +66,7 @@ namespace Rc::Render
 
         std::unique_ptr<Buffer> AllocateVertexBuffer(uint64_t size) const;
         std::unique_ptr<Buffer> AllocateIndexBuffer(uint64_t size) const;
+        std::unique_ptr<Buffer> AllocateInstanceBuffer(uint64_t size) const;
         std::unique_ptr<Buffer> AllocateStagingBuffer(uint64_t size) const;
         std::unique_ptr<Buffer> AllocateUniformBuffer(uint64_t size) const;
         std::unique_ptr<Buffer> AllocateDescriptorHeapBuffer(uint64_t size) const;

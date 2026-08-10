@@ -25,15 +25,6 @@ namespace Rc::Render
         pools[family_index].vertex_buffer_allocator = std::make_unique<ResourceAllocator<VertexBufferHandle>>(std::move(buffer));
     }
 
-    void ResourceManager::ReserveInstanceBuffer(ResourceFamily family, uint64_t capacity)
-    {
-        auto const family_index = std::to_underlying(family);
-        assert(family_index < pools.size());
-
-        auto buffer = device->AllocateVertexBuffer(capacity);
-        pools[family_index].instance_buffer_allocator = std::make_unique<ResourceAllocator<InstanceBufferHandle>>(std::move(buffer));
-    }
-
     void ResourceManager::ReserveIndexBuffer(ResourceFamily family, uint64_t capacity)
     {
         auto const family_index = std::to_underlying(family);
@@ -53,42 +44,20 @@ namespace Rc::Render
         return pools[std::to_underlying(name)].index_buffer_allocator->Allocate(name, size);
     }
 
-    InstanceBufferHandle ResourceManager::AllocateInstanceBuffer(ResourceFamily name, uint64_t size)
-    {
-        return pools[std::to_underlying(name)].instance_buffer_allocator->Allocate(name, size);
-    }
-
     BufferRegion& ResourceManager::GetBufferRegion(VertexBufferHandle handle)
     {
         auto const family = std::to_underlying(handle.FamilyName());
-        auto const index = handle.Index();
-
-        assert(pools[family].vertex_buffer_allocator->regions.size() >= index);
         // TODO: family assert
 
-        return pools[family].vertex_buffer_allocator->regions[index];
+        return pools[family].vertex_buffer_allocator->GetRegion(handle);
     }
 
     BufferRegion& ResourceManager::GetBufferRegion(IndexBufferHandle handle)
     {
         auto const family = std::to_underlying(handle.FamilyName());
-        auto const index = handle.Index();
-
-        assert(pools[family].index_buffer_allocator->regions.size() >= index);
         // TODO: family assert
 
-        return pools[family].index_buffer_allocator->regions[index];
-    }
-
-    BufferRegion& ResourceManager::GetBufferRegion(InstanceBufferHandle handle)
-    {
-        auto const family = std::to_underlying(handle.FamilyName());
-        auto const index = handle.Index();
-
-        assert(pools[family].instance_buffer_allocator->regions.size() >= index);
-        // TODO: family assert
-
-        return pools[family].instance_buffer_allocator->regions[index];
+        return pools[family].index_buffer_allocator->GetRegion(handle);
     }
 
     uint64_t ResourceManager::Upload(BufferRegion region, std::function<void(BufferWriter&)>& writer_callback)
