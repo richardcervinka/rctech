@@ -51,7 +51,7 @@ namespace Rc::Render
         void DisableColorAttachment(RenderTargetSlot slot);
 
         void AttachDepthBuffer(RenderTargetView const& render_target);
-        // void DisableDepthBuffer();
+        void DetachDepthBuffer();
 
         void ClearRenderTarget(RenderTargetSlot slot, Color const& color);
 
@@ -70,7 +70,6 @@ namespace Rc::Render
 
         void UseResourceDescriptorHeapBuffer(BufferRegion& region);
 
-        //void TransferBuffer(Buffer& src, Buffer& dst, uint64_t src_offset, uint64_t dst_offset, uint64_t size);
         void TransferBuffer(BufferRegion const& src, BufferRegion& dst);
 
         void BindVertexBuffer(Buffer const& vb, int slot, uint64_t offset);
@@ -87,9 +86,20 @@ namespace Rc::Render
 
         void SetScissor(Rectangle<int> const& rect);
 
-        void Draw(uint32_t vertex_count, uint32_t instance_count, uint32_t first_vertex, uint32_t first_instance);
+        void Draw(
+            uint32_t vertex_count,
+            uint32_t instance_count,
+            uint32_t first_vertex,
+            uint32_t first_instance
+        );
 
-        void DrawIndexed(uint32_t index_count, uint32_t instance_count, uint32_t first_index, int32_t vertex_offset, uint32_t first_instance);
+        void DrawIndexed(
+            uint32_t index_count,
+            uint32_t instance_count,
+            uint32_t first_index,
+            int32_t vertex_offset,
+            uint32_t first_instance
+        );
 
         void BindResourceDescriptorHeap(ResourceDescriptorHeap const& heap);
 

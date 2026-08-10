@@ -26,13 +26,13 @@ namespace Rc::Render
     // Try to find dedicated transfer queue (optional)
     static std::optional<uint32_t> FindDedicatedTransferQueueFamilyIndex(std::span<QueueFamilyProperties const> properties)
     {
-        for (uint32_t family_index = 0; family_index < properties.size(); family_index++)
+        for (uint32_t i = 0; i < properties.size(); i++)
         {
-            if (!properties[family_index].graphics &&
-                properties[family_index].transfer &&
-                !properties[family_index].compute)
+            if ((properties[i].graphics == false) &&
+                (properties[i].transfer == true) &&
+                (properties[i].compute == false))
             {
-                return family_index;
+                return i;
             }
         }
 

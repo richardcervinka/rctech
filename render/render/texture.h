@@ -33,10 +33,22 @@ namespace Rc::Render
             return vk_image;
         }
 
-        VkFormat const& GetFormat() const
+        VkFormat Format() const
         {
             return vk_format;
         }
+
+        uint32_t Width() const
+        {
+            return width;
+        }
+
+        uint32_t Height() const
+        {
+            return height;
+        }
+
+        uint32_t Channels() const;
 
         std::unique_ptr<RenderTargetView> CreateDepthBufferView() const;
 

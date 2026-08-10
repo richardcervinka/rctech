@@ -182,6 +182,11 @@ namespace Rc::Render
         };
     }
 
+    void RenderCommandBuffer::DetachDepthBuffer()
+    {
+        depth_attachment = std::nullopt;
+    }
+
     void RenderCommandBuffer::ClearRenderTarget(RenderTargetSlot slot, Color const& color)
     {
         auto& attachment = color_attachments[std::to_underlying(slot)];
@@ -530,12 +535,21 @@ namespace Rc::Render
         }
     }
 
-    void RenderCommandBuffer::Draw(uint32_t vertex_count, uint32_t instance_count, uint32_t first_vertex, uint32_t first_instance)
+    void RenderCommandBuffer::Draw(
+        uint32_t vertex_count,
+        uint32_t instance_count,
+        uint32_t first_vertex,
+        uint32_t first_instance)
     {
         vk_device.CmdDraw(vk_command_buffer, vertex_count, instance_count, first_vertex, first_instance);
     }
 
-    void RenderCommandBuffer::DrawIndexed(uint32_t index_count, uint32_t instance_count, uint32_t first_index, int32_t vertex_offset, uint32_t first_instance)
+    void RenderCommandBuffer::DrawIndexed(
+        uint32_t index_count,
+        uint32_t instance_count,
+        uint32_t first_index,
+        int32_t vertex_offset,
+        uint32_t first_instance)
     {
         vk_device.CmdDrawIndexed(vk_command_buffer, index_count, instance_count, first_index, vertex_offset, first_instance);
     }

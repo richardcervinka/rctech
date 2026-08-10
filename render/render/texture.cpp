@@ -75,6 +75,11 @@ namespace Rc::Render
         }
     }
 
+    uint32_t Texture2D::Channels() const
+    {
+        // TODO: Format to number of channels
+    };
+
     std::unique_ptr<RenderTargetView> Texture2D::CreateDepthBufferView() const
     {
         return std::make_unique<RenderTargetView>(

@@ -58,8 +58,6 @@ namespace Rc::Render
         std::unique_ptr<Semaphore> CreateSemaphore() const;
         std::unique_ptr<TimelineSemaphore> CreateTimelineSemaphore() const;
 
-        void WaitIdle() const noexcept;
-
         std::shared_ptr<PipelineLayout> CreatePipelineLayout();
 
         PipelineFactory CreatePipelineFactory();
@@ -74,7 +72,7 @@ namespace Rc::Render
 
         std::unique_ptr<Texture2D> AllocateDepthBuffer(uint32_t width, uint32_t height) const;
 
-        // std::unique_ptr<Texture2D> CreateTexture2D();
+        void WaitIdle() const noexcept;
 
     private:
         std::map<std::string, VulkanVersion> EnumerateExtensions() const;
