@@ -7,8 +7,12 @@ namespace Rc::Render
     {
         switch (format)
         {
-            case PixelFormat::DepthBuffer:
+            case PixelFormat::Depth:
                 return VK_FORMAT_D32_SFLOAT;
+            case PixelFormat::ColorRGB:
+                return VK_FORMAT_R8G8B8_SRGB;
+            case PixelFormat::ColorRGBA:
+                return VK_FORMAT_R8G8B8A8_SRGB;
         }
 
         std::unreachable();
@@ -20,8 +24,8 @@ namespace Rc::Render
         PixelFormat format,
         uint32_t width,
         uint32_t height,
-        VkImageUsageFlags usage, // VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT
-        VkImageLayout layout  // VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL / VK_IMAGE_LAYOUT_UNDEFINED
+        VkImageUsageFlags usage,
+        VkImageLayout layout
     ) :
         vk_device{vk_device},
         vk_format{ToVkFormat(format)},
@@ -39,7 +43,7 @@ namespace Rc::Render
             .imageType = VK_IMAGE_TYPE_2D,
             .format = vk_format,
             .extent = {width, height, 1},
-            .mipLevels = 1,
+            .mipLevels = 1, // ----------------------------------------------
             .arrayLayers = 1,
             .samples = VK_SAMPLE_COUNT_1_BIT,
             .tiling = VK_IMAGE_TILING_OPTIMAL,

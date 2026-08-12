@@ -8,14 +8,27 @@ namespace Rc::Render
 {    
     enum class PixelFormat
     {
-        DepthBuffer
+        Depth,
+
+        // RGB8 SRGB texture
+        ColorRGB,
+
+        // RGBA8 SRGB texture
+        ColorRGBA
+
+        // RGB8 UNORM texture
+        // LinearRGB
+
+        // RGBA8 UNORM texture
+        // LinearRGBA
+
+        // HdrRGB
+        // HdrRGBA
     };
 
     class Texture2D
     {
     public:
-        Texture2D() = default;
-
         Texture2D(
             VulkanDevice const& vk_device,
             VmaAllocator vma_allocator,
