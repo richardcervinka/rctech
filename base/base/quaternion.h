@@ -196,6 +196,13 @@ namespace Rc
             assert(value != 0);
             return {w / value, x / value, y / value, z / value};
         }
+
+        // Quaternion must be normalized first
+        //template<typename T>
+        // Vector4<double> Transform() const
+        // {
+            
+        // }
     };
 
 } // Rc

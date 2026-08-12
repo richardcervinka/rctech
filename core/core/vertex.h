@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <array>
+#include <span>
 #include "base/float.h"
 #include "base/matrix.h"
 
@@ -51,21 +52,26 @@ namespace Rc::Gfx
         Float3 position;
         Float3 color;
 
-        inline static const std::array<VertexDescription, 2> attributes
+        static std::span<VertexDescription const, 2> Attributes()
         {
-            VertexDescription
+            static const std::array<VertexDescription, 2> attributes
             {
-                .attribute = VertexAttribute::Position,
-                .binding = VertexBinding::PerVertex,
-                .offset = 0
-            },
-            VertexDescription
-            {
-                .attribute = VertexAttribute::Color,
-                .binding = VertexBinding::PerVertex,
-                .offset = 12
-            }
-        };
+                VertexDescription
+                {
+                    .attribute = VertexAttribute::Position,
+                    .binding = VertexBinding::PerVertex,
+                    .offset = offsetof(VertexBasic, position)
+                },
+                VertexDescription
+                {
+                    .attribute = VertexAttribute::Color,
+                    .binding = VertexBinding::PerVertex,
+                    .offset = offsetof(VertexBasic, color)
+                }
+            };
+
+            return attributes;
+        }
     };
 
     struct VertexInstance
@@ -73,57 +79,62 @@ namespace Rc::Gfx
         Matrix4<float> local_transformations;
         Matrix4<float> world_transformations;
 
-        inline static const std::array<VertexDescription, 8> attributes
+        static std::span<VertexDescription const, 8> Attributes()
         {
-            VertexDescription
+            static const std::array<VertexDescription, 8> attributes
             {
-                .attribute = VertexAttribute::Local0,
-                .binding = VertexBinding::PerInstance,
-                .offset = 0
-            },
-            VertexDescription
-            {
-                .attribute = VertexAttribute::Local1,
-                .binding = VertexBinding::PerInstance,
-                .offset = 4 * sizeof(float)
-            },
-            VertexDescription
-            {
-                .attribute = VertexAttribute::Local2,
-                .binding = VertexBinding::PerInstance,
-                .offset = 8 * sizeof(float)
-            },
-            VertexDescription
-            {
-                .attribute = VertexAttribute::Local3,
-                .binding = VertexBinding::PerInstance,
-                .offset = 12 * sizeof(float)
-            },
-            VertexDescription
-            {
-                .attribute = VertexAttribute::World0,
-                .binding = VertexBinding::PerInstance,
-                .offset = 16 * sizeof(float)
-            },
-            VertexDescription
-            {
-                .attribute = VertexAttribute::World1,
-                .binding = VertexBinding::PerInstance,
-                .offset = 20 * sizeof(float)
-            },
-            VertexDescription
-            {
-                .attribute = VertexAttribute::World2,
-                .binding = VertexBinding::PerInstance,
-                .offset = 24 * sizeof(float)
-            },
-            VertexDescription
-            {
-                .attribute = VertexAttribute::World3,
-                .binding = VertexBinding::PerInstance,
-                .offset = 28 * sizeof(float)
-            }
-        };
+                VertexDescription
+                {
+                    .attribute = VertexAttribute::Local0,
+                    .binding = VertexBinding::PerInstance,
+                    .offset = offsetof(VertexInstance, local_transformations) + (0 * sizeof(Float4))
+                },
+                VertexDescription
+                {
+                    .attribute = VertexAttribute::Local1,
+                    .binding = VertexBinding::PerInstance,
+                    .offset = offsetof(VertexInstance, local_transformations) + (1 * sizeof(Float4))
+                },
+                VertexDescription
+                {
+                    .attribute = VertexAttribute::Local2,
+                    .binding = VertexBinding::PerInstance,
+                    .offset = offsetof(VertexInstance, local_transformations) + (2 * sizeof(Float4))
+                },
+                VertexDescription
+                {
+                    .attribute = VertexAttribute::Local3,
+                    .binding = VertexBinding::PerInstance,
+                    .offset = offsetof(VertexInstance, local_transformations) + (3 * sizeof(Float4))
+                },
+                VertexDescription
+                {
+                    .attribute = VertexAttribute::World0,
+                    .binding = VertexBinding::PerInstance,
+                    .offset = offsetof(VertexInstance, world_transformations) + (0 * sizeof(Float4))
+                },
+                VertexDescription
+                {
+                    .attribute = VertexAttribute::World1,
+                    .binding = VertexBinding::PerInstance,
+                    .offset = offsetof(VertexInstance, world_transformations) + (1 * sizeof(Float4))
+                },
+                VertexDescription
+                {
+                    .attribute = VertexAttribute::World2,
+                    .binding = VertexBinding::PerInstance,
+                    .offset = offsetof(VertexInstance, world_transformations) + (2 * sizeof(Float4))
+                },
+                VertexDescription
+                {
+                    .attribute = VertexAttribute::World3,
+                    .binding = VertexBinding::PerInstance,
+                    .offset = offsetof(VertexInstance, world_transformations) + (3 * sizeof(Float4))
+                }
+            };
+
+            return attributes;
+        }
     };
 
 } // Rc::Gfx

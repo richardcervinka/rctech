@@ -1,6 +1,5 @@
 #include "camera.h"
 #include <cassert>
-#include <iostream>
 
 namespace Rc::Gfx
 {
@@ -67,12 +66,6 @@ namespace Rc::Gfx
             z_near,
             z_far
         );
-
-        //auto transformations_norm = transformations;
-        //transformations_norm.scale = 1.0;
-
-        //Matrix4<double> result; // = transformations_norm.GetTransformations();
-
         
         auto result = transformations.GetRotations().ToMatrix<double>();
         result.Transpose();
@@ -82,8 +75,6 @@ namespace Rc::Gfx
             -transformations.y,
             -transformations.z
         );
-
-        //result.Invert();
 
         result.PrependTransformations(projection_matrix);
 
