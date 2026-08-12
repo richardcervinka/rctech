@@ -59,11 +59,6 @@ namespace Rc::Generic
             return *renderer;
         }
 
-        Render::ResourceManager& GetResourceManager()
-        {
-            return *resource_manager;
-        }
-
     private:
         inline static Application* instance {nullptr};
 
@@ -73,8 +68,6 @@ namespace Rc::Generic
         std::unique_ptr<Window> window;
 
         std::unique_ptr<Render::Renderer> renderer;
-
-        std::shared_ptr<Render::ResourceManager> resource_manager;
 
         // Main loop time point, application time epoch.
         Clock::time_point time_run;

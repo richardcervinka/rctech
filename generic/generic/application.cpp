@@ -15,7 +15,6 @@ namespace Rc::Generic
 
         renderer = std::make_unique<Render::Renderer>();
         renderer->Initialize(*window);
-        resource_manager = renderer->GetResourceManager();
     }
 
     Application::~Application()
@@ -41,25 +40,12 @@ namespace Rc::Generic
     {
         time_now = Clock::now();
 
-        resource_manager->QueryCounter();
-
         renderer->BeginFrame();
     }
 
     void Application::EndFrame()
     {
         renderer->EndFrame();
-
-        // Submit copy commands.
-        if (resource_manager->PendingTransfer())
-        {
-            auto lock = std::unique_lock(*resource_manager, std::defer_lock);
-
-            if (lock.try_lock())
-            {
-                resource_manager->Transfer();
-            }
-        }
     }
 
 } // Rc::Generic

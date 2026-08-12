@@ -12,9 +12,11 @@ public:
 
     void BeginFrame() override
     {
+        Generic::Application::BeginFrame();
+        
         if (test_model != nullptr)
         {
-            if (GetResourceManager().Complete(resource_timeline))
+            if (GetRenderer().QueryUpload(resource_timeline))
             {
                 GetRenderer().test_model = std::move(test_model);
                 test_model = nullptr;
@@ -36,9 +38,6 @@ public:
                 }
             }
         }
-
-
-        Generic::Application::BeginFrame();
     }
 
     std::unique_ptr<TestModel> test_model;
@@ -50,15 +49,15 @@ void TestApplication::Initialize()
     Generic::Application::Initialize();
 
     //auto& renderer = GetRenderer();
-    auto& rm = GetResourceManager();
+    //auto& rm = GetResourceManager();
 
     test_model = std::make_unique<TestModel>();
 
-    rm.BeginUpload();
+    GetRenderer().BeginUpload();
 
-    test_model->vb_handle = rm.AllocateVertexBuffer(Render::ResourceFamily{0}, sizeof(Gfx::VertexBasic) * 8);
+    test_model->vb_handle = GetRenderer().AllocateVertexBuffer(Render::ResourceFamily{0}, sizeof(Gfx::VertexBasic) * 8);
 
-    resource_timeline = rm.Upload(test_model->vb_handle, [](Render::BufferWriter& writer) {
+    resource_timeline = GetRenderer().Upload(test_model->vb_handle, [](Render::BufferWriter& writer) {
         // front-left-bottom
         writer << Float3{-1, -1,  1};
         writer << Float3{1, 0, 0};
@@ -85,9 +84,9 @@ void TestApplication::Initialize()
         writer << Float3{0, 0, 1};
     });
     
-    test_model->ib_handle = rm.AllocateIndexBuffer(Render::ResourceFamily{0}, sizeof(uint16_t) * 36);
+    test_model->ib_handle = GetRenderer().AllocateIndexBuffer(Render::ResourceFamily{0}, sizeof(uint16_t) * 36);
 
-    resource_timeline = rm.Upload(test_model->ib_handle, [](Render::BufferWriter& writer) {
+    resource_timeline = GetRenderer().Upload(test_model->ib_handle, [](Render::BufferWriter& writer) {
         writer << std::array<uint16_t, 36>{
             // front
             0, 1, 2, 0, 3, 1,
@@ -104,7 +103,7 @@ void TestApplication::Initialize()
         };
     });
 
-    rm.EndUpload();
+    GetRenderer().EndUpload();
     //GetRenderer().transfer_timeline = rm.Transfer();
 
     for (int r = 0; r < 10; r++)

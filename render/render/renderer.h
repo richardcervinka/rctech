@@ -96,9 +96,43 @@ namespace Rc::Render
         // BeginFrame -> render commands -> EndFrame
         void EndFrame();
 
-        std::shared_ptr<ResourceManager> GetResourceManager()
+        VertexBufferHandle AllocateVertexBuffer(ResourceFamily family, uint64_t size)
         {
-            return resource_manager;
+            return resource_manager->AllocateVertexBuffer(family, size);
+        }
+
+        IndexBufferHandle AllocateIndexBuffer(ResourceFamily family, uint64_t size)
+        {
+            return resource_manager->AllocateIndexBuffer(family, size);
+        }
+
+        void BeginUpload()
+        {
+            auto lock = std::lock_guard{*resource_uploader};
+            resource_uploader->BeginUpload();
+        }
+
+        void EndUpload()
+        {
+            auto lock = std::lock_guard{*resource_uploader};
+            resource_uploader->EndUpload();
+        }
+
+        bool QueryUpload(uint64_t timeline) const
+        {
+            return resource_uploader->Complete(timeline);
+        }
+        
+        uint64_t Upload(VertexBufferHandle handle, std::function<void(BufferWriter&)> writer_callback)
+        {
+            auto lock = std::lock_guard{*resource_uploader};
+            return resource_uploader->Upload(resource_manager->GetBufferRegion(handle), writer_callback);
+        }
+
+        uint64_t Upload(IndexBufferHandle handle, std::function<void(BufferWriter&)> writer_callback)
+        {
+            auto lock = std::lock_guard{*resource_uploader};
+            return resource_uploader->Upload(resource_manager->GetBufferRegion(handle), writer_callback);
         }
 
     private:
@@ -131,7 +165,7 @@ namespace Rc::Render
 
         std::unique_ptr<Instance> instance;
         
-        std::shared_ptr<Device> device;
+        std::unique_ptr<Device> device;
 
         std::unique_ptr<Surface> surface;
 
@@ -156,7 +190,8 @@ namespace Rc::Render
         std::unique_ptr<Pipeline> test_pipeline;
         std::unique_ptr<Pipeline> test_vertex_pipeline;
 
-        std::shared_ptr<ResourceManager> resource_manager;
+        std::unique_ptr<ResourceManager> resource_manager;
+        std::unique_ptr<ResourceUploader> resource_uploader;
 
         Window::EventSize::Handler on_window_size {this, &Renderer::OnWindowSize};
 

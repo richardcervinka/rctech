@@ -2,26 +2,16 @@
 
 namespace Rc::Render
 {
-    ResourceManager::ResourceManager(std::shared_ptr<Device> device) :
-        device{std::move(device)}
-    {
-        transfer_queue = this->device->CreateTransferQueue();
-        transfer_commands = transfer_queue->CreateCommandBuffer();
-
-        transfer_buffer = std::make_unique<BufferRingAllocator>(
-            this->device->AllocateStagingBuffer(BufferRingAllocator::default_chunk_size * 16),
-            BufferRingAllocator::default_chunk_size
-        );
-
-        transfer_semaphore = this->device->CreateTimelineSemaphore();
-    }
+    ResourceManager::ResourceManager(Device& device) :
+        device{device}
+    {}
 
     void ResourceManager::ReserveVertexBuffer(ResourceFamily family, uint64_t capacity)
     {
         auto const family_index = std::to_underlying(family);
         assert(family_index < pools.size());
 
-        auto buffer = device->AllocateVertexBuffer(capacity);
+        auto buffer = device.AllocateVertexBuffer(capacity);
         pools[family_index].vertex_buffer_allocator = std::make_unique<ResourceAllocator<VertexBufferHandle>>(std::move(buffer));
     }
 
@@ -30,7 +20,7 @@ namespace Rc::Render
         auto const family_index = std::to_underlying(family);
         assert(family_index < pools.size());
 
-        auto buffer = device->AllocateIndexBuffer(capacity);
+        auto buffer = device.AllocateIndexBuffer(capacity);
         pools[family_index].index_buffer_allocator = std::make_unique<ResourceAllocator<IndexBufferHandle>>(std::move(buffer));
     }
     
@@ -60,7 +50,22 @@ namespace Rc::Render
         return pools[family].index_buffer_allocator->GetRegion(handle);
     }
 
-    uint64_t ResourceManager::Upload(BufferRegion region, std::function<void(BufferWriter&)>& writer_callback)
+    // ResourceUploader
+
+    ResourceUploader::ResourceUploader(Device& device) : device{device}
+    {
+        transfer_queue = device.CreateTransferQueue();
+        transfer_commands = transfer_queue->CreateCommandBuffer();
+
+        transfer_buffer = std::make_unique<BufferRingAllocator>(
+            device.AllocateStagingBuffer(BufferRingAllocator::default_chunk_size * 16),
+            BufferRingAllocator::default_chunk_size
+        );
+
+        transfer_semaphore = device.CreateTimelineSemaphore();
+    }
+
+    uint64_t ResourceUploader::Upload(BufferRegion region, std::function<void(BufferWriter&)>& writer_callback)
     {
         assert(writer_callback != nullptr);
 
@@ -78,32 +83,32 @@ namespace Rc::Render
         return transfer_buffer->TimelineValue();
     }
 
-    void ResourceManager::BeginUpload()
+    void ResourceUploader::BeginUpload()
     {
         pending = false;
         transfer_commands->Reset();
         transfer_commands->Begin();
     }
 
-    void ResourceManager::EndUpload()
+    void ResourceUploader::EndUpload()
     {
         transfer_commands->End();
         pending = true;
     }
     
-    void ResourceManager::Transfer()
+    void ResourceUploader::Transfer()
     {
         transfer_semaphore->Set(transfer_buffer->TimelineValue());
         transfer_queue->Submit(*transfer_commands, *transfer_semaphore);
         pending = false;
     }
 
-    void ResourceManager::QueryCounter()
+    void ResourceUploader::QueryCounter()
     {
         counter = transfer_semaphore->QueryCounter();
     }
 
-    bool ResourceManager::Complete(uint64_t counter) const
+    bool ResourceUploader::Complete(uint64_t counter) const
     {
         return this->counter >= counter;
     }

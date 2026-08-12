@@ -26,6 +26,7 @@ namespace Rc::Render
             device->WaitIdle();
         }
 
+        resource_uploader = nullptr;
         resource_manager = nullptr;
         test_vertex_pipeline = nullptr;
         test_pipeline = nullptr;
@@ -121,7 +122,8 @@ namespace Rc::Render
         // Handle window resizing.
         window.OnEventSize(on_window_size);
 
-        resource_manager = std::make_unique<ResourceManager>(device);
+        resource_manager = std::make_unique<ResourceManager>(*device);
+        resource_uploader = std::make_unique<ResourceUploader>(*device);
         
         // ---------------------------- TEST ----------------------------
 
@@ -142,7 +144,10 @@ namespace Rc::Render
             factory.SetPixelShader(GetPixelShader(PixelShaderSlot::Null));
             factory.SetVertexBinding(Gfx::VertexBinding::PerVertex, sizeof(Gfx::VertexBasic));
             factory.SetVertexBinding(Gfx::VertexBinding::PerInstance, sizeof(Gfx::VertexInstance));
-            factory.SetVertexAttributes({Gfx::VertexBasic::attributes, Gfx::VertexInstance::attributes});
+            factory.SetVertexAttributes({
+                Gfx::VertexBasic::Attributes(),
+                Gfx::VertexInstance::Attributes()
+            });
             test_vertex_pipeline = factory.Create();
         }
 
@@ -176,6 +181,8 @@ namespace Rc::Render
 
         swap_chain->AcquireNextImage();
 
+        resource_uploader->QueryCounter();
+
         if (test_model != nullptr)
         {
             Test();
@@ -194,6 +201,17 @@ namespace Rc::Render
         swap_chain->Present(*render_queue);
 
         frame_number += 1;
+
+        // Submit copy commands.
+        if (resource_uploader->PendingTransfer())
+        {
+            auto lock = std::unique_lock(*resource_uploader, std::defer_lock);
+
+            if (lock.try_lock())
+            {
+                resource_uploader->Transfer();
+            }
+        }
     }
 
     static Gfx::PerspectiveCamera CreateTestCamera()
@@ -208,38 +226,86 @@ namespace Rc::Render
     void Renderer::Test()
     {
         static Gfx::PerspectiveCamera camera = CreateTestCamera();
+        
+        auto camera_rotations = camera.transformations.GetRotations();
+        auto camera_matrix = camera_rotations.ToMatrix<double>();
 
-        if (Input::Pushed(Input::KeyCode::LeftArrow))
+        Vector4<double> camera_right
         {
-            camera.transformations.x -= 0.01; 
-        }
-        if (Input::Pushed(Input::KeyCode::RightArrow))
+            camera_matrix.At(0, 0),
+            camera_matrix.At(1, 0),
+            camera_matrix.At(2, 0),
+            camera_matrix.At(3, 0)
+        };
+
+        Vector4<double> camera_up
         {
-            camera.transformations.x += 0.01; 
-        }
-        if (Input::Pushed(Input::KeyCode::UpArrow))
+            camera_matrix.At(0, 1),
+            camera_matrix.At(1, 1),
+            camera_matrix.At(2, 1),
+            camera_matrix.At(3, 1)
+        };
+
+        Vector4<double> camera_forward
         {
-            camera.transformations.y += 0.01; 
-        }
-        if (Input::Pushed(Input::KeyCode::DownArrow))
+            camera_matrix.At(0, 2),
+            camera_matrix.At(1, 2),
+            camera_matrix.At(2, 2),
+            camera_matrix.At(3, 2)
+        };
+
+        camera_forward *= 0.01;
+        camera_right *= 0.01;
+        camera_up *= 0.01;
+        // t.AppendTranslation()
+
+        if (Input::Pushed(Input::KeyCode::A))
         {
-            camera.transformations.y -= 0.01; 
+            camera.transformations.x -= camera_right.x;
+            camera.transformations.y -= camera_right.y;
+            camera.transformations.z -= camera_right.z;
         }
         if (Input::Pushed(Input::KeyCode::D))
         {
-            camera.transformations.yaw -= 0.005; 
-        }
-        if (Input::Pushed(Input::KeyCode::A))
-        {
-            camera.transformations.yaw += 0.005; 
+            camera.transformations.x += camera_right.x;
+            camera.transformations.y += camera_right.y;
+            camera.transformations.z += camera_right.z;
         }
         if (Input::Pushed(Input::KeyCode::W))
         {
-            camera.transformations.pitch += 0.005; 
+            camera.transformations.x -= camera_forward.x;
+            camera.transformations.y -= camera_forward.y;
+            camera.transformations.z -= camera_forward.z;
         }
         if (Input::Pushed(Input::KeyCode::S))
         {
+            camera.transformations.x += camera_forward.x;
+            camera.transformations.y += camera_forward.y;
+            camera.transformations.z += camera_forward.z;
+        }
+        if (Input::Pushed(Input::KeyCode::RightArrow))
+        {
+            camera.transformations.yaw -= 0.005; 
+        }
+        if (Input::Pushed(Input::KeyCode::LeftArrow))
+        {
+            camera.transformations.yaw += 0.005; 
+        }
+        if (Input::Pushed(Input::KeyCode::UpArrow))
+        {
+            camera.transformations.pitch += 0.005; 
+        }
+        if (Input::Pushed(Input::KeyCode::DownArrow))
+        {
             camera.transformations.pitch -= 0.005; 
+        }
+        if (Input::Pushed(Input::KeyCode::Spacebar))
+        {
+            camera.transformations.y += 0.01;
+        }
+        if (Input::Pushed(Input::KeyCode::LeftControl))
+        {
+            camera.transformations.y -= 0.01;
         }
 
         RenderPassContext render_pass_context {};

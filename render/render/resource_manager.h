@@ -137,7 +137,7 @@ namespace Rc::Render
     class ResourceManager
     {
     public:
-        explicit ResourceManager(std::shared_ptr<Device> device);
+        explicit ResourceManager(Device& device);
 
         void ReserveVertexBuffer(ResourceFamily family, uint64_t capacity); // usage parameter?
         void ReserveInstanceBuffer(ResourceFamily family, uint64_t capacity); // usage parameter?
@@ -159,11 +159,23 @@ namespace Rc::Render
         BufferRegion& GetBufferRegion(VertexBufferHandle handle);
         BufferRegion& GetBufferRegion(IndexBufferHandle handle);
 
+    private:
+        Device& device; // ---------------------------------------- const ref ?
+
+        // Map family index to a verte buffer regions.
+        std::array<ResourcePool, 256> pools;
+    };
+
+    class ResourceUploader
+    {
+    public:
+        explicit ResourceUploader(Device& device);
+
         void BeginUpload();
 
         void EndUpload();
 
-        // Call in render loop ---------------------- TODO: Typed TransferFuture....
+        // Call in render loop
         void Transfer();
 
         // Call in render loop
@@ -172,15 +184,17 @@ namespace Rc::Render
         // Call in render loop
         bool Complete(uint64_t counter) const;
 
-        uint64_t Upload(VertexBufferHandle handle, std::function<void(BufferWriter&)> writer_callback)
-        {
-            return Upload(GetBufferRegion(handle), writer_callback);
-        }
+        // uint64_t Upload(VertexBufferHandle handle, std::function<void(BufferWriter&)> writer_callback)
+        // {
+        //     return Upload(manager.GetBufferRegion(handle), writer_callback);
+        // }
 
-        uint64_t Upload(IndexBufferHandle handle, std::function<void(BufferWriter&)> writer_callback)
-        {
-            return Upload(GetBufferRegion(handle), writer_callback);
-        }
+        // uint64_t Upload(IndexBufferHandle handle, std::function<void(BufferWriter&)> writer_callback)
+        // {
+        //     return Upload(manager.GetBufferRegion(handle), writer_callback);
+        // }
+
+        uint64_t Upload(BufferRegion region, std::function<void(BufferWriter&)>& writer_callback);
 
         // Lockable interface
         bool try_lock()
@@ -206,9 +220,7 @@ namespace Rc::Render
         }
 
     private:
-        uint64_t Upload(BufferRegion region, std::function<void(BufferWriter&)>& writer_callback);
-
-        std::shared_ptr<Device> device;
+        Device& device;
 
         std::unique_ptr<TransferCommandQueue> transfer_queue;
         std::unique_ptr<TransferCommandBuffer> transfer_commands;
@@ -217,9 +229,6 @@ namespace Rc::Render
         std::unique_ptr<BufferRingAllocator> transfer_buffer;
 
         std::unique_ptr<TimelineSemaphore> transfer_semaphore;
-
-        // Map family index to a verte buffer regions.
-        std::array<ResourcePool, 256> pools;
 
         std::mutex mutex;
 
