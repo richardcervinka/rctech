@@ -12,16 +12,20 @@ namespace Rc::Render
 {
     enum class ResourceFamily : uint32_t {};
 
-    //
-    // Public handle to a vertex buffer region.
-    // Visible out of renderer.
-    //
-    class VertexBufferHandle
+    enum class ResourceType
+    {
+        VertexBuffer,
+        IndexBuffer,
+        Texture
+    };
+
+    template<ResourceType>
+    class ResourceHandle
     {
     public:
-        VertexBufferHandle() = default;
+        ResourceHandle() = default;
 
-        VertexBufferHandle(ResourceFamily family, uint64_t index, uint32_t generation) :
+        ResourceHandle(ResourceFamily family, uint64_t index, uint32_t generation) :
             family{family},
             index{index},
             generation{generation}
@@ -48,41 +52,9 @@ namespace Rc::Render
         uint32_t generation {};
     };
 
-    //
-    // Public handle to a index buffer region.
-    // Visible out of renderer.
-    //
-    class IndexBufferHandle
-    {
-    public:
-        IndexBufferHandle() = default;
-
-        IndexBufferHandle(ResourceFamily family, uint64_t index, uint32_t generation) :
-            family{family},
-            index{index},
-            generation{generation}
-        {}
-
-        ResourceFamily FamilyName() const
-        {
-            return family;
-        }
-
-        uint64_t Index() const
-        {
-            return index;
-        }
-
-        uint32_t Generation() const
-        {
-            return generation;
-        }
-
-    private:
-        ResourceFamily family {};
-        uint64_t index {};
-        uint32_t generation {};
-    };
+    using VertexBufferHandle = ResourceHandle<ResourceType::VertexBuffer>;
+    using IndexBufferHandle = ResourceHandle<ResourceType::IndexBuffer>;
+    using TextureHandle = ResourceHandle<ResourceType::Texture>;
 
     //
     // Linear subresource handle allocator.
@@ -132,6 +104,7 @@ namespace Rc::Render
     {
         std::unique_ptr<ResourceAllocator<VertexBufferHandle>> vertex_buffer_allocator;
         std::unique_ptr<ResourceAllocator<IndexBufferHandle>> index_buffer_allocator;
+        //std::vector<TextureHandle> textures;
     };
 
     class ResourceManager
@@ -145,6 +118,7 @@ namespace Rc::Render
 
         VertexBufferHandle AllocateVertexBuffer(ResourceFamily name, uint64_t size);
         IndexBufferHandle AllocateIndexBuffer(ResourceFamily name, uint64_t size);
+        //TextureHandle AllocateTexture2d(ResourceFamily name)
 
         Buffer const& GetVertexBuffer(ResourceFamily family)
         {
@@ -183,16 +157,6 @@ namespace Rc::Render
 
         // Call in render loop
         bool Complete(uint64_t counter) const;
-
-        // uint64_t Upload(VertexBufferHandle handle, std::function<void(BufferWriter&)> writer_callback)
-        // {
-        //     return Upload(manager.GetBufferRegion(handle), writer_callback);
-        // }
-
-        // uint64_t Upload(IndexBufferHandle handle, std::function<void(BufferWriter&)> writer_callback)
-        // {
-        //     return Upload(manager.GetBufferRegion(handle), writer_callback);
-        // }
 
         uint64_t Upload(BufferRegion region, std::function<void(BufferWriter&)>& writer_callback);
 

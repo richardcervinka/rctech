@@ -12,7 +12,7 @@
 #include "frame_renderer.h"
 #include "buffer_linear_allocator.h"
 #include "buffer_ring_allocator.h"
-#include "resource_manager.h"
+#include "resource.h"
 
 struct TestModel
 {
