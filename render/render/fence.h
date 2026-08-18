@@ -19,7 +19,7 @@ namespace Rc::Render
         Fence(Fence&& other) = delete;
         Fence& operator=(Fence&& other) = delete;
 
-        VkFence Handle() const { return vk_fence; }
+        VkFence Underlying() const { return vk_fence; }
 
         void Wait() const;
 

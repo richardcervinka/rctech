@@ -26,6 +26,7 @@ namespace Rc
         Load("vkCreateDebugUtilsMessengerEXT", m_vkCreateDebugUtilsMessengerEXT);
         Load("vkDestroyDebugUtilsMessengerEXT", m_vkDestroyDebugUtilsMessengerEXT);
         Load("vkGetPhysicalDeviceDescriptorSizeEXT", m_vkGetPhysicalDeviceDescriptorSizeEXT);
+        Load("vkGetPhysicalDeviceSurfaceFormatsKHR", m_vkGetPhysicalDeviceSurfaceFormatsKHR);
     }
 
     VulkanInstance::~VulkanInstance()
@@ -190,6 +191,26 @@ namespace Rc
     {
         m_vkDestroyDebugUtilsMessengerEXT(m_vk_instance, messenger, nullptr);
         messenger = VK_NULL_HANDLE;
+    }
+
+    uint32_t VulkanInstance::GetPhysicalDeviceSurfaceFormatsKHRCount(VkPhysicalDevice physical_device, VkSurfaceKHR surface) const
+    {
+        uint32_t result {};
+        if (auto vk_result = m_vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface, &result, nullptr); vk_result != VK_SUCCESS)
+        {
+            throw VulkanException(vk_result);
+        }
+        return result;
+    }
+
+    std::span<VkSurfaceFormatKHR> VulkanInstance::GetPhysicalDeviceSurfaceFormatsKHR(VkPhysicalDevice physical_device, VkSurfaceKHR surface, std::span<VkSurfaceFormatKHR> buffer) const
+    {
+        auto count = static_cast<uint32_t>(buffer.size());
+        if (auto vk_result = m_vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface, &count, buffer.data()); vk_result != VK_SUCCESS)
+        {
+            throw VulkanException(vk_result);
+        }
+        return buffer.subspan(0, count);
     }
 
 } // Rc

@@ -309,7 +309,7 @@ namespace Rc::Render
 
     void RenderCommandBuffer::BindPipeline(Pipeline const& pipeline)
     {
-        vk_device.CmdBindPipeline(vk_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.Handle());
+        vk_device.CmdBindPipeline(vk_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.Underlying());
     }
 
     void RenderCommandBuffer::TransferBuffer(BufferRegion const& src, BufferRegion& dst)
@@ -326,7 +326,7 @@ namespace Rc::Render
             .dstAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT,
             .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
             .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-            .buffer = dst.Handle(),
+            .buffer = dst.Underlying(),
             .offset = VkDeviceSize{dst.Offset()},
             .size = VkDeviceSize{dst.Size()}
         };
@@ -344,6 +344,8 @@ namespace Rc::Render
             .pImageMemoryBarriers = nullptr
         };
 
+        vk_device.CmdPipelineBarrier2(vk_command_buffer, dependency_info);
+
         dst.access_flags = VK_ACCESS_2_TRANSFER_WRITE_BIT;
         dst.stage_flags = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
 
@@ -354,7 +356,7 @@ namespace Rc::Render
             .size = VkDeviceSize{src.Size()}
         };
         
-        vk_device.CmdCopyBuffer(vk_command_buffer, src.Handle(), dst.Handle(), {&region, 1});
+        vk_device.CmdCopyBuffer(vk_command_buffer, src.Underlying(), dst.Underlying(), {&region, 1});
     }
 
     void RenderCommandBuffer::UseVertexBuffer(BufferRegion& region)
@@ -371,7 +373,7 @@ namespace Rc::Render
             .dstAccessMask = VK_ACCESS_2_VERTEX_ATTRIBUTE_READ_BIT,
             .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
             .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-            .buffer = region.Handle(),
+            .buffer = region.Underlying(),
             .offset = region.Offset(),
             .size = region.Size()
         };
@@ -407,7 +409,7 @@ namespace Rc::Render
             .dstAccessMask = VK_ACCESS_2_INDEX_READ_BIT,
             .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
             .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-            .buffer = region.Handle(),
+            .buffer = region.Underlying(),
             .offset = region.Offset(),
             .size = region.Size()
         };
@@ -445,7 +447,7 @@ namespace Rc::Render
             .dstAccessMask = VK_ACCESS_2_UNIFORM_READ_BIT,
             .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
             .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-            .buffer = region.Handle(),
+            .buffer = region.Underlying(),
             .offset = region.Offset(),
             .size = region.Size()
         };
@@ -483,7 +485,7 @@ namespace Rc::Render
             .dstAccessMask = VK_ACCESS_2_RESOURCE_HEAP_READ_BIT_EXT,
             .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
             .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-            .buffer = region.Handle(),
+            .buffer = region.Underlying(),
             .offset = region.Offset(),
             .size = region.Size()
         };
@@ -511,7 +513,7 @@ namespace Rc::Render
     {
         // TODO: Assert Buffer::usage
         const std::array<VkDeviceSize, 1> vk_offset {offset};
-        const std::array<VkBuffer, 1> vk_buffers {vb.Handle()};
+        const std::array<VkBuffer, 1> vk_buffers {vb.Underlying()};
 
         vk_device.CmdBindVertexBuffers(vk_command_buffer, static_cast<uint32_t>(slot), 1, vk_buffers, vk_offset);
     }
@@ -523,11 +525,11 @@ namespace Rc::Render
         switch (type)
         {
             case IndexType::Uint16:
-                vk_device.CmdBindIndexBuffer(vk_command_buffer, ib.Handle(), offset, VK_INDEX_TYPE_UINT16);
+                vk_device.CmdBindIndexBuffer(vk_command_buffer, ib.Underlying(), offset, VK_INDEX_TYPE_UINT16);
                 return;
 
             case IndexType::Uint32:
-                vk_device.CmdBindIndexBuffer(vk_command_buffer, ib.Handle(), offset, VK_INDEX_TYPE_UINT32);
+                vk_device.CmdBindIndexBuffer(vk_command_buffer, ib.Underlying(), offset, VK_INDEX_TYPE_UINT32);
                 return;
 
             default:
@@ -561,9 +563,9 @@ namespace Rc::Render
             .sType = VK_STRUCTURE_TYPE_BIND_HEAP_INFO_EXT,
             .pNext = nullptr,
             .heapRange.address = heap.Address(),
-            .heapRange.size = heap.SizeTotal(),
-            .reservedRangeOffset = heap.Size(),
-            .reservedRangeSize = heap.Reserved()
+            .heapRange.size = heap.Size(),
+            .reservedRangeOffset = heap.ReservedOffset(),
+            .reservedRangeSize = heap.ReservedSize()
         };
 
         vk_device.CmdBindResourceHeapEXT(vk_command_buffer, bind_info);
@@ -682,7 +684,7 @@ namespace Rc::Render
             .dstAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT,
             .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
             .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-            .buffer = dst.Handle(),
+            .buffer = dst.Underlying(),
             .offset = VkDeviceSize{dst.Offset()},
             .size = VkDeviceSize{dst.Size()}
         };
@@ -700,6 +702,8 @@ namespace Rc::Render
             .pImageMemoryBarriers = nullptr
         };
 
+        vk_device.CmdPipelineBarrier2(vk_command_buffer, dependency_info);
+
         dst.access_flags = VK_ACCESS_2_TRANSFER_WRITE_BIT;
         dst.stage_flags = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
 
@@ -710,7 +714,85 @@ namespace Rc::Render
             .size = VkDeviceSize{src.Size()}
         };
         
-        vk_device.CmdCopyBuffer(vk_command_buffer, src.Handle(), dst.Handle(), {&region, 1});
+        vk_device.CmdCopyBuffer(vk_command_buffer, src.Underlying(), dst.Underlying(), {&region, 1});
+    }
+
+    void TransferCommandBuffer::TransferTexture(BufferRegion const& src, Texture2d& dst)
+    {
+        // assert(src.Size() == dst.Size());
+
+        VkImageMemoryBarrier2 const barrier
+        {
+            .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
+            .pNext = nullptr,
+            .srcStageMask = dst.stage_flags,
+            .srcAccessMask = dst.access_flags,
+            .dstStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT,
+            .dstAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT,
+            .oldLayout = dst.layout,
+            .newLayout = VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+            .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+            .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+            .image = dst.Underlying(),
+            VkImageSubresourceRange
+            {
+                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                .baseMipLevel = 0,
+                .levelCount = 1,
+                .baseArrayLayer = 0,
+                .layerCount = 1
+            }
+        };
+
+        VkDependencyInfo const dependency_info
+        {
+            .sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
+            .pNext = nullptr,
+            .dependencyFlags = {},
+            .memoryBarrierCount = 0,
+            .pMemoryBarriers = nullptr,
+            .bufferMemoryBarrierCount = 0,
+            .pBufferMemoryBarriers = nullptr,
+            .imageMemoryBarrierCount = 1,
+            .pImageMemoryBarriers = &barrier
+        };
+
+        vk_device.CmdPipelineBarrier2(vk_command_buffer, dependency_info);
+
+        dst.access_flags = VK_ACCESS_2_TRANSFER_WRITE_BIT;
+        dst.stage_flags = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
+        dst.layout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+
+        VkBufferImageCopy region
+        {
+            .bufferOffset = src.Offset(),
+            .bufferRowLength = 0, //---------------------- see
+            .bufferImageHeight = 0, //-------------------- see
+            .imageSubresource = {
+                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                .mipLevel = 0,
+                .baseArrayLayer = 0,
+                .layerCount = 1
+            },
+            .imageOffset = {
+                .x = 0,
+                .y = 0,
+                .z = 0
+            },
+            .imageExtent = {
+                .width = dst.Width(),
+                .height = dst.Height(),
+                .depth = 1
+            }
+        };
+        
+        vk_device.CmdCopyBufferToImage(
+            vk_command_buffer,
+            src.Underlying(),
+            dst.Underlying(),
+            dst.layout,
+            {&region, 1}
+        );
     }
 
 } // Rc::Render

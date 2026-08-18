@@ -3,32 +3,17 @@
 #include "vulkan/device.h"
 #include "vulkan/instance.h"
 #include "buffer.h"
+#include "texture.h"
 #include <vector>
 
 namespace Rc::Render
 {
-    struct UniformBufferDescriptor
-    {
-        uint64_t address;
-        uint64_t size;
-    };
+    // class ResourceBinding
+    // {
+    // public:
 
-    class ResourceDescriptor
-    {
-    public:
-        ResourceDescriptor(UniformBufferDescriptor const& descriptor) :
-            address{descriptor.address},
-            size(descriptor.size),
-            type{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER}
-        {}
-
-    private:
-        friend class ResourceDescriptorHeap;
-
-        uint64_t address {};
-        uint64_t size {};
-        VkDescriptorType type {};
-    };
+    // private:
+    // };
 
     class ResourceDescriptorHeap
     {
@@ -37,29 +22,22 @@ namespace Rc::Render
             VulkanInstance const& instance,
             VulkanDevice const& device,
             VkPhysicalDevice vk_physical_device,
-            std::span<ResourceDescriptor const> descriptors
+            std::unique_ptr<Buffer> buffer
         );
 
-        // buffer - resource descriptor heap buffer
-        void Attach(Buffer& descriptor_heap_buffer)
+        uint64_t Size() const
         {
-            address = descriptor_heap_buffer.Address();
-        }
-        
-        // Get required Buffer size
-        uint64_t SizeTotal() const //------------------------------- rename
-        {
-            return reserved + buffer.size();
+            return buffer->Size();
         }
 
-        uint64_t Size() const //------------------------------- rename
+        uint64_t ReservedSize() const
         {
-            return buffer.size();
+            return reserved_size;
         }
 
-        uint64_t Reserved() const
+        uint64_t ReservedOffset() const
         {
-            return reserved;
+            return reserved_offset;
         }
 
         uint64_t Address() const
@@ -67,20 +45,45 @@ namespace Rc::Render
             return address;
         }
 
+        BufferRegion GetBufferRegion() const
+        {
+            return buffer->GetRegion();
+        }
+
+        void WriteUniformBufferDescriptor(
+            uint64_t index,
+            uint64_t address,
+            uint64_t size
+        );
+        
+        void WriteTexture2dDescriptor(
+            uint64_t index,
+            Texture2d const& texture
+        );
+
         void Write(std::span<std::byte> dst) const;
 
     private:
         VulkanDevice const& vk_device;
         
         // Size of descriptor slot.
-        std::size_t stride {0};
+        uint64_t buffer_descriptor_size {0};
+        uint64_t image_descriptor_size {0};
 
         uint64_t address {0};
 
         // Size of reserved region.
-        uint64_t reserved {0};
+        uint64_t reserved_offset {0};
+        uint64_t reserved_size {0};
 
-        std::vector<std::byte> buffer;
+        uint32_t begin_buffer_index {0};
+        uint32_t end_buffer_index {0};
+        uint32_t begin_texture_index {0};
+        uint32_t end_texture_index {0};
+
+        std::vector<std::byte> data;
+
+        std::unique_ptr<Buffer> buffer;
     };
 
     // class SamplerDescriptorHeap

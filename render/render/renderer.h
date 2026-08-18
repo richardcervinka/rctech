@@ -18,6 +18,7 @@ struct TestModel
 {
     Rc::Render::VertexBufferHandle vb_handle;
     Rc::Render::IndexBufferHandle ib_handle; 
+    Rc::Render::Texture2dHandle texture;
 
     std::vector<Rc::Gfx::Transformations> instances;
 };
@@ -64,6 +65,8 @@ namespace Rc::Render
 
         std::unique_ptr<TestModel> test_model;
 
+        void SetupTestScene();
+
         // --------------------------------------
 
         Renderer();
@@ -106,6 +109,11 @@ namespace Rc::Render
             return resource_manager->AllocateIndexBuffer(family, size);
         }
 
+        Texture2dHandle AllocateTexture2d(ResourceFamily family, uint32_t width, uint32_t height, PixelFormat format)
+        {
+            return resource_manager->AllocateTexture2d(family, width, height, format);
+        }
+
         void BeginUpload()
         {
             auto lock = std::lock_guard{*resource_uploader};
@@ -135,6 +143,12 @@ namespace Rc::Render
             return resource_uploader->Upload(resource_manager->GetBufferRegion(handle), writer_callback);
         }
 
+        uint64_t Upload(Texture2dHandle handle, std::function<void(BufferWriter&)> writer_callback)
+        {
+            auto lock = std::lock_guard{*resource_uploader};
+            return resource_uploader->Upload(*resource_manager->test_texture, writer_callback);
+        }
+
     private:
         // Assign vertex shader to the slot.
         void SetVertexShader(VertexShaderSlot slot, std::unique_ptr<Shader> shader)
@@ -150,12 +164,12 @@ namespace Rc::Render
 
         VkShaderModule GetVertexShader(VertexShaderSlot slot)
         {
-            return vertex_shaders[static_cast<std::size_t>(slot)]->Handle();
+            return vertex_shaders[static_cast<std::size_t>(slot)]->Underlying();
         }
 
         VkShaderModule GetPixelShader(PixelShaderSlot slot)
         {
-            return pixel_shaders[static_cast<std::size_t>(slot)]->Handle();
+            return pixel_shaders[static_cast<std::size_t>(slot)]->Underlying();
         }
 
         void OnWindowSize(Window::EventSize::Payload const& e)

@@ -34,6 +34,12 @@ namespace Rc::Render
         return pools[std::to_underlying(name)].index_buffer_allocator->Allocate(name, size);
     }
 
+    Texture2dHandle ResourceManager::AllocateTexture2d(ResourceFamily name, uint32_t width, uint32_t height, PixelFormat format)
+    {
+        test_texture = device.AllocateTexture2d(width, height, format);
+        return {}; // ----------------------------------------------------------------------
+    }
+
     BufferRegion& ResourceManager::GetBufferRegion(VertexBufferHandle handle)
     {
         auto const family = std::to_underlying(handle.FamilyName());
@@ -76,9 +82,23 @@ namespace Rc::Render
         BufferWriter writer(staging_memory);
         writer_callback(writer);
 
-        // -------- transfer command
-
         transfer_commands->TransferBuffer(*staging_region, region);
+
+        return transfer_buffer->TimelineValue();
+    }
+
+    uint64_t ResourceUploader::Upload(Texture2d& texture, std::function<void(BufferWriter&)>& writer_callback)
+    {
+        assert(writer_callback != nullptr);
+
+        auto staging_region = transfer_buffer->Allocate(texture.GetLinearDataSize());  // -------------- Reset complete allocations, see RingAllocator
+        // // TODO: Throw when vb_region is nullopt? Or Fallback --------------------------------------------------------
+        auto staging_memory = transfer_buffer->Map<std::byte>(*staging_region);
+
+        BufferWriter writer(staging_memory);
+        writer_callback(writer);
+
+        transfer_commands->TransferTexture(*staging_region, texture);
 
         return transfer_buffer->TimelineValue();
     }

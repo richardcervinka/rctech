@@ -18,7 +18,7 @@ namespace Rc
         VulkanInstance& operator=(VulkanInstance const&) = delete;
         VulkanInstance& operator=(VulkanInstance&&) = delete;
 
-        VkInstance Handle() const { return m_vk_instance; }
+        VkInstance Underlying() const { return m_vk_instance; }
 
         // vkEnumeratePhysicalDevices
         uint32_t EnumeratePhysicalDevicesCount() const;
@@ -74,6 +74,13 @@ namespace Rc
         // vkDestroyDebugUtilsMessengerEXT
         void DestroyDebugUtilsMessengerEXT(VkDebugUtilsMessengerEXT& messenger) const;
 
+        // vkGetPhysicalDeviceSurfaceFormatsKHR
+        uint32_t GetPhysicalDeviceSurfaceFormatsKHRCount(VkPhysicalDevice physical_device, VkSurfaceKHR surface) const;
+
+        // vkGetPhysicalDeviceSurfaceFormatsKHR
+        std::span<VkSurfaceFormatKHR> GetPhysicalDeviceSurfaceFormatsKHR(VkPhysicalDevice physical_device, VkSurfaceKHR surface, std::span<VkSurfaceFormatKHR> buffer) const;
+
+
     private:
         friend class VulkanContext;
 
@@ -106,6 +113,7 @@ namespace Rc
         PFN_vkCreateDebugUtilsMessengerEXT m_vkCreateDebugUtilsMessengerEXT {nullptr};
         PFN_vkDestroyDebugUtilsMessengerEXT m_vkDestroyDebugUtilsMessengerEXT {nullptr};
         PFN_vkGetPhysicalDeviceDescriptorSizeEXT m_vkGetPhysicalDeviceDescriptorSizeEXT {nullptr};
+        PFN_vkGetPhysicalDeviceSurfaceFormatsKHR m_vkGetPhysicalDeviceSurfaceFormatsKHR {nullptr};
     };
 
 } // Rc

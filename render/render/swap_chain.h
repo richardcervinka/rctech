@@ -4,16 +4,28 @@
 #include "platform/window.h"
 #include "render_target.h"
 #include "semaphore.h"
+#include "texture.h"
 #include "command_queue.h"
 
 namespace Rc::Render
 {
+    enum class ColorProfile
+    {
+        SDR,
+        HDR10
+    };
+
     class SwapChain
     {
     public:
         ~SwapChain();
 
-        SwapChain(VulkanDevice const& vk_device, VkSurfaceKHR surface, Window const& window);
+        SwapChain(
+            VulkanDevice const& vk_device,
+            VkSurfaceKHR surface,
+            Window const& window,
+            VkSurfaceFormatKHR const& surface_format
+        );
 
         SwapChain(SwapChain const&) = delete;
         SwapChain& operator=(SwapChain const&) = delete;
@@ -47,7 +59,7 @@ namespace Rc::Render
 
         RenderTargetView const& GetRenderTargetView() const
         {
-            return *views.at(image_index);
+            return *back_buffers.at(image_index).render_target;
         }
 
         // Texture2D const& GetTexture() const // ------------------------ rename to framebuffer
@@ -60,10 +72,7 @@ namespace Rc::Render
             return image_index;
         }
 
-        VkFormat GetFormat() const
-        {
-            return vk_format;
-        }
+        PixelFormat Format() const;
 
         void Present(RenderCommandQueue const& queue) const;
 
@@ -84,7 +93,7 @@ namespace Rc::Render
 
         VkSwapchainCreateInfoKHR vk_info {};
 
-        VkFormat vk_format {VK_FORMAT_R8G8B8A8_SRGB}; // -------------------- determine!
+        VkFormat vk_format {VK_FORMAT_UNDEFINED};
 
         VkSwapchainKHR vk_swap_chain {VK_NULL_HANDLE};
 
@@ -92,8 +101,14 @@ namespace Rc::Render
         //std::vector<Texture2D> images;
         std::vector<VkImage> images;
 
+        struct BackBuffer
+        {
+            std::unique_ptr<Texture2d> texture;
+            std::unique_ptr<RenderTargetView> render_target;
+        };
+
         // Indexed by the m_index.
-        std::vector<std::unique_ptr<RenderTargetView>> views;
+        std::vector<BackBuffer> back_buffers;
 
         std::vector<std::unique_ptr<Semaphore>> acquire_semaphores;
 

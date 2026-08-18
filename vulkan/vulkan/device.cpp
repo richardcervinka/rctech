@@ -47,6 +47,7 @@ namespace Rc
         Load("vkCmdSetViewport", m_vkCmdSetViewport);
         Load("vkCmdSetScissor", m_vkCmdSetScissor);
         Load("vkCmdCopyBuffer", m_vkCmdCopyBuffer);
+        Load("vkCmdCopyBufferToImage", m_vkCmdCopyBufferToImage);
         Load("vkCmdBindVertexBuffers", m_vkCmdBindVertexBuffers);
         Load("vkCmdBindIndexBuffer", m_vkCmdBindIndexBuffer);
         Load("vkCreateDescriptorSetLayout", m_vkCreateDescriptorSetLayout);
@@ -415,6 +416,11 @@ namespace Rc
     void VulkanDevice::CmdCopyBuffer(VkCommandBuffer command_buffer, VkBuffer src, VkBuffer dst, std::span<VkBufferCopy const> regions) const
     {
         m_vkCmdCopyBuffer(command_buffer, src, dst, regions.size(), regions.data());
+    }
+
+    void VulkanDevice::CmdCopyBufferToImage(VkCommandBuffer command_buffer, VkBuffer src_buffer, VkImage dst_image, VkImageLayout dst_image_layout, std::span<VkBufferImageCopy const> regions) const
+    {
+        m_vkCmdCopyBufferToImage(command_buffer, src_buffer, dst_image, dst_image_layout, regions.size(), regions.data());
     }
 
     void VulkanDevice::CmdBindVertexBuffers(VkCommandBuffer command_buffer, uint32_t first_binding, uint32_t binding_count, std::span<VkBuffer const> buffers, std::span<VkDeviceSize const> offsets) const

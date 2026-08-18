@@ -23,6 +23,8 @@ namespace Rc::Render
     class ResourceHandle
     {
     public:
+        using Type = ResourceType;
+
         ResourceHandle() = default;
 
         ResourceHandle(ResourceFamily family, uint64_t index, uint32_t generation) :
@@ -54,7 +56,7 @@ namespace Rc::Render
 
     using VertexBufferHandle = ResourceHandle<ResourceType::VertexBuffer>;
     using IndexBufferHandle = ResourceHandle<ResourceType::IndexBuffer>;
-    using TextureHandle = ResourceHandle<ResourceType::Texture>;
+    using Texture2dHandle = ResourceHandle<ResourceType::Texture>;
 
     //
     // Linear subresource handle allocator.
@@ -107,6 +109,9 @@ namespace Rc::Render
         //std::vector<TextureHandle> textures;
     };
 
+    //
+    // Upload GPU data using staging buffer.
+    //
     class ResourceManager
     {
     public:
@@ -118,7 +123,7 @@ namespace Rc::Render
 
         VertexBufferHandle AllocateVertexBuffer(ResourceFamily name, uint64_t size);
         IndexBufferHandle AllocateIndexBuffer(ResourceFamily name, uint64_t size);
-        //TextureHandle AllocateTexture2d(ResourceFamily name)
+        Texture2dHandle AllocateTexture2d(ResourceFamily name, uint32_t width, uint32_t height, PixelFormat format);
 
         Buffer const& GetVertexBuffer(ResourceFamily family)
         {
@@ -132,6 +137,8 @@ namespace Rc::Render
 
         BufferRegion& GetBufferRegion(VertexBufferHandle handle);
         BufferRegion& GetBufferRegion(IndexBufferHandle handle);
+
+        std::unique_ptr<Texture2d> test_texture;
 
     private:
         Device& device; // ---------------------------------------- const ref ?
@@ -158,7 +165,14 @@ namespace Rc::Render
         // Call in render loop
         bool Complete(uint64_t counter) const;
 
+        // TODO: Renam to UploadBuffer, UploadTexture2d
         uint64_t Upload(BufferRegion region, std::function<void(BufferWriter&)>& writer_callback);
+        uint64_t Upload(Texture2d& texture, std::function<void(BufferWriter&)>& writer_callback);
+
+        bool PendingTransfer() const
+        {
+            return pending;
+        }
 
         // Lockable interface
         bool try_lock()
@@ -176,11 +190,6 @@ namespace Rc::Render
         void unlock()
         {
             mutex.unlock();
-        }
-
-        bool PendingTransfer() const
-        {
-            return pending;
         }
 
     private:

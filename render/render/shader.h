@@ -17,7 +17,7 @@ namespace Rc::Render
         Shader(Shader&& other) = delete;
         Shader& operator=(Shader&& other) = delete;
 
-        VkShaderModule Handle() const { return vk_shader_module; }
+        VkShaderModule Underlying() const { return vk_shader_module; }
 
     private:
         VulkanDevice const& vk_device;

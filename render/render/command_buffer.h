@@ -72,6 +72,8 @@ namespace Rc::Render
 
         void TransferBuffer(BufferRegion const& src, BufferRegion& dst);
 
+        //void TransferResourceDescriptorHeap()
+
         void BindVertexBuffer(Buffer const& vb, int slot, uint64_t offset);
 
         void BindIndexBuffer(Buffer const& ib, IndexType type, uint64_t offset);
@@ -111,8 +113,8 @@ namespace Rc::Render
         void SetDepthCompareLess();
         void EnableStencilTest();
         void DisableStencilTest();
-
-        VkCommandBuffer Handle() const
+        
+        VkCommandBuffer Underlying() const
         {
             return vk_command_buffer;
         }
@@ -156,8 +158,9 @@ namespace Rc::Render
         void End();
 
         void TransferBuffer(BufferRegion const& src, BufferRegion& dst);
+        void TransferTexture(BufferRegion const& src, Texture2d& dst);
         
-        VkCommandBuffer Handle() const
+        VkCommandBuffer Underlying() const
         {
             return vk_command_buffer;
         }

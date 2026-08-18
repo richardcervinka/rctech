@@ -29,19 +29,19 @@ namespace Rc::Render
             return vk_family;
         }
 
-        VkQueue Handle() const
+        VkQueue Underlying() const
         {
             return vk_queue;
         }
 
         void WaitSemaphore(Semaphore const& semaphore)
         {
-            vk_submit_wait = semaphore.Handle();
+            vk_submit_wait = semaphore.Underlying();
         }
 
         void SignalSemaphore(Semaphore const& semaphore)
         {
-            vk_submit_signal = semaphore.Handle();
+            vk_submit_signal = semaphore.Underlying();
         }
 
     private:
@@ -75,7 +75,7 @@ namespace Rc::Render
             return vk_family;
         }
 
-        VkQueue Handle() const
+        VkQueue Underlying() const
         {
             return vk_queue;
         }

@@ -9,7 +9,6 @@
 #include "device.h"
 #include "core/camera.h"
 #include "core/vertex.h"
-#include "constants.h"
 
 namespace Rc::Render
 {
@@ -40,7 +39,10 @@ namespace Rc::Render
 
         void Resize(Device const& device, uint32_t width, uint32_t height);
 
-        void UpdateResourceDescriptorHeap(Device const& device);
+        void UpdateResourceDescriptorHeap(
+            Device const& device,
+            std::unique_ptr<ResourceDescriptorHeap> descriptor_heap
+        );
 
         void Begin(/*FrameData const& data*/);
 
@@ -94,11 +96,11 @@ namespace Rc::Render
 
         // TODO: Frame uniform buffer
 
-        std::unique_ptr<Buffer> resource_descriptor_heap_buffer;
+        //std::unique_ptr<Buffer> resource_descriptor_heap_buffer;
 
         std::unique_ptr<ResourceDescriptorHeap> resource_descriptor_heap;
 
-        std::unique_ptr<Texture2D> depth_buffer;
+        std::unique_ptr<Texture2d> depth_buffer;
         std::unique_ptr<RenderTargetView> depth_buffer_view;
     };
 

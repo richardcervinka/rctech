@@ -31,7 +31,10 @@ namespace Rc::Gfx
         World0,
         World1,
         World2,
-        World3
+        World3,
+
+        // Texture Coordinates
+        TextureUV
     };
 
     enum class VertexBinding
@@ -50,7 +53,7 @@ namespace Rc::Gfx
     struct VertexBasic
     {
         Float3 position;
-        Float3 color;
+        Float2 uv;
 
         static std::span<VertexDescription const, 2> Attributes()
         {
@@ -64,9 +67,9 @@ namespace Rc::Gfx
                 },
                 VertexDescription
                 {
-                    .attribute = VertexAttribute::Color,
+                    .attribute = VertexAttribute::TextureUV,
                     .binding = VertexBinding::PerVertex,
-                    .offset = offsetof(VertexBasic, color)
+                    .offset = offsetof(VertexBasic, uv)
                 }
             };
 

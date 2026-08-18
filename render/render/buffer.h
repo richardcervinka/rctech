@@ -36,7 +36,7 @@ namespace Rc::Render
             return size == 0;
         }
 
-        VkBuffer Handle() const
+        VkBuffer Underlying() const
         {
             return vk_buffer;
         }
@@ -82,7 +82,7 @@ namespace Rc::Render
         Buffer(Buffer&& other) = delete;
         Buffer& operator=(Buffer&& other) = delete;
 
-        VkBuffer Handle() const
+        VkBuffer Underlying() const
         {
             return vk_buffer;
         }
@@ -128,8 +128,6 @@ namespace Rc::Render
         // }
 
     private:
-
-
         VulkanDevice const& vk_device;
         VkBuffer vk_buffer {VK_NULL_HANDLE};
         VmaAllocator vma_allocator {VK_NULL_HANDLE};
@@ -169,6 +167,12 @@ namespace Rc::Render
         {
             std::memcpy(ptr, value.data(), value.size());
             ptr += value.size();
+        }
+
+        BufferWriter& operator<<(uint32_t value)
+        {
+            Write(value);
+            return *this;
         }
 
         BufferWriter& operator<<(float value)

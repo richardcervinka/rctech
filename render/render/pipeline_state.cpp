@@ -18,8 +18,8 @@ namespace Rc::Render
         vk_device.DestroyPipeline(vk_pipeline);
     }
 
-    // PipelineLayout --------------------------------------------------------------------------- Odstranit
-
+    // PipelineLayout
+    
     PipelineLayout::PipelineLayout(VulkanDevice const& vk_device) : vk_device{vk_device}
     {
         VkDescriptorSetLayoutCreateInfo descriptor_set_layout_info
@@ -55,7 +55,8 @@ namespace Rc::Render
 
     // PipelineFactory
 
-    PipelineFactory::PipelineFactory(VulkanDevice const& vk_device) : vk_device{vk_device}
+    PipelineFactory::PipelineFactory(VulkanDevice const& vk_device)
+        : vk_device{vk_device}
     {
         // VkPipelineInputAssemblyStateCreateInfo
         input_assembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -258,7 +259,7 @@ namespace Rc::Render
             .pDepthStencilState = nullptr,
             .pColorBlendState = &color_blend,
             .pDynamicState = &dynamic_state_info,
-            .layout = VK_NULL_HANDLE, // m_pipeline_layout->Handle(),
+            .layout = VK_NULL_HANDLE, // m_pipeline_layout->Underlying(),
             .renderPass = nullptr,
             .subpass = 0,
             .basePipelineHandle = VK_NULL_HANDLE,
@@ -266,6 +267,11 @@ namespace Rc::Render
         };
 
         return std::make_unique<Pipeline>(vk_device, pipeline_info);
+    }
+
+    void PipelineFactory::SetOutputFormat(PixelFormat format)
+    {
+        color_attachment_formats[0] = VK_FORMAT_B8G8R8A8_SRGB; // swap_chain.GetFormat();
     }
 
     static VkFormat GetFormat(Gfx::VertexAttribute attribute)
@@ -288,6 +294,8 @@ namespace Rc::Render
             case Gfx::VertexAttribute::World2:
             case Gfx::VertexAttribute::World3:
                 return VK_FORMAT_R32G32B32A32_SFLOAT;
+            case Gfx::VertexAttribute::TextureUV:
+                return VK_FORMAT_R32G32_SFLOAT;
         }
 
         std::unreachable();
@@ -319,6 +327,8 @@ namespace Rc::Render
                 return 9;
             case Gfx::VertexAttribute::World3:
                 return 10;
+            case Gfx::VertexAttribute::TextureUV:
+                return 11;
         }
 
         std::unreachable();

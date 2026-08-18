@@ -45,7 +45,7 @@ namespace Rc::Render
         VkPhysicalDevice vk_physical_device,
         Surface const& surface
     ) :
-        instance{&instance},
+        instance{instance},
         vk_physical_device{vk_physical_device}
     {
         auto const extensions = EnumerateExtensions();
@@ -318,13 +318,13 @@ namespace Rc::Render
             .ppEnabledExtensionNames = enable_extensions.data()
         };
 
-        device = this->instance->CreateDevice(vk_physical_device, info);
+        device = instance.CreateDevice(vk_physical_device, info);
 
         auto const vma_functions = context.GetVmaFunctions(instance, *device);
 
         VmaAllocatorCreateInfo allocator_info {};
-        allocator_info.instance = this->instance->Handle();
-        allocator_info.device = device->Handle();
+        allocator_info.instance = instance.Underlying();
+        allocator_info.device = device->Underlying();
         allocator_info.physicalDevice = this->vk_physical_device;
         allocator_info.vulkanApiVersion = VK_API_VERSION_1_4; //------------------------------- Precist z instance
         allocator_info.pVulkanFunctions = &vma_functions;
@@ -340,11 +340,11 @@ namespace Rc::Render
     {
         std::map<std::string, VulkanVersion> result;
 
-        auto const count = instance->EnumerateDeviceExtensionPropertiesCount(vk_physical_device, {});
+        auto const count = instance.EnumerateDeviceExtensionPropertiesCount(vk_physical_device, {});
 
         std::vector<VkExtensionProperties> properties(count);
 
-        for (auto const& extension : instance->EnumerateDeviceExtensionProperties(vk_physical_device, {}, properties))
+        for (auto const& extension : instance.EnumerateDeviceExtensionProperties(vk_physical_device, {}, properties))
         {
             result[extension.extensionName] = {extension.specVersion};
         }
@@ -354,9 +354,9 @@ namespace Rc::Render
 
     std::vector<QueueFamilyProperties> Device::GetQueueFamilyProperties(Surface const& surface) const
     {
-        auto const count = instance->GetPhysicalDeviceQueueFamilyPropertiesCount(vk_physical_device);
+        auto const count = instance.GetPhysicalDeviceQueueFamilyPropertiesCount(vk_physical_device);
         std::vector<VkQueueFamilyProperties> properties(count);
-        instance->GetPhysicalDeviceQueueFamilyProperties(vk_physical_device, properties);
+        instance.GetPhysicalDeviceQueueFamilyProperties(vk_physical_device, properties);
 
         std::vector<QueueFamilyProperties> result;
         result.reserve(count);
@@ -369,8 +369,8 @@ namespace Rc::Render
                 .graphics = (properties[index].queueFlags & VK_QUEUE_GRAPHICS_BIT) != 0,
                 .transfer = (properties[index].queueFlags & VK_QUEUE_TRANSFER_BIT) != 0,
                 .compute = (properties[index].queueFlags & VK_QUEUE_COMPUTE_BIT) != 0,
-                .presentation = instance->GetPhysicalDevicePresentationSupport(vk_physical_device, index),
-                .surface = instance->GetPhysicalDeviceSurfaceSupportKHR(vk_physical_device, index, surface.Handle())
+                .presentation = instance.GetPhysicalDevicePresentationSupport(vk_physical_device, index),
+                .surface = instance.GetPhysicalDeviceSurfaceSupportKHR(vk_physical_device, index, surface.Underlying())
             });
         }
 
@@ -387,9 +387,35 @@ namespace Rc::Render
         }
     }
 
-    std::unique_ptr<SwapChain> Device::CreateSwapChain(Surface const& surface, Window const& window)
+    std::unique_ptr<SwapChain> Device::CreateSwapChain(Surface const& surface, Window const& window, [[maybe_unused]] ColorProfile color_profile)
     {
-        return std::make_unique<SwapChain>(*device, surface.vk_surface, window);
+        assert(color_profile == ColorProfile::SDR);
+
+        auto const surface_formats_size = instance.GetPhysicalDeviceSurfaceFormatsKHRCount(vk_physical_device, surface.Underlying());
+        std::vector<VkSurfaceFormatKHR> surface_formats_buffer(surface_formats_size);
+        auto const surface_formats = instance.GetPhysicalDeviceSurfaceFormatsKHR(vk_physical_device, surface.Underlying(), surface_formats_buffer);
+    
+        // 1) VK_FORMAT_B8G8R8A8_SRGB + VK_COLOR_SPACE_SRGB_NONLINEAR_KHR
+        for (auto const& surface_format : surface_formats)
+        {
+            if ((surface_format.format == VK_FORMAT_B8G8R8A8_SRGB) &&
+                (surface_format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR))
+            {
+                return std::make_unique<SwapChain>(*device, surface.vk_surface, window, surface_format); 
+            }
+        }
+
+        // 2) VK_FORMAT_R8G8B8A8_SRGB + VK_COLOR_SPACE_SRGB_NONLINEAR_KHR
+        for (auto const& surface_format : surface_formats)
+        {
+            if ((surface_format.format == VK_FORMAT_R8G8B8A8_SRGB) &&
+                (surface_format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR))
+            {
+                return std::make_unique<SwapChain>(*device, surface.vk_surface, window, surface_format); 
+            }
+        }
+
+        throw std::runtime_error("Unable to create swap chain");
     }
 
     std::unique_ptr<Shader> Device::CreateShader(std::span<uint32_t const> spirv)
@@ -440,9 +466,25 @@ namespace Rc::Render
         return PipelineFactory(*device);
     }
 
-    std::unique_ptr<ResourceDescriptorHeap> Device::CreateResourceDescriptorHeap(std::span<ResourceDescriptor const> descriptors) const
+    std::unique_ptr<ResourceDescriptorHeap> Device::CreateResourceDescriptorHeap(uint64_t user_size) const
     {
-        return std::make_unique<ResourceDescriptorHeap>(*instance, *device, vk_physical_device, descriptors);
+        auto const heap_properties = instance.GetPhysicalDeviceDescriptorHeapProperties(vk_physical_device);
+        auto const size = user_size + heap_properties.minResourceHeapReservedRange;
+
+        auto buffer = std::make_unique<Buffer>(
+            *device,
+            size,
+            vma_allocator,
+            VkBufferUsageFlags2
+            {
+                VK_BUFFER_USAGE_DESCRIPTOR_HEAP_BIT_EXT |
+                VK_BUFFER_USAGE_2_TRANSFER_DST_BIT |
+                VK_BUFFER_USAGE_2_SHADER_DEVICE_ADDRESS_BIT
+            },
+            VmaAllocationCreateFlags{}
+        );
+
+        return std::make_unique<ResourceDescriptorHeap>(instance, *device, vk_physical_device, std::move(buffer));
     }
 
     std::unique_ptr<Buffer> Device::AllocateVertexBuffer(uint64_t size) const
@@ -530,25 +572,9 @@ namespace Rc::Render
         );
     }
 
-    std::unique_ptr<Buffer> Device::AllocateDescriptorHeapBuffer(uint64_t size) const
+    std::unique_ptr<Texture2d> Device::AllocateDepthBuffer(uint32_t width, uint32_t height) const
     {
-        return std::make_unique<Buffer>(
-            *device,
-            size,
-            vma_allocator,
-            VkBufferUsageFlags2
-            {
-                VK_BUFFER_USAGE_DESCRIPTOR_HEAP_BIT_EXT |
-                VK_BUFFER_USAGE_2_TRANSFER_DST_BIT |
-                VK_BUFFER_USAGE_2_SHADER_DEVICE_ADDRESS_BIT
-            },
-            VmaAllocationCreateFlags{}
-        );
-    }
-
-    std::unique_ptr<Texture2D> Device::AllocateDepthBuffer(uint32_t width, uint32_t height) const
-    {
-        return std::make_unique<Texture2D>(
+        return std::make_unique<Texture2d>(
             *device,
             vma_allocator,
             PixelFormat::Depth,
@@ -559,9 +585,9 @@ namespace Rc::Render
         );
     }
 
-    std::unique_ptr<Texture2D> Device::AllocateTexture2d(uint32_t width, uint32_t height, PixelFormat format) const
+    std::unique_ptr<Texture2d> Device::AllocateTexture2d(uint32_t width, uint32_t height, PixelFormat format) const
     {
-        return std::make_unique<Texture2D>(
+        return std::make_unique<Texture2d>(
             *device,
             vma_allocator,
             format,

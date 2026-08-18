@@ -6,6 +6,7 @@
 #include <vector>
 #include <array>
 #include "core/vertex.h"
+#include "texture.h"
 
 namespace Rc::Render
 {
@@ -21,7 +22,7 @@ namespace Rc::Render
         Pipeline(Pipeline&& other) = delete;
         Pipeline& operator=(Pipeline&& other) = delete;
 
-        VkPipeline Handle() const { return vk_pipeline; }
+        VkPipeline Underlying() const { return vk_pipeline; }
 
     private:
         VulkanDevice const& vk_device;
@@ -40,7 +41,7 @@ namespace Rc::Render
         PipelineLayout(PipelineLayout&& other) = delete;
         PipelineLayout& operator=(PipelineLayout&& other) = delete;
 
-        VkPipelineLayout Handle() const { return vk_pipeline_layout; }
+        VkPipelineLayout Underlying() const { return vk_pipeline_layout; }
 
     private:
         VulkanDevice const& vk_device;
@@ -57,7 +58,9 @@ namespace Rc::Render
     public:
         PipelineFactory() = default;
 
-        explicit PipelineFactory(VulkanDevice const& vk_device);
+        PipelineFactory(VulkanDevice const& vk_device);
+
+        void SetOutputFormat(PixelFormat format);
 
         void SetVertexShader(VkShaderModule vs)
         {
@@ -89,10 +92,10 @@ namespace Rc::Render
     private:
         static constexpr std::size_t color_attachment_count = 4;
 
-        static inline std::array<VkFormat, color_attachment_count> color_attachment_formats
+        std::array<VkFormat, color_attachment_count> color_attachment_formats
         {
             // RenderTargetSlot::FrameBuffer
-            VK_FORMAT_R8G8B8A8_SRGB,
+            VK_FORMAT_UNDEFINED, // VK_FORMAT_R8G8B8A8_SRGB, //---------------------------------------------------------------- Swap Chain
             //
             VK_FORMAT_UNDEFINED,
             //

@@ -17,7 +17,7 @@ namespace Rc
         VulkanDevice& operator=(VulkanDevice const&) = delete;
         VulkanDevice& operator=(VulkanDevice&&) = delete;
 
-        VkDevice Handle() const { return m_vk_device; }
+        VkDevice Underlying() const { return m_vk_device; }
 
         operator bool() const noexcept { return m_vk_device != VK_NULL_HANDLE; }
 
@@ -169,6 +169,9 @@ namespace Rc
         // vkCmdCopyBuffer
         void CmdCopyBuffer(VkCommandBuffer command_buffer, VkBuffer src, VkBuffer dst, std::span<VkBufferCopy const> regions) const;
 
+        // vkCmdCopyBufferToImage
+        void CmdCopyBufferToImage(VkCommandBuffer command_buffer, VkBuffer src_buffer, VkImage dst_image, VkImageLayout dst_image_layout, std::span<VkBufferImageCopy const> regions) const;
+
         // vkCmdBindVertexBuffers
         void CmdBindVertexBuffers(VkCommandBuffer command_buffer, uint32_t first_binding, uint32_t binding_count, std::span<VkBuffer const> buffers, std::span<VkDeviceSize const> offsets) const;
 
@@ -277,6 +280,7 @@ namespace Rc
         PFN_vkCmdSetViewport m_vkCmdSetViewport {nullptr};
         PFN_vkCmdSetScissor m_vkCmdSetScissor {nullptr};
         PFN_vkCmdCopyBuffer m_vkCmdCopyBuffer {nullptr};
+        PFN_vkCmdCopyBufferToImage m_vkCmdCopyBufferToImage {nullptr};
         PFN_vkCmdBindVertexBuffers m_vkCmdBindVertexBuffers {nullptr};
         PFN_vkCmdBindIndexBuffer m_vkCmdBindIndexBuffer {nullptr};
         PFN_vkCreateDescriptorSetLayout m_vkCreateDescriptorSetLayout {nullptr};

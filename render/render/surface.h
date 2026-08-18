@@ -17,7 +17,7 @@ namespace Rc::Render
         Surface(Surface&& other) = delete;
         Surface& operator=(Surface&& other) = delete;
 
-        VkSurfaceKHR Handle() const
+        VkSurfaceKHR Underlying() const
         {
             return vk_surface;
         }

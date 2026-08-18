@@ -47,7 +47,7 @@ namespace Rc::Render
 
         ~Device();
 
-        std::unique_ptr<SwapChain> CreateSwapChain(Surface const& surface, Window const& window);
+        std::unique_ptr<SwapChain> CreateSwapChain(Surface const& surface, Window const& window, [[maybe_unused]] ColorProfile color_profile);
 
         std::unique_ptr<Shader> CreateShader(std::span<uint32_t const> spirv);
 
@@ -62,18 +62,18 @@ namespace Rc::Render
 
         PipelineFactory CreatePipelineFactory();
 
-        std::unique_ptr<ResourceDescriptorHeap> CreateResourceDescriptorHeap(std::span<ResourceDescriptor const> descriptors) const;
+        std::unique_ptr<ResourceDescriptorHeap> CreateResourceDescriptorHeap(uint64_t user_size) const;
 
         std::unique_ptr<Buffer> AllocateVertexBuffer(uint64_t size) const;
         std::unique_ptr<Buffer> AllocateIndexBuffer(uint64_t size) const;
         std::unique_ptr<Buffer> AllocateInstanceBuffer(uint64_t size) const;
         std::unique_ptr<Buffer> AllocateStagingBuffer(uint64_t size) const;
         std::unique_ptr<Buffer> AllocateUniformBuffer(uint64_t size) const;
-        std::unique_ptr<Buffer> AllocateDescriptorHeapBuffer(uint64_t size) const;
+        //std::unique_ptr<Buffer> AllocateDescriptorHeapBuffer(uint64_t size) const;
 
-        std::unique_ptr<Texture2D> AllocateDepthBuffer(uint32_t width, uint32_t height) const;
+        std::unique_ptr<Texture2d> AllocateDepthBuffer(uint32_t width, uint32_t height) const;
 
-        std::unique_ptr<Texture2D> AllocateTexture2d(uint32_t width, uint32_t height, PixelFormat format) const;
+        std::unique_ptr<Texture2d> AllocateTexture2d(uint32_t width, uint32_t height, PixelFormat format) const;
 
         void WaitIdle() const noexcept;
 
@@ -81,7 +81,7 @@ namespace Rc::Render
         std::map<std::string, VulkanVersion> EnumerateExtensions() const;
         std::vector<QueueFamilyProperties> GetQueueFamilyProperties(Surface const& surface) const;
 
-        VulkanInstance const* instance {nullptr}; //------------------------- ref ?
+        VulkanInstance const& instance;
         std::unique_ptr<VulkanDevice> device;
         
         VkPhysicalDevice vk_physical_device {VK_NULL_HANDLE};

@@ -1,5 +1,5 @@
 #include "frame_renderer.h"
-#include <array>
+#include "constants.h"
 
 namespace Rc::Render
 {
@@ -13,19 +13,6 @@ namespace Rc::Render
         render_pass_uniform_buffer = device.AllocateUniformBuffer(RenderPassConstants::size);
         depth_buffer = device.AllocateDepthBuffer(width, height);
         depth_buffer_view = depth_buffer->CreateDepthBufferView();
-
-        std::array<ResourceDescriptor, 1> const resource_descriptors
-        {
-            UniformBufferDescriptor
-            {
-                .address = render_pass_uniform_buffer->Address(),
-                .size = render_pass_uniform_buffer->Size()
-            }
-        };
-
-        resource_descriptor_heap = device.CreateResourceDescriptorHeap(resource_descriptors);
-        resource_descriptor_heap_buffer = device.AllocateDescriptorHeapBuffer(resource_descriptor_heap->SizeTotal());
-        resource_descriptor_heap->Attach(*resource_descriptor_heap_buffer);
     }
 
     void Frame::Resize(Device const& device, uint32_t width, uint32_t height)
@@ -34,15 +21,26 @@ namespace Rc::Render
         depth_buffer_view = depth_buffer->CreateDepthBufferView();
     }
 
-    void Frame::UpdateResourceDescriptorHeap(Device const& device)
+    void Frame::UpdateResourceDescriptorHeap(
+        Device const& device,
+        std::unique_ptr<ResourceDescriptorHeap> descriptor_heap)
     {
+        resource_descriptor_heap = std::move(descriptor_heap);
+
+        // Write resource descriptors
+        resource_descriptor_heap->WriteUniformBufferDescriptor(
+            0,
+            render_pass_uniform_buffer->Address(),
+            render_pass_uniform_buffer->Size()
+        );
+
         auto transfer_buffer = device.AllocateStagingBuffer(resource_descriptor_heap->Size());
 
         const auto staging_region = transfer_buffer->GetRegion(0, resource_descriptor_heap->Size());
         // TODO: Throw when vb_region is nullopt? --------------------------------------------------------
         const auto memory = transfer_buffer->Map(staging_region);
 
-        auto dst_region = resource_descriptor_heap_buffer->GetRegion(0, resource_descriptor_heap->Size());
+        auto dst_region = resource_descriptor_heap->GetBufferRegion();
                 
         // Write descriotor heap to the transfer buffer.
         resource_descriptor_heap->Write(memory);
@@ -54,7 +52,7 @@ namespace Rc::Render
         commands->TransferBuffer(staging_region, dst_region);
 
         // Memory Barrier
-        commands->UseResourceDescriptorHeapBuffer(dst_region);
+        commands->UseResourceDescriptorHeapBuffer(dst_region); //-------------------- One
 
         commands->End();
 

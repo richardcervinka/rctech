@@ -59,7 +59,7 @@ namespace Rc::Render
         
         VkImageView view {VK_NULL_HANDLE};
 
-        mutable VkImageLayout layout {VK_IMAGE_LAYOUT_UNDEFINED};
+        mutable VkImageLayout layout {VK_IMAGE_LAYOUT_UNDEFINED}; //---------------------------
         VkImageAspectFlags vk_aspect {VK_IMAGE_ASPECT_NONE};
 
         int width {0};

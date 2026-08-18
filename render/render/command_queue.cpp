@@ -24,7 +24,7 @@ namespace Rc::Render
             VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
         };
 
-        auto command_buffers = cb.Handle();
+        auto command_buffers = cb.Underlying();
 
         VkSubmitInfo submit_info
         {
@@ -50,7 +50,7 @@ namespace Rc::Render
             submit_info.pSignalSemaphores = &vk_submit_signal;
         }
         
-        vk_device.QueueSubmit(vk_queue, submit_info, fence.Handle());
+        vk_device.QueueSubmit(vk_queue, submit_info, fence.Underlying());
 
         vk_submit_wait = VK_NULL_HANDLE;
         vk_submit_signal =VK_NULL_HANDLE;
@@ -72,8 +72,8 @@ namespace Rc::Render
 
     void TransferCommandQueue::Submit(TransferCommandBuffer const& cb, TimelineSemaphore& signal)
     {
-        auto command_buffers = cb.Handle();
-        auto signal_semaphores = signal.Handle();
+        auto command_buffers = cb.Underlying();
+        auto signal_semaphores = signal.Underlying();
         auto value = signal.Value();
 
         VkTimelineSemaphoreSubmitInfo timeline_info

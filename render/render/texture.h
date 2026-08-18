@@ -10,11 +10,14 @@ namespace Rc::Render
     {
         Depth,
 
-        // RGB8 SRGB texture
-        ColorRGB,
+        // RGBA8_SRGB texture
+        ColorRGBA,
 
-        // RGBA8 SRGB texture
-        ColorRGBA
+        // SwapChain surface BGRA8_SRGB
+        SurfaceBGRA,
+
+        // SwapChain surface RGBA_SRGB
+        SurfaceRGBA
 
         // RGB8 UNORM texture
         // LinearRGB
@@ -26,10 +29,20 @@ namespace Rc::Render
         // HdrRGBA
     };
 
-    class Texture2D
+    class Texture2d
     {
     public:
-        Texture2D(
+        // Texture that is no ovener of the VkImage
+        Texture2d(
+            VulkanDevice const& vk_device,
+            VkImage vk_image,
+            PixelFormat format,
+            uint32_t width,
+            uint32_t height
+        );
+
+        // Texture that is ovener of the VkImage
+        Texture2d(
             VulkanDevice const& vk_device,
             VmaAllocator vma_allocator,
             PixelFormat format,
@@ -39,14 +52,19 @@ namespace Rc::Render
             VkImageLayout layout
         );
 
-        ~Texture2D();
+        ~Texture2d();
 
-        VkImage const& GetImage() const
+        VkImage const& Underlying() const
         {
             return vk_image;
         }
 
-        VkFormat Format() const
+        PixelFormat Format() const
+        {
+            return format;
+        }
+
+        VkFormat UnderlyingFormat() const
         {
             return vk_format;
         }
@@ -63,9 +81,14 @@ namespace Rc::Render
 
         uint32_t Channels() const;
 
+        // Total number of bytes in linear image layout.
+        // Use this value to allocate staging buffer.
+        uint64_t GetLinearDataSize() const;
+
         std::unique_ptr<RenderTargetView> CreateDepthBufferView() const;
 
     private:
+        friend class TransferCommandBuffer;
         friend class RenderTargetView;
 
         VulkanDevice const& vk_device;
@@ -73,13 +96,17 @@ namespace Rc::Render
         VmaAllocation vma_allocation {nullptr};
         VmaAllocationInfo vma_allocation_info {};
 
+        PixelFormat format {};
         VkFormat vk_format {VK_FORMAT_UNDEFINED};
         uint32_t width {0};
         uint32_t height {0};
 
         VkImage vk_image {VK_NULL_HANDLE};
+        //bool ovner {false};
 
-        
+        VkImageLayout layout {VK_IMAGE_LAYOUT_UNDEFINED};
+        VkAccessFlags2 access_flags {VK_ACCESS_NONE};
+        VkPipelineStageFlags stage_flags {VK_PIPELINE_STAGE_NONE};
     };
 
 } // Rc::Render

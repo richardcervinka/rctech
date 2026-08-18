@@ -21,9 +21,12 @@ layout(location = 7) in vec4 in_world_0;
 layout(location = 8) in vec4 in_world_1;
 layout(location = 9) in vec4 in_world_2;
 layout(location = 10) in vec4 in_world_3;
+// Texture UV
+layout(location = 11) in vec2 in_uv;
 
 // Output
 layout(location = 0) out vec3 out_color;
+layout(location = 1) out vec2 out_uv;
 
 void main()
 {
@@ -34,5 +37,7 @@ void main()
     position = ubo[0].camera_projection * position;
 
     gl_Position = position;
-    out_color = in_color;
+    //out_color = in_color;
+    out_color = vec3(in_uv.r, in_uv.g, 0);
+    out_uv = in_uv;
 }

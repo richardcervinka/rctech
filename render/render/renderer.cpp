@@ -104,7 +104,7 @@ namespace Rc::Render
         // Core objects.
         surface = instance->CreateSurface(window);
         device = CreateDevice();
-        swap_chain = device->CreateSwapChain(*surface, window);
+        swap_chain = device->CreateSwapChain(*surface, window, ColorProfile::SDR);
         render_queue = device->CreateGraphicsQueue();
         pipeline_layout = device->CreatePipelineLayout();
 
@@ -113,7 +113,12 @@ namespace Rc::Render
         for (auto& frame : frames)
         {
             frame.Create(*device, swap_chain->Width(), swap_chain->Height());
-            frame.UpdateResourceDescriptorHeap(*device);
+
+            // Create resource descriptor heap
+            //auto resource_descriptor_heap = device->CreateResourceDescriptorHeap(2048);
+            //resource_descriptor_heap->WriteTexture2dDescriptor(10, )
+
+            //frame.UpdateResourceDescriptorHeap(*device, std::move(resource_descriptor_heap));
         }
 
         // Create embedded shaders.
@@ -127,6 +132,8 @@ namespace Rc::Render
         
         // ---------------------------- TEST ----------------------------
 
+        resource_manager->test_texture = device->AllocateTexture2d(32, 32, PixelFormat::ColorRGBA);
+
         resource_manager->ReserveVertexBuffer(ResourceFamily{0}, 2048 * 32);
         resource_manager->ReserveIndexBuffer(ResourceFamily{0}, 2048 * 32);
 
@@ -135,6 +142,7 @@ namespace Rc::Render
             factory.SetPipelineLayout(pipeline_layout);
             factory.SetVertexShader(GetVertexShader(VertexShaderSlot::Overlay));
             factory.SetPixelShader(GetPixelShader(PixelShaderSlot::Null));
+            factory.SetOutputFormat(swap_chain->Format());
             test_pipeline = factory.Create();
         }
         {
@@ -144,6 +152,7 @@ namespace Rc::Render
             factory.SetPixelShader(GetPixelShader(PixelShaderSlot::Null));
             factory.SetVertexBinding(Gfx::VertexBinding::PerVertex, sizeof(Gfx::VertexBasic));
             factory.SetVertexBinding(Gfx::VertexBinding::PerInstance, sizeof(Gfx::VertexInstance));
+            factory.SetOutputFormat(swap_chain->Format());
             factory.SetVertexAttributes({
                 Gfx::VertexBasic::Attributes(),
                 Gfx::VertexInstance::Attributes()
@@ -338,6 +347,22 @@ namespace Rc::Render
         frame->Draw(36, 10 * 10, 0, 0, 0);
 
         frame->EndRenderPass();
+    }
+
+    void Renderer::SetupTestScene() // ----------------------------------------- dev only
+    {
+        for (auto& frame : frames)
+        {
+            //frame.Create(*device, swap_chain->Width(), swap_chain->Height());
+
+            // Create resource descriptor heap
+            auto resource_descriptor_heap = device->CreateResourceDescriptorHeap(2048);
+
+            resource_descriptor_heap->WriteTexture2dDescriptor(4, *resource_manager->test_texture);
+            //resource_descriptor_heap->WriteTexture2dDescriptor(10, )
+
+            frame.UpdateResourceDescriptorHeap(*device, std::move(resource_descriptor_heap));
+        }
     }
 
 } // Rc::Render

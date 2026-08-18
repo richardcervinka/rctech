@@ -20,7 +20,7 @@ namespace Rc::Render
         Semaphore(Semaphore&& other) = delete;
         Semaphore& operator=(Semaphore&& other) = delete;
 
-        VkSemaphore Handle() const
+        VkSemaphore Underlying() const
         {
             return vk_semaphore;
         }
@@ -67,7 +67,7 @@ namespace Rc::Render
         // Query the current value.
         uint64_t QueryCounter() const;
 
-        VkSemaphore Handle() const
+        VkSemaphore Underlying() const
         {
             return vk_semaphore;
         }

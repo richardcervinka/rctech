@@ -3,16 +3,26 @@
 
 namespace Rc::Render
 {
-    SwapChain::SwapChain(VulkanDevice const& vk_device, VkSurfaceKHR surface, Window const& window) :
+    SwapChain::SwapChain(
+        VulkanDevice const& vk_device,
+        VkSurfaceKHR surface,
+        Window const& window,
+        VkSurfaceFormatKHR const& surface_format
+    ) :
         vk_device{vk_device}
     {
+        assert(
+            (surface_format.format == VK_FORMAT_B8G8R8A8_SRGB) ||
+            (surface_format.format == VK_FORMAT_R8G8B8A8_SRGB)
+        );
+
         auto const extent = window.GetClientArea();
         
         vk_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
         vk_info.surface = surface;
         vk_info.minImageCount = 3;
-        vk_info.imageFormat = vk_format;
-        vk_info.imageColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
+        vk_info.imageFormat = surface_format.format;
+        vk_info.imageColorSpace = surface_format.colorSpace;
         vk_info.imageExtent.width = extent.w;
         vk_info.imageExtent.height = extent.h;
         vk_info.imageArrayLayers = 1;
@@ -22,6 +32,8 @@ namespace Rc::Render
         vk_info.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
         vk_info.presentMode = VK_PRESENT_MODE_FIFO_KHR;
         vk_info.clipped = VK_TRUE;
+
+        vk_format = surface_format.format;
 
         Create();
     }
@@ -43,7 +55,7 @@ namespace Rc::Render
     void SwapChain::Create()
     {
         images.clear();
-        views.clear();
+        back_buffers.clear();
         acquire_semaphores.clear();
 
         vk_swap_chain = vk_device.CreateSwapchainKHR(vk_info);
@@ -56,16 +68,24 @@ namespace Rc::Render
         {
             images.emplace_back(image);
 
-            views.push_back(
-                std::make_unique<RenderTargetView>(
-                    vk_device,
-                    image,
-                    vk_format,
-                    VK_IMAGE_ASPECT_COLOR_BIT,
-                    vk_info.imageExtent.width,
-                    vk_info.imageExtent.height
-                )
+            auto texture = std::make_unique<Texture2d>(
+                vk_device,
+                image,
+                PixelFormat::ColorRGBA, // ----------------- !!!!!!!!!!!!!!!!!!!!!!
+                vk_info.imageExtent.width,
+                vk_info.imageExtent.height
             );
+
+            auto render_target = std::make_unique<RenderTargetView>(
+                vk_device,
+                image,
+                vk_format,
+                VK_IMAGE_ASPECT_COLOR_BIT,
+                vk_info.imageExtent.width,
+                vk_info.imageExtent.height
+            );
+
+            back_buffers.emplace_back(std::move(texture), std::move(render_target));
 
             acquire_semaphores.push_back(std::make_unique<Semaphore>(vk_device));
             present_semaphores.push_back(std::make_unique<Semaphore>(vk_device));
@@ -81,14 +101,14 @@ namespace Rc::Render
         image_index = vk_device.AcquireNextImageKHR(
             vk_swap_chain,
             UINT64_MAX,
-            GetAcquireSemaphore().Handle(),
+            GetAcquireSemaphore().Underlying(),
             VK_NULL_HANDLE
         );
     }
 
     void SwapChain::Present(RenderCommandQueue const& queue) const
     {
-        auto present_semaphore = GetPresentSemaphore().Handle();
+        auto present_semaphore = GetPresentSemaphore().Underlying();
 
         VkPresentInfoKHR const present_info
         {
@@ -102,13 +122,25 @@ namespace Rc::Render
             .pResults = nullptr
         };
 
-        auto const vk_result = vk_device.QueuePresentKHR(queue.Handle(), present_info);
+        auto const vk_result = vk_device.QueuePresentKHR(queue.Underlying(), present_info);
 
         if ((vk_result == VK_ERROR_OUT_OF_DATE_KHR) ||
             (vk_result == VK_SUBOPTIMAL_KHR))
         {
             // Minimal: ignore; a real app by rebuilds swapchain on resize --------------------------------
         }
+    }
+
+    PixelFormat SwapChain::Format() const
+    {
+        switch (vk_format)
+        {
+            case VK_FORMAT_B8G8R8A8_SRGB:
+                return PixelFormat::SurfaceBGRA;
+            case VK_FORMAT_R8G8B8A8_SRGB:
+                return PixelFormat::SurfaceRGBA;
+        }
+        std::unreachable();
     }
 
 } // Rc::Render
