@@ -62,20 +62,6 @@ namespace Rc::Render
 
         void LoadRenderTarget(RenderTargetSlot slot);
 
-        // Swap chain present target barrier
-        void UsePresentingFramebuffer(RenderTargetView const& render_target);
-
-        // Set vertex buffer read barrier.
-        void UseVertexBuffer(BufferRegion& region);
-
-        // Set index buffer read barrier.
-        void UseIndexBuffer(BufferRegion& region);
-
-        void UseUniformBuffer(BufferRegion& region);
-
-        void UseResourceDescriptorHeapBuffer(BufferRegion& region);
-        void UseSamplerDescriptorHeapBuffer(BufferRegion& region);
-
         void TransferBuffer(BufferRegion const& src, BufferRegion& dst);
 
         //void TransferResourceDescriptorHeap()
@@ -122,6 +108,18 @@ namespace Rc::Render
         void SetDepthCompareLess();
         void EnableStencilTest();
         void DisableStencilTest();
+
+        // Swap chain present target barrier
+        void BarierPresentSwapChain(RenderTargetView const& render_target);
+        void BarierDrawToSwapChain(RenderTargetView const& render_target);
+        void BarierUseDepthBuffer(RenderTargetView const& render_target);
+        void BarierUseResourceDescriptorHeap(BufferRegion& region);
+        void BarierUseSamplerDescriptorHeap(BufferRegion& region);
+        // Set vertex buffer read barrier.
+        void UseVertexBuffer(BufferRegion& region); // TODO
+        // Set index buffer read barrier.
+        void UseIndexBuffer(BufferRegion& region); // TODO
+        void UseUniformBuffer(BufferRegion& region); // TODO
         
         VkCommandBuffer Underlying() const
         {
@@ -166,7 +164,17 @@ namespace Rc::Render
 
         void End();
 
-        void TransferBuffer(BufferRegion const& src, BufferRegion& dst);
+        // New bariers
+
+        void BarierAcquireTextureTransfer(Texture2d const& texture);
+        void BarierReleaseTextureTransfer(Texture2d const& texture, uint32_t dst_queue_family_index);
+
+        void TransferBuffer(
+            BufferRegion const& src,
+            BufferRegion& dst,
+            uint32_t dst_queue_family_index = 0
+        );
+
         void TransferTexture(BufferRegion const& src, Texture2d& dst);
         
         VkCommandBuffer Underlying() const
@@ -182,6 +190,8 @@ namespace Rc::Render
 
         // Primary command buffers.
         VkCommandBuffer vk_command_buffer {VK_NULL_HANDLE};
+
+        uint32_t vk_queue_family_index {};
     };
     
 } // Rc::Render

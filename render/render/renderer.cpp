@@ -166,7 +166,7 @@ namespace Rc::Render
         window.OnEventSize(on_window_size);
 
         resource_manager = std::make_unique<ResourceManager>(*device);
-        resource_uploader = std::make_unique<ResourceUploader>(*device);
+        resource_uploader = std::make_unique<ResourceUploader>(*device, render_queue->FamilyIndex());
 
         resource_manager->ReserveVertexBuffer(ResourceFamily{0}, 2048 * 32);
         resource_manager->ReserveIndexBuffer(ResourceFamily{0}, 2048 * 32);
@@ -234,7 +234,7 @@ namespace Rc::Render
 
     void Renderer::EndFrame()
     {
-        frame->commands->UsePresentingFramebuffer(swap_chain->GetRenderTargetView()); // ---------------
+        frame->commands->BarierPresentSwapChain(swap_chain->GetRenderTargetView()); // ---------------
         frame->commands->End();
         
         render_queue->WaitSemaphore(swap_chain->GetAcquireSemaphore());
@@ -404,7 +404,7 @@ namespace Rc::Render
         render_commands->Reset();
         render_commands->Begin();
         render_commands->TransferBuffer(staging_region, buffer);
-        render_commands->UseResourceDescriptorHeapBuffer(buffer);
+        render_commands->BarierUseResourceDescriptorHeap(buffer);
         render_commands->End();
 
         // Submit commands.
@@ -433,7 +433,7 @@ namespace Rc::Render
         render_commands->Reset();
         render_commands->Begin();
         render_commands->TransferBuffer(staging_region, buffer);
-        render_commands->UseSamplerDescriptorHeapBuffer(buffer);
+        render_commands->BarierUseSamplerDescriptorHeap(buffer);
         render_commands->End();
 
         // Submit commands.

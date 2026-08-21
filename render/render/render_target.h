@@ -29,7 +29,7 @@ namespace Rc::Render
             return view;
         }
 
-        VkImage Image() const
+        VkImage Underlying() const
         {
             return image;
         }

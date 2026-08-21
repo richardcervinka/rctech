@@ -59,7 +59,9 @@ namespace Rc::Render
 
     // ResourceUploader
 
-    ResourceUploader::ResourceUploader(Device& device) : device{device}
+    ResourceUploader::ResourceUploader(Device& device, uint32_t render_queue_family_index) :
+        device{device},
+        render_queue_family_index{render_queue_family_index}
     {
         transfer_queue = device.CreateTransferQueue();
         transfer_commands = transfer_queue->CreateCommandBuffer();
@@ -99,7 +101,9 @@ namespace Rc::Render
         BufferWriter writer(staging_memory);
         writer_callback(writer);
 
+        transfer_commands->BarierAcquireTextureTransfer(texture);
         transfer_commands->TransferTexture(*staging_region, texture);
+        transfer_commands->BarierReleaseTextureTransfer(texture, render_queue_family_index);
 
         return transfer_buffer->TimelineValue();
     }

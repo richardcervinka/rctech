@@ -172,7 +172,7 @@ namespace Rc::Render
             return data;
         }
         
-        BufferRegion GetBufferRegion() const
+        BufferRegion GetBufferRegion() const // --------------------- Jen getter
         {
             return buffer->GetRegion(0, reserved_offset);
         }

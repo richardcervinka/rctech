@@ -148,7 +148,7 @@ namespace Rc::Render
     class ResourceUploader
     {
     public:
-        explicit ResourceUploader(Device& device);
+        ResourceUploader(Device& device, uint32_t render_queue_family_index);
 
         void BeginUpload();
 
@@ -206,6 +206,8 @@ namespace Rc::Render
         uint64_t counter {0};
 
         std::atomic<bool> pending {false};
+
+        uint32_t render_queue_family_index {};
     };
 
 } // Rc::Render

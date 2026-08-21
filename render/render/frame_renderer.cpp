@@ -73,11 +73,13 @@ namespace Rc::Render
         commands->BindResourceDescriptorHeap(resource_descriptor_heap);
         commands->BindSamplerDescriptorHeap(sampler_descriptor_heap);
         commands->EnableColorAttachment(RenderTargetSlot::FrameBuffer, framebuffer);
+        commands->BarierDrawToSwapChain(framebuffer);
         commands->DisableStencilTest();
         commands->EnableDepthTest();
         commands->EnableDepthWrite();
         commands->SetDepthCompareGreater();
         commands->AttachDepthBuffer(*depth_buffer_view);
+        commands->BarierUseDepthBuffer(*depth_buffer_view);
         commands->ClearRenderTarget(RenderTargetSlot::FrameBuffer, Color(0, 0, 0, 1));
         commands->BindPipeline(pipeline);
         commands->BeginRendering(framebuffer_area);
