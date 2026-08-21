@@ -12,6 +12,8 @@
 #include "core/transformations.h"
 #include "core/camera.h"
 #include "generic/input.h"
+#include "constants.h"
+#include "development.h"
 
 namespace Rc::Render
 {
@@ -26,6 +28,10 @@ namespace Rc::Render
             device->WaitIdle();
         }
 
+        Rc::Dev::test_texture = nullptr;
+
+        sampler_descriptor_heap = nullptr;
+        resource_descriptor_heap = nullptr;
         resource_uploader = nullptr;
         resource_manager = nullptr;
         test_vertex_pipeline = nullptr;
@@ -42,6 +48,8 @@ namespace Rc::Render
             shader = nullptr;
         }
 
+        render_fence = nullptr;
+        render_commands = nullptr;
         render_queue = nullptr;
         swap_chain = nullptr;
         surface = nullptr;
@@ -106,20 +114,50 @@ namespace Rc::Render
         device = CreateDevice();
         swap_chain = device->CreateSwapChain(*surface, window, ColorProfile::SDR);
         render_queue = device->CreateGraphicsQueue();
+        render_commands = render_queue->CreateCommandBuffer();
+        render_fence = device->CreateFence();
         pipeline_layout = device->CreatePipelineLayout();
+        resource_descriptor_heap = device->CreateResourceDescriptorHeap(2048);
+        sampler_descriptor_heap = device->CreateSamplerDescriptorHeap(2048);
+
+        // TEST
+        // ---------------------------- TEST ----------------------------
+        Rc::Dev::test_texture = device->AllocateTexture2d(16, 16, PixelFormat::ColorRGBA);
+        assert(Rc::Dev::test_texture != nullptr);
+        resource_descriptor_heap->WriteTexture2dDescriptor(4, *Rc::Dev::test_texture);
+        sampler_descriptor_heap->WriteDefaultSampler(0);
 
         // Create frames in flight.
         frames.resize(swap_chain->Size());
-        for (auto& frame : frames)
+
+        // Initialize frames in flight.
+        for (std::size_t i = 0; i < frames.size(); i++)
         {
-            frame.Create(*device, swap_chain->Width(), swap_chain->Height());
+            auto& frame = frames[i];
 
-            // Create resource descriptor heap
-            //auto resource_descriptor_heap = device->CreateResourceDescriptorHeap(2048);
-            //resource_descriptor_heap->WriteTexture2dDescriptor(10, )
+            static constexpr uint64_t staging_buffer_size = 2048; // --------------------- docasne
 
-            //frame.UpdateResourceDescriptorHeap(*device, std::move(resource_descriptor_heap));
+            frame.uniform_buffer_index = static_cast<uint32_t>(i);
+            frame.queue = device->CreateGraphicsQueue();
+            frame.commands = frame.queue->CreateCommandBuffer();
+            frame.fence = device->CreateFence();
+            frame.staging_buffer = std::make_unique<BufferLinearAllocator>(device->AllocateStagingBuffer(staging_buffer_size));
+            frame.instance_buffer = device->AllocateInstanceBuffer(2048 * 32); // ---------------------------------------------------------------- Size?
+            frame.render_pass_uniform_buffer = device->AllocateUniformBuffer(RenderPassConstants::size);
+            frame.depth_buffer = device->AllocateDepthBuffer(swap_chain->Width(), swap_chain->Height());
+            frame.depth_buffer_view = frame.depth_buffer->CreateDepthBufferView();
+
+            // Write resource descriptors...
+
+            resource_descriptor_heap->WriteUniformBufferDescriptor(
+                frame.uniform_buffer_index,
+                frame.render_pass_uniform_buffer->Address(),
+                frame.render_pass_uniform_buffer->Size()
+            );
         }
+
+        UploadResourceDescriptorHeap(*resource_descriptor_heap);
+        UploadSamplerDescriptorHeap(*sampler_descriptor_heap);
 
         // Create embedded shaders.
         InitializeShaders();
@@ -129,10 +167,6 @@ namespace Rc::Render
 
         resource_manager = std::make_unique<ResourceManager>(*device);
         resource_uploader = std::make_unique<ResourceUploader>(*device);
-        
-        // ---------------------------- TEST ----------------------------
-
-        resource_manager->test_texture = device->AllocateTexture2d(32, 32, PixelFormat::ColorRGBA);
 
         resource_manager->ReserveVertexBuffer(ResourceFamily{0}, 2048 * 32);
         resource_manager->ReserveIndexBuffer(ResourceFamily{0}, 2048 * 32);
@@ -336,6 +370,8 @@ namespace Rc::Render
 
         frame->BeginTestRenderPass(
             *test_vertex_pipeline,
+            *resource_descriptor_heap,
+            *sampler_descriptor_heap,
             swap_chain->GetRenderTargetView(),
             render_pass_context
         );
@@ -349,20 +385,62 @@ namespace Rc::Render
         frame->EndRenderPass();
     }
 
-    void Renderer::SetupTestScene() // ----------------------------------------- dev only
+    void Renderer::UploadResourceDescriptorHeap(ResourceDescriptorHeap& descriptor_heap)
     {
-        for (auto& frame : frames)
-        {
-            //frame.Create(*device, swap_chain->Width(), swap_chain->Height());
+        auto const data = descriptor_heap.Data();
+        auto buffer = descriptor_heap.GetBufferRegion();
 
-            // Create resource descriptor heap
-            auto resource_descriptor_heap = device->CreateResourceDescriptorHeap(2048);
+        auto transfer_buffer = device->AllocateStagingBuffer(data.size());
+        auto const staging_region = transfer_buffer->GetRegion(0, data.size());
+        // TODO: Throw when vb_region is nullopt? --------------------------------------------------------
 
-            resource_descriptor_heap->WriteTexture2dDescriptor(4, *resource_manager->test_texture);
-            //resource_descriptor_heap->WriteTexture2dDescriptor(10, )
+        // Write data heap to the transfer buffer.
+        auto const memory = transfer_buffer->Map(staging_region);
+        std::copy(data.begin(), data.end(), memory.data());
 
-            frame.UpdateResourceDescriptorHeap(*device, std::move(resource_descriptor_heap));
-        }
+        render_fence->Wait();
+
+        // Transfer the staging buffer.
+        render_commands->Reset();
+        render_commands->Begin();
+        render_commands->TransferBuffer(staging_region, buffer);
+        render_commands->UseResourceDescriptorHeapBuffer(buffer);
+        render_commands->End();
+
+        // Submit commands.
+        //auto fence = device->CreateFence(); // ---------------- Sdilene, stejne jako render_commands
+        render_fence->Reset();
+        render_queue->Submit(*render_commands, *render_fence);
+        render_fence->Wait();
+    }
+
+    void Renderer::UploadSamplerDescriptorHeap(SamplerDescriptorHeap& descriptor_heap)
+    {
+        auto const data = descriptor_heap.Data();
+        auto buffer = descriptor_heap.GetBufferRegion();
+
+        auto transfer_buffer = device->AllocateStagingBuffer(data.size());
+        auto const staging_region = transfer_buffer->GetRegion(0, data.size());
+        // TODO: Throw when vb_region is nullopt? --------------------------------------------------------
+
+        // Write data heap to the transfer buffer.
+        auto const memory = transfer_buffer->Map(staging_region);
+        std::copy(data.begin(), data.end(), memory.data());
+
+        render_fence->Wait();
+
+        // Transfer the staging buffer.
+        render_commands->Reset();
+        render_commands->Begin();
+        render_commands->TransferBuffer(staging_region, buffer);
+        render_commands->UseSamplerDescriptorHeapBuffer(buffer);
+        render_commands->End();
+
+        // Submit commands.
+        //auto fence = device->CreateFence(); // ---------------- Sdilene, stejne jako render_commands
+        render_fence->Reset();
+        render_queue->Submit(*render_commands, *render_fence);
+        render_fence->Wait();
     }
 
 } // Rc::Render

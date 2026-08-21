@@ -24,22 +24,23 @@ namespace Rc::Math
     constexpr double egamma = std::numbers::egamma;
     constexpr double phi = std::numbers::phi;
     
-    constexpr float fe = std::numbers::e_v<float>;
-    constexpr float flog2e = std::numbers::log2e_v<float>;
-    constexpr float flog10e = std::numbers::log10e_v<float>;
-    constexpr float fpi = std::numbers::pi_v<float>;
-    constexpr float finv_pi = std::numbers::inv_pi_v<float>;
-    constexpr float finv_sqrtpi = std::numbers::inv_sqrtpi_v<float>;
-    constexpr float fln2 = std::numbers::ln2_v<float>;
-    constexpr float fln10 = std::numbers::ln10_v<float>;
-    constexpr float fsqrt2 = std::numbers::sqrt2_v<float>;
-    constexpr float fsqrt3 = std::numbers::sqrt3_v<float>;
-    constexpr float finv_sqrt3 = std::numbers::inv_sqrt3_v<float>;
-    constexpr float fegamma = std::numbers::egamma_v<float>;
-    constexpr float fphi = std::numbers::phi_v<float>;
+    constexpr double Sin(double x)
+    {
+        return std::sin(x);
+    }
+
+    constexpr double Cos(double x)
+    {
+        return std::cos(x);
+    }
+
+    constexpr double Tan(double x)
+    {
+        return std::tan(x);
+    }
 
     template <typename T>
-    inline bool Range(T value, T min, T max) noexcept
+    constexpr bool InRange(T value, T min, T max) noexcept
     {
         return (value >= min) && (value <= max);
     }
@@ -49,19 +50,29 @@ namespace Rc::Math
         return degrees * (Math::pi / 180.0);
     }
 
-    constexpr float DegToRad(float degrees)
-    {
-        return degrees * (Math::fpi / 180.0f);
-    }
-
     constexpr double RadToDeg(double radians)
     {
         return radians * (180.0 / Math::pi);
     }
 
-    constexpr float RadToDeg(float radians)
+    // Sinus Cardinalis
+    constexpr double Sinc(double x)
     {
-        return radians * (180.0f / Math::fpi);
+        if (x == 0)
+        {
+            return 1;
+        }
+        return std::sin(x) / x;
+    }
+
+    // Normalized Sinus Cardinalis
+    constexpr double SincNorm(double x)
+    {
+        if (x == 0)
+        {
+            return 1;
+        }
+        return std::sin(x * pi) / (x * pi);
     }
     
 } // Rc::Math

@@ -1,16 +1,22 @@
 #version 460
 #extension GL_EXT_descriptor_heap : require
+#extension GL_EXT_nonuniform_qualifier : require
 
 // View to the descriptor heap.
 layout(descriptor_heap) uniform Constants
 {
     mat4 camera_projection;
-    mat4 transformation; // ---------------- Bude soucasti per-instance dat
-} ubo[];
+}
+ubo[];
+
+layout(push_constant) uniform PushData
+{
+    uint ubo_index;
+}
+push_data;
 
 // Input
 layout(location = 0) in vec3 in_position;
-layout(location = 2) in vec3 in_color;
 // Local transformation matrix
 layout(location = 3) in vec4 in_local_0;
 layout(location = 4) in vec4 in_local_1;
@@ -32,12 +38,16 @@ void main()
 {
     vec4 position = vec4(in_position, 1.0);
 
+    // Local transformations
     position = mat4x4(in_local_0, in_local_1, in_local_2, in_local_3) * position;
+    // Global transformations
     position = mat4x4(in_world_0, in_world_1, in_world_2, in_world_3) * position;
-    position = ubo[0].camera_projection * position;
+    // Camera projection
+    position = ubo[push_data.ubo_index].camera_projection * position;
 
     gl_Position = position;
-    //out_color = in_color;
+
     out_color = vec3(in_uv.r, in_uv.g, 0);
+
     out_uv = in_uv;
 }

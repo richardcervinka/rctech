@@ -3,6 +3,8 @@
 
 namespace Rc::Render
 {
+    // ResourceDescriptorHeap
+    
     ResourceDescriptorHeap::ResourceDescriptorHeap(
         VulkanInstance const& instance,
         VulkanDevice const& device,
@@ -78,7 +80,7 @@ namespace Rc::Render
             .size = buffer_descriptor_size
         };
 
-        vk_device.WriteResourceDescriptor(resource_descriptor_info, host_address);
+        vk_device.WriteResourceDescriptorEXT(resource_descriptor_info, host_address);
     }
 
     void ResourceDescriptorHeap::WriteTexture2dDescriptor(
@@ -133,11 +135,73 @@ namespace Rc::Render
             .size = image_descriptor_size
         };
 
-        vk_device.WriteResourceDescriptor(resource_descriptor_info, host_address);
+        vk_device.WriteResourceDescriptorEXT(resource_descriptor_info, host_address);
     }
 
-    void ResourceDescriptorHeap::Write(std::span<std::byte> dst) const
+    // void ResourceDescriptorHeap::Write(std::span<std::byte> dst) const
+    // {
+    //     std::copy(data.begin(), data.end(), dst.data());
+    // }
+
+    // SamplerDescriptorHeap
+
+    SamplerDescriptorHeap::SamplerDescriptorHeap(
+        VulkanInstance const& instance,
+        VulkanDevice const& device,
+        VkPhysicalDevice vk_physical_device,
+        std::unique_ptr<Buffer> buffer
+    ) :
+        vk_device{device}
     {
-        std::copy(data.begin(), data.end(), dst.data());
+        auto const heap_properties = instance.GetPhysicalDeviceDescriptorHeapProperties(vk_physical_device);
+
+        assert(buffer->Size() >= heap_properties.minSamplerHeapReservedRange);
+
+        descriptor_size = heap_properties.samplerDescriptorSize;
+        reserved_size = heap_properties.minSamplerHeapReservedRange;
+        reserved_offset = buffer->Size() - heap_properties.minSamplerHeapReservedRange;
+
+        // Align size to VkPhysicalDeviceDescriptorHeapPropertiesEXT::resourceHeapAlignment
+        // It is required for alignment of the reserved offset.
+        if (uint64_t const tail = reserved_offset % heap_properties.samplerHeapAlignment; tail > 0)
+        {
+            reserved_offset -= tail;
+        }
+
+        begin_index = 0;
+        end_index = reserved_offset % descriptor_size;
+        
+        data.resize(reserved_offset);
+        this->buffer = std::move(buffer);
+        address = this->buffer->Address();
+    }
+
+    void SamplerDescriptorHeap::WriteDefaultSampler(uint64_t index)
+    {
+        VkSamplerCreateInfo sampler_info
+        {
+            .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
+            .magFilter = VK_FILTER_LINEAR,
+            .minFilter = VK_FILTER_LINEAR,
+            .mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST,
+            .minLod = 0.0f,
+            .maxLod = 0.0f,
+            .mipLodBias = 0.0f,
+            .addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+            .addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+            .addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+            .anisotropyEnable = VK_FALSE,
+            .maxAnisotropy = 1.0f,
+            .borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK,
+            .unnormalizedCoordinates = VK_FALSE
+        };
+
+        VkHostAddressRangeEXT const host_address
+        {
+            .address = data.data() + (descriptor_size * index),
+            .size = descriptor_size
+        };
+
+        vk_device.WriteSamplerDescriptorEXT(sampler_info, host_address);
     }
 }

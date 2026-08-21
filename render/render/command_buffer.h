@@ -27,6 +27,11 @@ namespace Rc::Render
         FrameBuffer = 0
     };
 
+    struct PushBlock
+    {
+        uint32_t ubo_index;
+    };
+
     class RenderCommandBuffer
     {
     public:
@@ -69,6 +74,7 @@ namespace Rc::Render
         void UseUniformBuffer(BufferRegion& region);
 
         void UseResourceDescriptorHeapBuffer(BufferRegion& region);
+        void UseSamplerDescriptorHeapBuffer(BufferRegion& region);
 
         void TransferBuffer(BufferRegion const& src, BufferRegion& dst);
 
@@ -88,6 +94,8 @@ namespace Rc::Render
 
         void SetScissor(Rectangle<int> const& rect);
 
+        void PushData(PushBlock const& data) const;
+
         void Draw(
             uint32_t vertex_count,
             uint32_t instance_count,
@@ -104,6 +112,7 @@ namespace Rc::Render
         );
 
         void BindResourceDescriptorHeap(ResourceDescriptorHeap const& heap);
+        void BindSamplerDescriptorHeap(SamplerDescriptorHeap const& heap);
 
         void EnableDepthTest();
         void DisableDepthTest();

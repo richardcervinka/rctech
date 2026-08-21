@@ -79,7 +79,7 @@ namespace Rc::Render
 
     void RenderCommandBuffer::EnableColorAttachment(RenderTargetSlot slot, RenderTargetView const& render_target)
     {
-        VkImageMemoryBarrier const barrier
+        VkImageMemoryBarrier const barrier  // ------------------------------------ Použít- VkImageMemoryBarrier2
         {
             .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
             .pNext = nullptr,
@@ -95,7 +95,7 @@ namespace Rc::Render
 
         vk_device.CmdPipelineBarrier(
             vk_command_buffer,
-            VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+            VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, //---------------------------- Muzu pouzit jen pro back buffery !
             VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
             {},
             {},
@@ -509,6 +509,44 @@ namespace Rc::Render
         region.stage_flags = VK_PIPELINE_STAGE_2_ALL_GRAPHICS_BIT;
     }
 
+    void RenderCommandBuffer::UseSamplerDescriptorHeapBuffer(BufferRegion& region)
+    {
+        // TODO: Assert Buffer::usage
+
+        VkBufferMemoryBarrier2 const barrier
+        {
+            .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2,
+            .pNext = nullptr,
+            .srcStageMask = region.stage_flags,
+            .srcAccessMask = region.access_flags,
+            .dstStageMask = VK_PIPELINE_STAGE_2_ALL_GRAPHICS_BIT,
+            .dstAccessMask = VK_ACCESS_2_SAMPLER_HEAP_READ_BIT_EXT,
+            .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+            .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+            .buffer = region.Underlying(),
+            .offset = region.Offset(),
+            .size = region.Size()
+        };
+
+        VkDependencyInfo const dependency_info
+        {
+            .sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
+            .pNext = nullptr,
+            .dependencyFlags = {},
+            .memoryBarrierCount = 0,
+            .pMemoryBarriers = nullptr,
+            .bufferMemoryBarrierCount = 1,
+            .pBufferMemoryBarriers = &barrier,
+            .imageMemoryBarrierCount = 0,
+            .pImageMemoryBarriers = nullptr
+        };
+
+        vk_device.CmdPipelineBarrier2(vk_command_buffer, dependency_info);
+
+        region.access_flags = VK_ACCESS_2_RESOURCE_HEAP_READ_BIT_EXT;
+        region.stage_flags = VK_PIPELINE_STAGE_2_ALL_GRAPHICS_BIT;
+    }
+
     void RenderCommandBuffer::BindVertexBuffer(Buffer const& vb, int slot, uint64_t offset)
     {
         // TODO: Assert Buffer::usage
@@ -571,6 +609,22 @@ namespace Rc::Render
         vk_device.CmdBindResourceHeapEXT(vk_command_buffer, bind_info);
     }
 
+
+    void RenderCommandBuffer::BindSamplerDescriptorHeap(SamplerDescriptorHeap const& heap)
+    {
+        VkBindHeapInfoEXT bind_info
+        {
+            .sType = VK_STRUCTURE_TYPE_BIND_HEAP_INFO_EXT,
+            .pNext = nullptr,
+            .heapRange.address = heap.Address(),
+            .heapRange.size = heap.Size(),
+            .reservedRangeOffset = heap.ReservedOffset(),
+            .reservedRangeSize = heap.ReservedSize()
+        };
+
+        vk_device.CmdBindSamplerHeapEXT(vk_command_buffer, bind_info);
+    }
+
     void RenderCommandBuffer::EnableDepthTest()
     {
         vk_device.CmdSetDepthTestEnableEXT(vk_command_buffer, VK_TRUE);
@@ -609,6 +663,20 @@ namespace Rc::Render
     void RenderCommandBuffer::DisableStencilTest()
     {
         vk_device.CmdSetStencilTestEnableEXT(vk_command_buffer, VK_FALSE);
+    }
+
+    void RenderCommandBuffer::PushData(PushBlock const& data) const
+    {
+        VkPushDataInfoEXT const data_info
+        {
+            .sType = VK_STRUCTURE_TYPE_PUSH_DATA_INFO_EXT,
+            .pNext = nullptr,
+            .offset = 0,
+            .data.address = &data,
+            .data.size = sizeof(PushBlock)
+        };
+
+        vk_device.CmdPushDataEXT(vk_command_buffer, data_info);
     }
 
     // TransferCommandBuffer
@@ -719,6 +787,8 @@ namespace Rc::Render
 
     void TransferCommandBuffer::TransferTexture(BufferRegion const& src, Texture2d& dst)
     {
+        // ------------------------------------------------------------- Potrebuju transfer mezi queue family
+
         // assert(src.Size() == dst.Size());
 
         VkImageMemoryBarrier2 const barrier

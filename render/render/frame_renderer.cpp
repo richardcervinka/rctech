@@ -3,63 +3,10 @@
 
 namespace Rc::Render
 {
-    void Frame::Create(Device const& device, uint32_t width, uint32_t height)
-    {
-        queue = device.CreateGraphicsQueue();
-        fence = device.CreateFence();
-        commands = queue->CreateCommandBuffer();
-        staging_buffer = std::make_unique<BufferLinearAllocator>(device.AllocateStagingBuffer(staging_buffer_size));
-        instance_buffer = device.AllocateInstanceBuffer(2048 * 32); // ---------------------------------------------------------------- Size?
-        render_pass_uniform_buffer = device.AllocateUniformBuffer(RenderPassConstants::size);
-        depth_buffer = device.AllocateDepthBuffer(width, height);
-        depth_buffer_view = depth_buffer->CreateDepthBufferView();
-    }
-
     void Frame::Resize(Device const& device, uint32_t width, uint32_t height)
     {
         depth_buffer = device.AllocateDepthBuffer(width, height);
         depth_buffer_view = depth_buffer->CreateDepthBufferView();
-    }
-
-    void Frame::UpdateResourceDescriptorHeap(
-        Device const& device,
-        std::unique_ptr<ResourceDescriptorHeap> descriptor_heap)
-    {
-        resource_descriptor_heap = std::move(descriptor_heap);
-
-        // Write resource descriptors
-        resource_descriptor_heap->WriteUniformBufferDescriptor(
-            0,
-            render_pass_uniform_buffer->Address(),
-            render_pass_uniform_buffer->Size()
-        );
-
-        auto transfer_buffer = device.AllocateStagingBuffer(resource_descriptor_heap->Size());
-
-        const auto staging_region = transfer_buffer->GetRegion(0, resource_descriptor_heap->Size());
-        // TODO: Throw when vb_region is nullopt? --------------------------------------------------------
-        const auto memory = transfer_buffer->Map(staging_region);
-
-        auto dst_region = resource_descriptor_heap->GetBufferRegion();
-                
-        // Write descriotor heap to the transfer buffer.
-        resource_descriptor_heap->Write(memory);
-
-        commands->Reset();
-        commands->Begin();
-
-        // Transfer the staging buffer.
-        commands->TransferBuffer(staging_region, dst_region);
-
-        // Memory Barrier
-        commands->UseResourceDescriptorHeapBuffer(dst_region); //-------------------- One
-
-        commands->End();
-
-        // Submit commands.
-        fence->Reset();
-        queue->Submit(*commands, *fence);
-        fence->Wait();
     }
 
     void Frame::Begin()
@@ -70,7 +17,6 @@ namespace Rc::Render
         
         commands->Reset();
         commands->Begin();
-        commands->BindResourceDescriptorHeap(*resource_descriptor_heap);
 
         instance_writer = BufferWriter(instance_buffer->Map());
     }
@@ -83,6 +29,8 @@ namespace Rc::Render
 
     void Frame::BeginTestRenderPass(
         Pipeline const& pipeline,
+        ResourceDescriptorHeap const& resource_descriptor_heap,
+        SamplerDescriptorHeap const& sampler_descriptor_heap,
         RenderTargetView const& framebuffer,
         RenderPassContext const& context)
     {
@@ -118,6 +66,12 @@ namespace Rc::Render
             .h = framebuffer_area.h
         });
 
+        commands->PushData({
+            .ubo_index = uniform_buffer_index
+        });
+
+        commands->BindResourceDescriptorHeap(resource_descriptor_heap);
+        commands->BindSamplerDescriptorHeap(sampler_descriptor_heap);
         commands->EnableColorAttachment(RenderTargetSlot::FrameBuffer, framebuffer);
         commands->DisableStencilTest();
         commands->EnableDepthTest();

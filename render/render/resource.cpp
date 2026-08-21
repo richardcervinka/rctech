@@ -1,4 +1,5 @@
 #include "resource.h"
+#include "development.h"
 
 namespace Rc::Render
 {
@@ -36,7 +37,7 @@ namespace Rc::Render
 
     Texture2dHandle ResourceManager::AllocateTexture2d(ResourceFamily name, uint32_t width, uint32_t height, PixelFormat format)
     {
-        test_texture = device.AllocateTexture2d(width, height, format);
+        Rc::Dev::test_texture = device.AllocateTexture2d(width, height, format);
         return {}; // ----------------------------------------------------------------------
     }
 

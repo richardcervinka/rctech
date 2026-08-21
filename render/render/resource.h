@@ -138,8 +138,6 @@ namespace Rc::Render
         BufferRegion& GetBufferRegion(VertexBufferHandle handle);
         BufferRegion& GetBufferRegion(IndexBufferHandle handle);
 
-        std::unique_ptr<Texture2d> test_texture;
-
     private:
         Device& device; // ---------------------------------------- const ref ?
 

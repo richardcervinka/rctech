@@ -32,17 +32,10 @@ namespace Rc::Render
     class Frame
     {
     public:
-        static constexpr uint64_t staging_buffer_size = 2048;
+        //static constexpr uint64_t staging_buffer_size = 2048;
         //static constexpr uint64_t render_pass_uniform_buffer_size = 16 * 4;
 
-        void Create(Device const& device, uint32_t width, uint32_t height);
-
-        void Resize(Device const& device, uint32_t width, uint32_t height);
-
-        void UpdateResourceDescriptorHeap(
-            Device const& device,
-            std::unique_ptr<ResourceDescriptorHeap> descriptor_heap
-        );
+        void Resize(Device const& device, uint32_t width, uint32_t height); // ---------------- Remove ?
 
         void Begin(/*FrameData const& data*/);
 
@@ -50,6 +43,8 @@ namespace Rc::Render
 
         void BeginTestRenderPass(
             Pipeline const& pipeline,
+            ResourceDescriptorHeap const& resource_descriptor_heap,
+            SamplerDescriptorHeap const& sampler_descriptor_heap,
             RenderTargetView const& framebuffer,
             RenderPassContext const& context
         );
@@ -75,8 +70,7 @@ namespace Rc::Render
 
         void Wait() const;
 
-    private:
-        friend class Renderer;
+        uint32_t uniform_buffer_index {};
 
         std::unique_ptr<RenderCommandQueue> queue;
 
@@ -94,14 +88,11 @@ namespace Rc::Render
 
         std::unique_ptr<Buffer> render_pass_uniform_buffer;
 
-        // TODO: Frame uniform buffer
-
-        //std::unique_ptr<Buffer> resource_descriptor_heap_buffer;
-
-        std::unique_ptr<ResourceDescriptorHeap> resource_descriptor_heap;
-
         std::unique_ptr<Texture2d> depth_buffer;
         std::unique_ptr<RenderTargetView> depth_buffer_view;
+
+    private:
+        // Internal members...
     };
 
 } // Rc::Render

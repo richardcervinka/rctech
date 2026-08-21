@@ -191,10 +191,16 @@ namespace Rc
         void DestroyDescriptorPool(VkDescriptorPool& descriptor_pool) const;
 
         // vkWriteResourceDescriptorsEXT
-        void WriteResourceDescriptors(std::span<VkResourceDescriptorInfoEXT const> resources, std::span<VkHostAddressRangeEXT const> descriptors) const;
+        void WriteResourceDescriptorsEXT(std::span<VkResourceDescriptorInfoEXT const> resources, std::span<VkHostAddressRangeEXT const> descriptors) const;
 
         // vkWriteResourceDescriptorsEXT
-        void WriteResourceDescriptor(VkResourceDescriptorInfoEXT const& resource, VkHostAddressRangeEXT const& descriptor) const;
+        void WriteResourceDescriptorEXT(VkResourceDescriptorInfoEXT const& resource, VkHostAddressRangeEXT const& descriptor) const;
+
+        // vkWriteSamplerDescriptorsEXT
+        void WriteSamplerDescriptorsEXT(std::span<VkSamplerCreateInfo const> samplers,  std::span<VkHostAddressRangeEXT const> descriptors) const;
+
+        // vkWriteResourceDescriptorsEXT
+        void WriteSamplerDescriptorEXT(VkSamplerCreateInfo const& samplers, VkHostAddressRangeEXT const& descriptor) const;
 
         // vkGetBufferDeviceAddress
         VkDeviceAddress GetBufferDeviceAddress(VkBufferDeviceAddressInfo const& info) const;
@@ -222,6 +228,9 @@ namespace Rc
 
         // vkCmdSetStencilTestEnableEXT
         void CmdSetStencilTestEnableEXT(VkCommandBuffer command_buffer, VkBool32 enable) const;
+
+        // vkCmdPushDataEXT
+        void CmdPushDataEXT(VkCommandBuffer command_buffer, VkPushDataInfoEXT const& push_data_info) const;
 
     private:
         friend class VulkanContext;
@@ -288,6 +297,7 @@ namespace Rc
         PFN_vkCreateDescriptorPool m_vkCreateDescriptorPool {nullptr};
         PFN_vkDestroyDescriptorPool m_vkDestroyDescriptorPool {nullptr};
         PFN_vkWriteResourceDescriptorsEXT m_vkWriteResourceDescriptorsEXT {nullptr};
+        PFN_vkWriteSamplerDescriptorsEXT m_vkWriteSamplerDescriptorsEXT {nullptr};
         PFN_vkGetBufferDeviceAddress m_vkGetBufferDeviceAddress {nullptr};
         PFN_vkWaitSemaphores m_vkWaitSemaphores {nullptr};
         PFN_vkGetSemaphoreCounterValue m_vkGetSemaphoreCounterValue {nullptr};
@@ -297,6 +307,7 @@ namespace Rc
         PFN_vkCmdSetDepthWriteEnableEXT m_vkCmdSetDepthWriteEnableEXT {nullptr};
         PFN_vkCmdSetDepthCompareOpEXT m_vkCmdSetDepthCompareOpEXT {nullptr};
         PFN_vkCmdSetStencilTestEnableEXT m_vkCmdSetStencilTestEnableEXT {nullptr};
+        PFN_vkCmdPushDataEXT m_vkCmdPushDataEXT {nullptr};
     };
 
 } // Rc

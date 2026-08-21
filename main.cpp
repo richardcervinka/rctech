@@ -33,8 +33,8 @@ public:
             {
                 for (int c = 0; c < 10; c++)
                 {
-                    tm->instances[r * 10 + c].y = std::sin(step + ((Math::pi * r) / 10.0) + ((Math::pi * c) / 10.0)) * 0.3;
-                    tm->instances[r * 10 + c].scale = 0.35 + std::sin(step + ((Math::pi * r) / 10.0) + ((Math::pi * c) / 10.0)) * 0.05;
+                    tm->instances[r * 10 + c].y = Math::Sin(step + ((Math::pi * r) / 10.0) + ((Math::pi * c) / 10.0)) * 0.3;
+                    tm->instances[r * 10 + c].scale = 0.35 + Math::Sin(step + ((Math::pi * r) / 10.0) + ((Math::pi * c) / 10.0)) * 0.05;
                 }
             }
         }
@@ -94,8 +94,6 @@ void TestApplication::Initialize()
     
     test_model->ib_handle = renderer.AllocateIndexBuffer(Render::ResourceFamily{0}, sizeof(uint16_t) * 36);
 
-    test_model->texture = renderer.AllocateTexture2d(Render::ResourceFamily{0}, 16, 16, Render::PixelFormat::ColorRGBA);
-
     resource_timeline = renderer.Upload(test_model->ib_handle, [](Render::BufferWriter& writer) {
         writer << std::array<uint16_t, 36>{
             // front
@@ -119,7 +117,7 @@ void TestApplication::Initialize()
         };
     });
 
-    resource_timeline = renderer.Upload(test_model->texture, [](Render::BufferWriter& writer) {
+    resource_timeline = renderer.Upload(Rc::Render::Texture2dHandle{}, [](Render::BufferWriter& writer) {
 
         static const uint32_t data[256]
         {
@@ -133,7 +131,7 @@ void TestApplication::Initialize()
             0xFF30D0FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF30D0FF,
             0xFF30D0FF, 0xFF30D0FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF30D0FF, 0xFF30D0FF, 0xFF30D0FF,
             0xFF30D0FF, 0xFF10A0FF, 0xFF30D0FF, 0x80303030, 0xFF80E8FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF80E8FF, 0x80303030, 0xFF30D0FF, 0xFF10A0FF, 0xFF30D0FF, 0xFF30D0FF,
-            0xFF10A0FF, 0xFF10A0FF, 0xFF10A0FF, 0xFF30D0FF, 0xFF202020, 0xFF80E8FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF202020, 0xFF30D0FF, 0xFF10A0FF, 0xFF10A0FF, 0xFF10A0FF, 0xFF30D0FF, 0xFF30D0FF,
+            0xFF10A0FF, 0xFF10A0FF, 0xFF10A0FF, 0xFF30D0FF, 0xFF202020, 0xFF80E8FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF202020, 0xFF30D0FF, 0xFF10A0FF, 0xFF10A0FF, 0xFF30D0FF, 0xFF30D0FF,
             0x00000000, 0xFF10A0FF, 0xFF10A0FF, 0xFF10A0FF, 0xFF30D0FF, 0xFF202020, 0xFF202020, 0xFF202020, 0xFF202020, 0xFF202020, 0xFF30D0FF, 0xFF10A0FF, 0xFF10A0FF, 0xFF10A0FF, 0xFF30D0FF, 0x00000000,
             0x00000000, 0xFF30D0FF, 0xFF10A0FF, 0xFF10A0FF, 0xFF10A0FF, 0xFF10A0FF, 0xFF10A0FF, 0xFF10A0FF, 0xFF10A0FF, 0xFF10A0FF, 0xFF10A0FF, 0xFF10A0FF, 0xFF10A0FF, 0xFF30D0FF, 0x00000000, 0x00000000,
             0x00000000, 0x00000000, 0xFF30D0FF, 0xFF10A0FF, 0xFF10A0FF, 0xFF10A0FF, 0xFF10A0FF, 0xFF10A0FF, 0xFF10A0FF, 0xFF10A0FF, 0xFF10A0FF, 0xFF10A0FF, 0xFF30D0FF, 0x00000000, 0x00000000, 0x00000000,
@@ -157,13 +155,13 @@ void TestApplication::Initialize()
             tm.scale = 0.35;
             tm.x = -4.5 + r;
             tm.z = -4.5 + c;
-            tm.y = std::sin(((Math::pi * r) / 10.0) + ((Math::pi * c) / 10.0)) * 0.2;
+            tm.y = Math::Sin(((Math::pi * r) / 10.0) + ((Math::pi * c) / 10.0)) * 0.2;
 
             test_model->instances.push_back(tm);
         }
     }
 
-    renderer.SetupTestScene();
+    //renderer.SetupTestScene();
 }
 
 int APIENTRY wWinMain(

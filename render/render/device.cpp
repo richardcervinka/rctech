@@ -487,6 +487,27 @@ namespace Rc::Render
         return std::make_unique<ResourceDescriptorHeap>(instance, *device, vk_physical_device, std::move(buffer));
     }
 
+    std::unique_ptr<SamplerDescriptorHeap> Device::CreateSamplerDescriptorHeap(uint64_t user_size) const
+    {
+        auto const heap_properties = instance.GetPhysicalDeviceDescriptorHeapProperties(vk_physical_device);
+        auto const size = user_size + heap_properties.minSamplerHeapReservedRange;
+
+        auto buffer = std::make_unique<Buffer>(
+            *device,
+            size,
+            vma_allocator,
+            VkBufferUsageFlags2
+            {
+                VK_BUFFER_USAGE_DESCRIPTOR_HEAP_BIT_EXT |
+                VK_BUFFER_USAGE_2_TRANSFER_DST_BIT |
+                VK_BUFFER_USAGE_2_SHADER_DEVICE_ADDRESS_BIT
+            },
+            VmaAllocationCreateFlags{}
+        );
+
+        return std::make_unique<SamplerDescriptorHeap>(instance, *device, vk_physical_device, std::move(buffer));
+    }
+
     std::unique_ptr<Buffer> Device::AllocateVertexBuffer(uint64_t size) const
     {
         return std::make_unique<Buffer>(

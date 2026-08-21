@@ -55,6 +55,7 @@ namespace Rc
         Load("vkCreateDescriptorPool", m_vkCreateDescriptorPool);
         Load("vkDestroyDescriptorPool", m_vkDestroyDescriptorPool);
         Load("vkWriteResourceDescriptorsEXT", m_vkWriteResourceDescriptorsEXT);
+        Load("vkWriteSamplerDescriptorsEXT", m_vkWriteSamplerDescriptorsEXT);
         Load("vkGetBufferDeviceAddress", m_vkGetBufferDeviceAddress);
         Load("vkWaitSemaphores", m_vkWaitSemaphores);
         Load("vkGetSemaphoreCounterValue", m_vkGetSemaphoreCounterValue);
@@ -64,6 +65,7 @@ namespace Rc
         Load("vkCmdSetDepthWriteEnableEXT", m_vkCmdSetDepthWriteEnableEXT);
         Load("vkCmdSetDepthCompareOpEXT", m_vkCmdSetDepthCompareOpEXT);
         Load("vkCmdSetStencilTestEnableEXT", m_vkCmdSetStencilTestEnableEXT);
+        Load("vkCmdPushDataEXT", m_vkCmdPushDataEXT);
     }
 
     VulkanDevice::~VulkanDevice()
@@ -465,7 +467,7 @@ namespace Rc
         descriptor_pool = VK_NULL_HANDLE;
     }
 
-    void VulkanDevice::WriteResourceDescriptors(std::span<VkResourceDescriptorInfoEXT const> resources, std::span<VkHostAddressRangeEXT const> descriptors) const
+    void VulkanDevice::WriteResourceDescriptorsEXT(std::span<VkResourceDescriptorInfoEXT const> resources, std::span<VkHostAddressRangeEXT const> descriptors) const
     {
         assert(resources.size() == descriptors.size());
 
@@ -475,9 +477,27 @@ namespace Rc
         }
     }
 
-    void VulkanDevice::WriteResourceDescriptor(VkResourceDescriptorInfoEXT const& resource, VkHostAddressRangeEXT const& descriptor) const
+    void VulkanDevice::WriteResourceDescriptorEXT(VkResourceDescriptorInfoEXT const& resource, VkHostAddressRangeEXT const& descriptor) const
     {
         if (auto vk_result = m_vkWriteResourceDescriptorsEXT(m_vk_device, 1u, &resource, &descriptor); vk_result != VK_SUCCESS)
+        {
+            throw VulkanException(vk_result);
+        }
+    }
+
+    void VulkanDevice::WriteSamplerDescriptorsEXT(std::span<VkSamplerCreateInfo const> samplers,  std::span<VkHostAddressRangeEXT const> descriptors) const
+    {
+        assert(samplers.size() == descriptors.size());
+
+        if (auto vk_result = m_vkWriteSamplerDescriptorsEXT(m_vk_device, samplers.size(), samplers.data(), descriptors.data()); vk_result != VK_SUCCESS)
+        {
+            throw VulkanException(vk_result);
+        }
+    }
+
+    void VulkanDevice::WriteSamplerDescriptorEXT(VkSamplerCreateInfo const& sampler, VkHostAddressRangeEXT const& descriptor) const
+    {
+        if (auto vk_result = m_vkWriteSamplerDescriptorsEXT(m_vk_device, 1u, &sampler, &descriptor); vk_result != VK_SUCCESS)
         {
             throw VulkanException(vk_result);
         }
@@ -531,6 +551,11 @@ namespace Rc
     void VulkanDevice::CmdSetStencilTestEnableEXT(VkCommandBuffer command_buffer, VkBool32 enable) const
     {
         m_vkCmdSetStencilTestEnableEXT(command_buffer, enable);
+    }
+
+    void VulkanDevice::CmdPushDataEXT(VkCommandBuffer command_buffer, VkPushDataInfoEXT const& push_data_info) const
+    {
+        m_vkCmdPushDataEXT(command_buffer, &push_data_info);
     }
     
 } // Rc

@@ -13,12 +13,13 @@
 #include "buffer_linear_allocator.h"
 #include "buffer_ring_allocator.h"
 #include "resource.h"
+#include "development.h"
 
 struct TestModel
 {
     Rc::Render::VertexBufferHandle vb_handle;
     Rc::Render::IndexBufferHandle ib_handle; 
-    Rc::Render::Texture2dHandle texture;
+    //Rc::Render::Texture2dHandle texture;
 
     std::vector<Rc::Gfx::Transformations> instances;
 };
@@ -64,8 +65,6 @@ namespace Rc::Render
         // TEST rendering -----------------------
 
         std::unique_ptr<TestModel> test_model;
-
-        void SetupTestScene();
 
         // --------------------------------------
 
@@ -146,7 +145,7 @@ namespace Rc::Render
         uint64_t Upload(Texture2dHandle handle, std::function<void(BufferWriter&)> writer_callback)
         {
             auto lock = std::lock_guard{*resource_uploader};
-            return resource_uploader->Upload(*resource_manager->test_texture, writer_callback);
+            return resource_uploader->Upload(*Rc::Dev::test_texture, writer_callback);
         }
 
     private:
@@ -177,6 +176,9 @@ namespace Rc::Render
             Resize(e.w, e.h);
         }
 
+        void UploadResourceDescriptorHeap(ResourceDescriptorHeap& descriptor_heap);
+        void UploadSamplerDescriptorHeap(SamplerDescriptorHeap& descriptor_heap);
+
         std::unique_ptr<Instance> instance;
         
         std::unique_ptr<Device> device;
@@ -186,6 +188,9 @@ namespace Rc::Render
         std::unique_ptr<SwapChain> swap_chain;
 
         std::unique_ptr<RenderCommandQueue> render_queue;
+
+        std::unique_ptr<RenderCommandBuffer> render_commands;  //---------------------- Rename? Prefix render_ ?
+        std::unique_ptr<Fence> render_fence; //---------------------- Rename? Prefix render_ ?
 
         std::array<std::unique_ptr<Shader>, std::to_underlying(VertexShaderSlot::Count)> vertex_shaders;
         std::array<std::unique_ptr<Shader>, std::to_underlying(PixelShaderSlot::Count)> pixel_shaders;
@@ -206,6 +211,9 @@ namespace Rc::Render
 
         std::unique_ptr<ResourceManager> resource_manager;
         std::unique_ptr<ResourceUploader> resource_uploader;
+
+        std::unique_ptr<ResourceDescriptorHeap> resource_descriptor_heap;
+        std::unique_ptr<SamplerDescriptorHeap> sampler_descriptor_heap;
 
         Window::EventSize::Handler on_window_size {this, &Renderer::OnWindowSize};
 
