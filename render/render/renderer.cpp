@@ -9,11 +9,14 @@
 #include "platform/log.h"
 #include "core/vertex.h"
 #include "base/math.h"
+#include "base/stopwatch.h"
 #include "core/transformations.h"
 #include "core/camera.h"
 #include "generic/input.h"
 #include "constants.h"
 #include "development.h"
+#include <thread>
+#include <chrono>
 
 namespace Rc::Render
 {
@@ -142,7 +145,7 @@ namespace Rc::Render
             frame.commands = frame.queue->CreateCommandBuffer();
             frame.fence = device->CreateFence();
             frame.staging_buffer = std::make_unique<BufferLinearAllocator>(device->AllocateStagingBuffer(staging_buffer_size));
-            frame.instance_buffer = device->AllocateInstanceBuffer(2048 * 32); // ---------------------------------------------------------------- Size?
+            frame.instance_buffer = device->AllocateInstanceBuffer(512 * 512 * 64); // ---------------------------------------------------------------- Size?
             frame.render_pass_uniform_buffer = device->AllocateUniformBuffer(RenderPassConstants::size);
             frame.depth_buffer = device->AllocateDepthBuffer(swap_chain->Width(), swap_chain->Height());
             frame.depth_buffer_view = frame.depth_buffer->CreateDepthBufferView();
@@ -218,8 +221,10 @@ namespace Rc::Render
 
     void Renderer::BeginFrame()
     {
+        //std::this_thread::sleep_for(std::chrono::milliseconds{1});
         frame = &frames[frame_number % frames.size()];
 
+        //frame->Wait();
         frame->Begin();
 
         swap_chain->AcquireNextImage();
@@ -234,7 +239,16 @@ namespace Rc::Render
 
     void Renderer::EndFrame()
     {
-        frame->commands->BarierPresentSwapChain(swap_chain->GetRenderTargetView()); // ---------------
+        //frame->commands->BarierPresentSwapChain(swap_chain->GetRenderTargetView()); // ---------------
+        frame->commands->RenderTargetBarier(
+            swap_chain->GetRenderTargetView(),
+            ImageUsage::ColorAttachmentWrite,
+            ImageUsage::Present,
+            ImageLayout::ColorAttachment,
+            ImageLayout::Present,
+            ImageAccess::ColorAttachmentWrite,
+            ImageAccess::None
+        );
         frame->commands->End();
         
         render_queue->WaitSemaphore(swap_chain->GetAcquireSemaphore());
@@ -328,19 +342,19 @@ namespace Rc::Render
         }
         if (Input::Pushed(Input::KeyCode::RightArrow))
         {
-            camera.transformations.yaw -= 0.005; 
+            camera.transformations.yaw -= 0.01; 
         }
         if (Input::Pushed(Input::KeyCode::LeftArrow))
         {
-            camera.transformations.yaw += 0.005; 
+            camera.transformations.yaw += 0.01; 
         }
         if (Input::Pushed(Input::KeyCode::UpArrow))
         {
-            camera.transformations.pitch += 0.005; 
+            camera.transformations.pitch += 0.01; 
         }
         if (Input::Pushed(Input::KeyCode::DownArrow))
         {
-            camera.transformations.pitch -= 0.005; 
+            camera.transformations.pitch -= 0.01; 
         }
         if (Input::Pushed(Input::KeyCode::Spacebar))
         {
@@ -350,6 +364,8 @@ namespace Rc::Render
         {
             camera.transformations.y -= 0.01;
         }
+
+        Stopwatch stopwatch;
 
         RenderPassContext render_pass_context {};
         render_pass_context.camera = &camera;
@@ -363,10 +379,27 @@ namespace Rc::Render
             });
         }
 
-        frame->commands->UseVertexBuffer(resource_manager->GetBufferRegion(test_model->vb_handle));
-        frame->commands->UseIndexBuffer(resource_manager->GetBufferRegion(test_model->ib_handle));
+        // TODO: Toto je jen docasne reseni
+        static bool barier = true;
+        if (barier)
+        {
+            frame->commands->MemoryBarier(
+                resource_manager->GetBufferRegion(test_model->vb_handle),
+                BufferUsage::Undefined,
+                BufferUsage::VertexInput,
+                BufferAccess::None,
+                BufferAccess::VertexAttribute
+            );
+            frame->commands->MemoryBarier(
+                resource_manager->GetBufferRegion(test_model->ib_handle),
+                BufferUsage::Undefined,
+                BufferUsage::VertexInput,
+                BufferAccess::None,
+                BufferAccess::Index
+            );
 
-        //m_swap_chain->AcquireNextImage();
+            barier = false;
+        }
 
         frame->BeginTestRenderPass(
             *test_vertex_pipeline,
@@ -380,9 +413,12 @@ namespace Rc::Render
         frame->BindInstanceBuffer(0);
         frame->BindIndexBuffer(resource_manager->GetIndexBuffer(ResourceFamily{0}), IndexType::Uint16, 0);
 
-        frame->Draw(36, 10 * 10, 0, 0, 0);
+        frame->Draw(36, 420 * 420, 0, 0, 0);
 
         frame->EndRenderPass();
+
+        const auto render_time = stopwatch.Elapsed<std::chrono::milliseconds>();
+        return;
     }
 
     void Renderer::UploadResourceDescriptorHeap(ResourceDescriptorHeap& descriptor_heap)
@@ -404,7 +440,7 @@ namespace Rc::Render
         render_commands->Reset();
         render_commands->Begin();
         render_commands->TransferBuffer(staging_region, buffer);
-        render_commands->BarierUseResourceDescriptorHeap(buffer);
+
         render_commands->End();
 
         // Submit commands.
@@ -433,7 +469,6 @@ namespace Rc::Render
         render_commands->Reset();
         render_commands->Begin();
         render_commands->TransferBuffer(staging_region, buffer);
-        render_commands->BarierUseSamplerDescriptorHeap(buffer);
         render_commands->End();
 
         // Submit commands.

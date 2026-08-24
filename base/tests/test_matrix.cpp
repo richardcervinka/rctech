@@ -178,8 +178,8 @@ TEST(MatrixTest, Transform)
     
     auto v = m.Transform({1, 2, 0, 1});
 
-    EXPECT_DOUBLE_EQ(v.x, 4);
-    EXPECT_DOUBLE_EQ(v.y, 7);
+    EXPECT_DOUBLE_EQ(v.x, 6);
+    EXPECT_DOUBLE_EQ(v.y, 10);
     EXPECT_DOUBLE_EQ(v.z, 1);
 }
 

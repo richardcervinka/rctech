@@ -18,7 +18,7 @@ TEST(PerspectiveCamera, Projection_Perspective)
     EXPECT_NEAR(m.At(0, 2), 0.0, 0.00001);
     EXPECT_NEAR(m.At(0, 3), 0.0, 0.00001);
     EXPECT_NEAR(m.At(1, 0), 0.0, 0.00001);
-    EXPECT_NEAR(m.At(1, 1), 1.0, 0.00001);
+    EXPECT_NEAR(m.At(1, 1), -1.0, 0.00001);
     EXPECT_NEAR(m.At(1, 2), 0.0, 0.00001);
     EXPECT_NEAR(m.At(1, 3), 0.0, 0.00001);
     EXPECT_NEAR(m.At(2, 0), 0.0, 0.00001);

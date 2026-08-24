@@ -71,7 +71,7 @@ namespace Rc::Render
             auto texture = std::make_unique<Texture2d>(
                 vk_device,
                 image,
-                PixelFormat::ColorRGBA, // ----------------- !!!!!!!!!!!!!!!!!!!!!!
+                Format(),
                 vk_info.imageExtent.width,
                 vk_info.imageExtent.height
             );

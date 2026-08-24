@@ -16,6 +16,7 @@ layout(location = 0) out vec4 out_color;
 
 void main()
 {
+    // ivec2 texCoord = ivec2(in_uv.x * 16, in_uv.y * 16);
     // out_color = texelFetch(textures[4], texCoord, 0);
     out_color =  texture(sampler2D(textures[4], samplers[0]), in_uv);
 }

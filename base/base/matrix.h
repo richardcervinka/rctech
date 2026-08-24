@@ -285,32 +285,32 @@ namespace Rc
         void PrependTranslation(T x, T y, T z) noexcept
         {
             At(0, 0) += x * At(3, 0);
-            At(0, 1) += x * At(3, 1);
-            At(0, 2) += x * At(3, 2);
-            At(0, 3) += x * At(3, 3);
             At(1, 0) += y * At(3, 0);
-            At(1, 1) += y * At(3, 1);
-            At(1, 2) += y * At(3, 2);
-            At(1, 3) += y * At(3, 3);
             At(2, 0) += z * At(3, 0);
+            At(0, 1) += x * At(3, 1);
+            At(1, 1) += y * At(3, 1);
             At(2, 1) += z * At(3, 1);
+            At(0, 2) += x * At(3, 2);
+            At(1, 2) += y * At(3, 2);
             At(2, 2) += z * At(3, 2);
+            At(0, 3) += x * At(3, 3);
+            At(1, 3) += y * At(3, 3);
             At(2, 3) += z * At(3, 3);
         }
 
         void PrependScaling(T x, T y, T z) noexcept
         {
             At(0, 0) *= x;
-            At(0, 1) *= x;
-            At(0, 2) *= x;
-            At(0, 3) *= x;
-            At(1, 0) *= y;
-            At(1, 1) *= y;
-            At(1, 2) *= y;
-            At(1, 3) *= y;
+            At(1, 0) *= y; 
             At(2, 0) *= z;
+            At(0, 1) *= x; 
+            At(1, 1) *= y;
             At(2, 1) *= z;
+            At(0, 2) *= x;
+            At(1, 2) *= y;
             At(2, 2) *= z;
+            At(0, 3) *= x;
+            At(1, 3) *= y;
             At(2, 3) *= z;
         }
 

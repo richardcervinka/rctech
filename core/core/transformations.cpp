@@ -21,9 +21,9 @@ namespace Rc::Gfx
         // 2. translate pivot
         // 3. rotate
 
-        auto m = Matrix4<double>::Scale(scale, scale, scale);
+        auto m = GetRotations().ToMatrix<double>();
         m.AppendTranslation(pivot_x, pivot_y, pivot_z);
-        m.PrependTransformations(GetRotations().ToMatrix<double>());
+        m.AppendScaling(scale, scale, scale);
 
         return m;
     }

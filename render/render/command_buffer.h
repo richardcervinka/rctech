@@ -32,6 +32,58 @@ namespace Rc::Render
         uint32_t ubo_index;
     };
 
+    // Undefined,
+    // VertexBufferRead,
+    // IndexBufferRead,
+    // UniformReadVS,
+    // UniformReadFS,
+    // StorageReadCS,
+    // StorageWriteCS,
+    // SampledReadFS,
+    // TransferSrc,
+    // TransferDst,
+    // ColorAttachmentWrite,
+    // DepthAttachmentWrite,
+    // PresentSrc,
+    enum class ImageUsage
+    {
+        Undefined,
+        DepthStencilTest,
+        ColorAttachmentWrite,
+        Present  // PresentDst
+    };
+
+    enum class ImageLayout
+    {
+        Undefined,
+        ColorAttachment,
+        DeptAttachment,
+        Present
+    };
+
+    enum class ImageAccess
+    {
+        None,
+        DepthStencilTest,
+        ColorAttachmentWrite
+    };
+
+    enum class BufferUsage
+    {
+        Undefined,
+        VertexInput
+        // DepthStencilTest,
+        // ColorAttachmentWrite,
+        // Present  // PresentDst
+    };
+
+    enum class BufferAccess
+    {
+        None,
+        VertexAttribute,
+        Index
+    };
+
     class RenderCommandBuffer
     {
     public:
@@ -109,16 +161,34 @@ namespace Rc::Render
         void EnableStencilTest();
         void DisableStencilTest();
 
-        // Swap chain present target barrier
-        void BarierPresentSwapChain(RenderTargetView const& render_target);
-        void BarierDrawToSwapChain(RenderTargetView const& render_target);
-        void BarierUseDepthBuffer(RenderTargetView const& render_target);
-        void BarierUseResourceDescriptorHeap(BufferRegion& region);
-        void BarierUseSamplerDescriptorHeap(BufferRegion& region);
+
+
+        //enum class ImageAccess
+
+        //enum class AccessStage 
+
+        void RenderTargetBarier(
+            RenderTargetView const& render_target,
+            ImageUsage before_usage,
+            ImageUsage after_usage,
+            ImageLayout before_layout,
+            ImageLayout after_layout,
+            ImageAccess before_access,
+            ImageAccess after_access
+        );
+
+        void MemoryBarier(
+            BufferRegion const& region,
+            BufferUsage before_usage,
+            BufferUsage after_usage,
+            BufferAccess before_access,
+            BufferAccess after_access
+        );
+
         // Set vertex buffer read barrier.
-        void UseVertexBuffer(BufferRegion& region); // TODO
+        //void UseVertexBuffer(BufferRegion& region); // TODO
         // Set index buffer read barrier.
-        void UseIndexBuffer(BufferRegion& region); // TODO
+        // void UseIndexBuffer(BufferRegion& region); // TODO
         void UseUniformBuffer(BufferRegion& region); // TODO
         
         VkCommandBuffer Underlying() const
@@ -163,6 +233,24 @@ namespace Rc::Render
         void Begin();
 
         void End();
+
+        void RenderTargetBarier(
+            RenderTargetView const& render_target,
+            ImageUsage before_usage,
+            ImageUsage after_usage,
+            ImageLayout before_layout,
+            ImageLayout after_layout,
+            ImageAccess before_access,
+            ImageAccess after_access
+        );
+
+        void MemoryBarier(
+            BufferRegion const& region,
+            BufferUsage before_usage,
+            BufferUsage after_usage,
+            BufferAccess before_access,
+            BufferAccess after_access
+        );
 
         // New bariers
 

@@ -29,12 +29,15 @@ public:
         // Test animation
         if (auto& tm = GetRenderer().test_model)
         {
-            for (int r = 0; r < 10; r++)
+            int size = 420;
+
+            for (int r = 0; r < size; r++)
             {
-                for (int c = 0; c < 10; c++)
+                for (int c = 0; c < size; c++)
                 {
-                    tm->instances[r * 10 + c].y = Math::Sin(step + ((Math::pi * r) / 10.0) + ((Math::pi * c) / 10.0)) * 0.3;
-                    tm->instances[r * 10 + c].scale = 0.35 + Math::Sin(step + ((Math::pi * r) / 10.0) + ((Math::pi * c) / 10.0)) * 0.05;
+                    tm->instances[r * size + c].y = Math::Sin(step + ((Math::pi * r) / 10.0) + ((Math::pi * c) / 10.0)) * 0.3;
+                    tm->instances[r * size + c].scale = 0.35 + Math::Sin(step + ((Math::pi * r) / size) + ((Math::pi * c) / size)) * 0.02;
+                    //tm->instances[r * size + c].yaw = step;
                 }
             }
         }
@@ -147,15 +150,15 @@ void TestApplication::Initialize()
 
     renderer.EndUpload();
 
-    for (int r = 0; r < 10; r++)
+    for (int r = 0; r < 420; r++)
     {
-        for (int c = 0; c < 10; c++)
+        for (int c = 0; c < 420; c++)
         {
             Gfx::Transformations tm;
             tm.scale = 0.35;
-            tm.x = -4.5 + r;
-            tm.z = -4.5 + c;
-            tm.y = Math::Sin(((Math::pi * r) / 10.0) + ((Math::pi * c) / 10.0)) * 0.2;
+            tm.x = -210 + r;
+            tm.z = -210 + c;
+            //tm.y = Math::Sin(((Math::pi * r) / 10.0) + ((Math::pi * c) / 10.0)) * 0.2;
 
             test_model->instances.push_back(tm);
         }
