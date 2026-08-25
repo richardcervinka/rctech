@@ -120,8 +120,8 @@ namespace Rc::Render
         render_commands = render_queue->CreateCommandBuffer();
         render_fence = device->CreateFence();
         pipeline_layout = device->CreatePipelineLayout();
-        resource_descriptor_heap = device->CreateResourceDescriptorHeap(2048);
-        sampler_descriptor_heap = device->CreateSamplerDescriptorHeap(2048);
+        resource_descriptor_heap = device->CreateResourceDescriptorHeap(32 * 1024);
+        sampler_descriptor_heap = device->CreateSamplerDescriptorHeap(256);
 
         // TEST
         // ---------------------------- TEST ----------------------------
@@ -131,7 +131,7 @@ namespace Rc::Render
         sampler_descriptor_heap->WriteDefaultSampler(0);
 
         // Create frames in flight.
-        frames.resize(swap_chain->Size());
+        frames.resize(3);
 
         // Initialize frames in flight.
         for (std::size_t i = 0; i < frames.size(); i++)
@@ -141,12 +141,12 @@ namespace Rc::Render
             static constexpr uint64_t staging_buffer_size = 2048; // --------------------- docasne
 
             frame.uniform_buffer_index = static_cast<uint32_t>(i);
-            frame.queue = device->CreateGraphicsQueue();
-            frame.commands = frame.queue->CreateCommandBuffer();
+            //frame.queue = device->CreateGraphicsQueue();
+            frame.commands = render_queue->CreateCommandBuffer();
             frame.fence = device->CreateFence();
             frame.staging_buffer = std::make_unique<BufferLinearAllocator>(device->AllocateStagingBuffer(staging_buffer_size));
-            frame.instance_buffer = device->AllocateInstanceBuffer(512 * 512 * 64); // ---------------------------------------------------------------- Size?
-            frame.render_pass_uniform_buffer = device->AllocateUniformBuffer(RenderPassConstants::size);
+            frame.instance_buffer = device->AllocateInstanceBuffer(512 * 512 * sizeof(Gfx::VertexInstance)); // ---------------------------------------------------------------- Size?
+            frame.render_pass_uniform_buffer = device->AllocateUniformBuffer(1024);
             frame.depth_buffer = device->AllocateDepthBuffer(swap_chain->Width(), swap_chain->Height());
             frame.depth_buffer_view = frame.depth_buffer->CreateDepthBufferView();
 
@@ -224,12 +224,11 @@ namespace Rc::Render
         //std::this_thread::sleep_for(std::chrono::milliseconds{1});
         frame = &frames[frame_number % frames.size()];
 
-        //frame->Wait();
-        frame->Begin();
-
         swap_chain->AcquireNextImage();
 
         resource_uploader->QueryCounter();
+
+        frame->Begin();
 
         if (test_model != nullptr)
         {
@@ -269,6 +268,8 @@ namespace Rc::Render
                 resource_uploader->Transfer();
             }
         }
+
+        
     }
 
     static Gfx::PerspectiveCamera CreateTestCamera()
@@ -311,9 +312,9 @@ namespace Rc::Render
             camera_matrix.At(3, 2)
         };
 
-        camera_forward *= 0.01;
-        camera_right *= 0.01;
-        camera_up *= 0.01;
+        camera_forward *= 0.02;
+        camera_right *= 0.02;
+        camera_up *= 0.02;
         // t.AppendTranslation()
 
         if (Input::Pushed(Input::KeyCode::A))
@@ -358,11 +359,11 @@ namespace Rc::Render
         }
         if (Input::Pushed(Input::KeyCode::Spacebar))
         {
-            camera.transformations.y += 0.01;
+            camera.transformations.y += 0.02;
         }
         if (Input::Pushed(Input::KeyCode::LeftControl))
         {
-            camera.transformations.y -= 0.01;
+            camera.transformations.y -= 0.02;
         }
 
         Stopwatch stopwatch;
@@ -417,8 +418,8 @@ namespace Rc::Render
 
         frame->EndRenderPass();
 
-        const auto render_time = stopwatch.Elapsed<std::chrono::milliseconds>();
-        return;
+        // const auto render_time = stopwatch.Elapsed<std::chrono::milliseconds>();
+        // return;
     }
 
     void Renderer::UploadResourceDescriptorHeap(ResourceDescriptorHeap& descriptor_heap)
@@ -432,14 +433,31 @@ namespace Rc::Render
 
         // Write data heap to the transfer buffer.
         auto const memory = transfer_buffer->Map(staging_region);
-        std::copy(data.begin(), data.end(), memory.data());
+        std::copy(data.begin(), data.end(), memory.begin());
 
         render_fence->Wait();
 
         // Transfer the staging buffer.
         render_commands->Reset();
         render_commands->Begin();
+
+        render_commands->MemoryBarier(
+            buffer,
+            BufferUsage::Undefined,
+            BufferUsage::Transfer,
+            BufferAccess::None,
+            BufferAccess::TransferDst
+        );
+
         render_commands->TransferBuffer(staging_region, buffer);
+
+        render_commands->MemoryBarier(
+            buffer,
+            BufferUsage::Transfer,
+            BufferUsage::DescriptorHeap,
+            BufferAccess::TransferDst,
+            BufferAccess::ResourceDescriptorHeap
+        );
 
         render_commands->End();
 
@@ -468,7 +486,25 @@ namespace Rc::Render
         // Transfer the staging buffer.
         render_commands->Reset();
         render_commands->Begin();
+
+        render_commands->MemoryBarier(
+            buffer,
+            BufferUsage::Undefined,
+            BufferUsage::Transfer,
+            BufferAccess::None,
+            BufferAccess::TransferDst
+        );
+
         render_commands->TransferBuffer(staging_region, buffer);
+
+        render_commands->MemoryBarier(
+            buffer,
+            BufferUsage::Transfer,
+            BufferUsage::DescriptorHeap,
+            BufferAccess::TransferDst,
+            BufferAccess::SamplerDescriptorHeap
+        );
+
         render_commands->End();
 
         // Submit commands.

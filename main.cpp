@@ -24,7 +24,7 @@ public:
         }
 
         static double step = 0;
-        step += 0.005;
+        step += 0.010;
 
         // Test animation
         if (auto& tm = GetRenderer().test_model)

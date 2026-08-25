@@ -34,6 +34,13 @@ namespace Rc::Render
                 return VK_PIPELINE_STAGE_2_NONE;
             case BufferUsage::VertexInput:
                 return VK_PIPELINE_STAGE_2_VERTEX_INPUT_BIT;
+            case BufferUsage::Transfer:
+                return VK_PIPELINE_STAGE_2_TRANSFER_BIT;
+            case BufferUsage::DescriptorHeap:
+                return {
+                    VK_PIPELINE_STAGE_2_VERTEX_SHADER_BIT |
+                    VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT
+                };
         }
 
         std::unreachable();
@@ -84,6 +91,14 @@ namespace Rc::Render
                 return VK_ACCESS_2_VERTEX_ATTRIBUTE_READ_BIT;
             case BufferAccess::Index:
                 return VK_ACCESS_2_INDEX_READ_BIT;
+            case BufferAccess::TransferSrc:
+                return VK_ACCESS_2_TRANSFER_READ_BIT;
+            case BufferAccess::TransferDst:
+                return VK_ACCESS_2_TRANSFER_WRITE_BIT;  
+            case BufferAccess::ResourceDescriptorHeap:
+                return VK_ACCESS_2_RESOURCE_HEAP_READ_BIT_EXT;
+            case BufferAccess::SamplerDescriptorHeap:
+                return VK_ACCESS_2_SAMPLER_HEAP_READ_BIT_EXT;
         }
 
         std::unreachable();
@@ -325,39 +340,6 @@ namespace Rc::Render
     {
         assert(src.Size() == dst.Size());
 
-        VkBufferMemoryBarrier2 const barrier
-        {
-            .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2,
-            .pNext = nullptr,
-            .srcStageMask = dst.stage_flags,
-            .srcAccessMask = dst.access_flags,
-            .dstStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT,
-            .dstAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT,
-            .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-            .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-            .buffer = dst.Underlying(),
-            .offset = VkDeviceSize{dst.Offset()},
-            .size = VkDeviceSize{dst.Size()}
-        };
-
-        VkDependencyInfo const dependency_info
-        {
-            .sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
-            .pNext = nullptr,
-            .dependencyFlags = {},
-            .memoryBarrierCount = 0,
-            .pMemoryBarriers = nullptr,
-            .bufferMemoryBarrierCount = 1,
-            .pBufferMemoryBarriers = &barrier,
-            .imageMemoryBarrierCount = 0,
-            .pImageMemoryBarriers = nullptr
-        };
-
-        vk_device.CmdPipelineBarrier2(vk_command_buffer, dependency_info);
-
-        dst.access_flags = VK_ACCESS_2_TRANSFER_WRITE_BIT;
-        dst.stage_flags = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
-
         struct VkBufferCopy region
         {
             .srcOffset = VkDeviceSize{src.Offset()},
@@ -376,9 +358,9 @@ namespace Rc::Render
         {
             .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2,
             .pNext = nullptr,
-            .srcStageMask = region.stage_flags,
-            .srcAccessMask = region.access_flags,
-            .dstStageMask = VK_PIPELINE_STAGE_2_VERTEX_SHADER_BIT,
+            .srcStageMask = VK_PIPELINE_STAGE_2_NONE,
+            .srcAccessMask = VK_ACCESS_2_NONE,
+            .dstStageMask = VK_PIPELINE_STAGE_2_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT,
             .dstAccessMask = VK_ACCESS_2_UNIFORM_READ_BIT,
             .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
             .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,

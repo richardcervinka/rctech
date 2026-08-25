@@ -1,6 +1,7 @@
 #include "frame_renderer.h"
 #include "constants.h"
-
+#include <thread>
+#include <chrono>
 namespace Rc::Render
 {
     void Frame::Resize(Device const& device, uint32_t width, uint32_t height)
@@ -11,8 +12,11 @@ namespace Rc::Render
 
     void Frame::Begin()
     {
+        //std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        // std::atomic_signal_fence(std::memory_order_seq_cst);
+
         fence->Wait();
-        fence->Reset();
+        fence->Reset(); // ----------------- Do End() ?
         staging_buffer->Reset();
         
         commands->Reset();
@@ -37,7 +41,8 @@ namespace Rc::Render
         Rectangle<int> const framebuffer_area {0, 0, framebuffer.Width(), framebuffer.Height()};
 
         // Update uniform buffer
-        {
+        //static int cnt = 0;
+        /*if (uniform_buffer_index == 1)*/ {
             auto region = render_pass_uniform_buffer->GetRegion(0, RenderPassConstants::size);
 
             RenderPassConstants constants
@@ -46,6 +51,8 @@ namespace Rc::Render
             };
 
             constants.Write(*render_pass_uniform_buffer, region);
+
+            commands->UseUniformBuffer(region);
         }
 
         // Begin rendering

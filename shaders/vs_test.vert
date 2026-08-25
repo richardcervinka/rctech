@@ -43,7 +43,7 @@ void main()
     // Global transformations
     position = mat4x4(in_world_0, in_world_1, in_world_2, in_world_3) * position;
     // Camera projection
-    position = ubo[push_data.ubo_index].camera_projection * position;
+    position = ubo[push_data.ubo_index].camera_projection * position; // push_data.ubo_index
 
     gl_Position = position;
 

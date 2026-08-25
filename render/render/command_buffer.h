@@ -71,7 +71,9 @@ namespace Rc::Render
     enum class BufferUsage
     {
         Undefined,
-        VertexInput
+        VertexInput,
+        Transfer,
+        DescriptorHeap
         // DepthStencilTest,
         // ColorAttachmentWrite,
         // Present  // PresentDst
@@ -81,7 +83,11 @@ namespace Rc::Render
     {
         None,
         VertexAttribute,
-        Index
+        Index,
+        TransferSrc,
+        TransferDst,
+        ResourceDescriptorHeap,
+        SamplerDescriptorHeap
     };
 
     class RenderCommandBuffer

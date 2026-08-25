@@ -72,7 +72,7 @@ namespace Rc::Render
 
         uint32_t uniform_buffer_index {};
 
-        std::unique_ptr<RenderCommandQueue> queue;
+        //std::unique_ptr<RenderCommandQueue> queue;
 
         std::unique_ptr<Fence> fence;
         
@@ -84,7 +84,7 @@ namespace Rc::Render
 
         std::span<std::byte> instance_map;
 
-        BufferWriter instance_writer;
+        BufferWriter instance_writer; //--------------------
 
         std::unique_ptr<Buffer> render_pass_uniform_buffer;
 

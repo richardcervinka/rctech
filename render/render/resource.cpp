@@ -85,6 +85,14 @@ namespace Rc::Render
         BufferWriter writer(staging_memory);
         writer_callback(writer);
 
+        transfer_commands->MemoryBarier(
+            region,
+            BufferUsage::Undefined,
+            BufferUsage::Transfer,
+            BufferAccess::None,
+            BufferAccess::TransferDst
+        );
+
         transfer_commands->TransferBuffer(*staging_region, region);
 
         return transfer_buffer->TimelineValue();

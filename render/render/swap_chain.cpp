@@ -88,6 +88,7 @@ namespace Rc::Render
             back_buffers.emplace_back(std::move(texture), std::move(render_target));
 
             acquire_semaphores.push_back(std::make_unique<Semaphore>(vk_device));
+            acquire_semaphores.push_back(std::make_unique<Semaphore>(vk_device));
             present_semaphores.push_back(std::make_unique<Semaphore>(vk_device));
         }
 
@@ -96,7 +97,7 @@ namespace Rc::Render
 
     void SwapChain::AcquireNextImage()
     {
-        acquire_index = (acquire_index + 1) % Size();
+        acquire_index = (acquire_index + 1) % acquire_semaphores.size();
 
         image_index = vk_device.AcquireNextImageKHR(
             vk_swap_chain,
