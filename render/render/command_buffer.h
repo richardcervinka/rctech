@@ -71,23 +71,19 @@ namespace Rc::Render
     enum class BufferUsage
     {
         Undefined,
-        VertexInput,
-        Transfer,
-        DescriptorHeap
+        VertexBuffer,
+        IndexBuffer,
+        UniformBuffer,
+        //TransferRead,
+        TransferWrite,
+        ResourceDescriptorHeap,
+        SamplerDescriptorHeap
+        // Transfer,
+        // DescriptorHeap,
+        // UniformBuffer
         // DepthStencilTest,
         // ColorAttachmentWrite,
         // Present  // PresentDst
-    };
-
-    enum class BufferAccess
-    {
-        None,
-        VertexAttribute,
-        Index,
-        TransferSrc,
-        TransferDst,
-        ResourceDescriptorHeap,
-        SamplerDescriptorHeap
     };
 
     class RenderCommandBuffer
@@ -186,17 +182,9 @@ namespace Rc::Render
         void MemoryBarier(
             BufferRegion const& region,
             BufferUsage before_usage,
-            BufferUsage after_usage,
-            BufferAccess before_access,
-            BufferAccess after_access
+            BufferUsage after_usage
         );
 
-        // Set vertex buffer read barrier.
-        //void UseVertexBuffer(BufferRegion& region); // TODO
-        // Set index buffer read barrier.
-        // void UseIndexBuffer(BufferRegion& region); // TODO
-        void UseUniformBuffer(BufferRegion& region); // TODO
-        
         VkCommandBuffer Underlying() const
         {
             return vk_command_buffer;
@@ -253,9 +241,7 @@ namespace Rc::Render
         void MemoryBarier(
             BufferRegion const& region,
             BufferUsage before_usage,
-            BufferUsage after_usage,
-            BufferAccess before_access,
-            BufferAccess after_access
+            BufferUsage after_usage
         );
 
         // New bariers

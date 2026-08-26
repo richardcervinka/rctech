@@ -115,7 +115,7 @@ namespace Rc::Render
         // Indexed by the m_index.
         std::vector<std::unique_ptr<Semaphore>> present_semaphores;
 
-        int acquire_index {-1};
+        uint32_t acquire_index {0};
 
         uint32_t image_index {0};
     };

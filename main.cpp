@@ -24,7 +24,7 @@ public:
         }
 
         static double step = 0;
-        step += 0.010;
+        step += 0.020;
 
         // Test animation
         if (auto& tm = GetRenderer().test_model)
@@ -36,7 +36,7 @@ public:
                 for (int c = 0; c < size; c++)
                 {
                     tm->instances[r * size + c].y = Math::Sin(step + ((Math::pi * r) / 10.0) + ((Math::pi * c) / 10.0)) * 0.3;
-                    tm->instances[r * size + c].scale = 0.35 + Math::Sin(step + ((Math::pi * r) / size) + ((Math::pi * c) / size)) * 0.02;
+                    tm->instances[r * size + c].scale = 0.35 + Math::Sin(step + ((Math::pi * r) / 10.0) + ((Math::pi * c) / 10.0)) * 0.03;
                     //tm->instances[r * size + c].yaw = step;
                 }
             }

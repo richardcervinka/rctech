@@ -52,7 +52,7 @@ namespace Rc::Render
 
             constants.Write(*render_pass_uniform_buffer, region);
 
-            commands->UseUniformBuffer(region);
+            commands->MemoryBarier(region, BufferUsage::Undefined, BufferUsage::UniformBuffer);  // ------------------------------ NE KAZDY FRAME !!!!!!!!!!!!!!!!
         }
 
         // Begin rendering

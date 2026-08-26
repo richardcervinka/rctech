@@ -387,16 +387,12 @@ namespace Rc::Render
             frame->commands->MemoryBarier(
                 resource_manager->GetBufferRegion(test_model->vb_handle),
                 BufferUsage::Undefined,
-                BufferUsage::VertexInput,
-                BufferAccess::None,
-                BufferAccess::VertexAttribute
+                BufferUsage::VertexBuffer
             );
             frame->commands->MemoryBarier(
                 resource_manager->GetBufferRegion(test_model->ib_handle),
                 BufferUsage::Undefined,
-                BufferUsage::VertexInput,
-                BufferAccess::None,
-                BufferAccess::Index
+                BufferUsage::IndexBuffer
             );
 
             barier = false;
@@ -440,25 +436,9 @@ namespace Rc::Render
         // Transfer the staging buffer.
         render_commands->Reset();
         render_commands->Begin();
-
-        render_commands->MemoryBarier(
-            buffer,
-            BufferUsage::Undefined,
-            BufferUsage::Transfer,
-            BufferAccess::None,
-            BufferAccess::TransferDst
-        );
-
+        render_commands->MemoryBarier(buffer, BufferUsage::Undefined, BufferUsage::TransferWrite);
         render_commands->TransferBuffer(staging_region, buffer);
-
-        render_commands->MemoryBarier(
-            buffer,
-            BufferUsage::Transfer,
-            BufferUsage::DescriptorHeap,
-            BufferAccess::TransferDst,
-            BufferAccess::ResourceDescriptorHeap
-        );
-
+        render_commands->MemoryBarier(buffer, BufferUsage::TransferWrite, BufferUsage::ResourceDescriptorHeap);
         render_commands->End();
 
         // Submit commands.
@@ -486,25 +466,9 @@ namespace Rc::Render
         // Transfer the staging buffer.
         render_commands->Reset();
         render_commands->Begin();
-
-        render_commands->MemoryBarier(
-            buffer,
-            BufferUsage::Undefined,
-            BufferUsage::Transfer,
-            BufferAccess::None,
-            BufferAccess::TransferDst
-        );
-
+        render_commands->MemoryBarier(buffer, BufferUsage::Undefined, BufferUsage::TransferWrite);
         render_commands->TransferBuffer(staging_region, buffer);
-
-        render_commands->MemoryBarier(
-            buffer,
-            BufferUsage::Transfer,
-            BufferUsage::DescriptorHeap,
-            BufferAccess::TransferDst,
-            BufferAccess::SamplerDescriptorHeap
-        );
-
+        render_commands->MemoryBarier(buffer, BufferUsage::TransferWrite, BufferUsage::SamplerDescriptorHeap);
         render_commands->End();
 
         // Submit commands.
