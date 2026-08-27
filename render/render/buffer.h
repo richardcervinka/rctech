@@ -56,9 +56,6 @@ namespace Rc::Render
         uint64_t offset {0};
         uint64_t size {0};
         //uint64_t generation {0};
-
-        VkAccessFlags2 access_flags {VK_ACCESS_NONE};
-        VkPipelineStageFlags stage_flags {VK_PIPELINE_STAGE_NONE};
     };
 
     //

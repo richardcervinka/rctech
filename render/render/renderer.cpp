@@ -238,16 +238,12 @@ namespace Rc::Render
 
     void Renderer::EndFrame()
     {
-        //frame->commands->BarierPresentSwapChain(swap_chain->GetRenderTargetView()); // ---------------
-        frame->commands->RenderTargetBarier(
+        frame->commands->RenderTargetBarrier(
             swap_chain->GetRenderTargetView(),
-            ImageUsage::ColorAttachmentWrite,
-            ImageUsage::Present,
-            ImageLayout::ColorAttachment,
-            ImageLayout::Present,
-            ImageAccess::ColorAttachmentWrite,
-            ImageAccess::None
+            ImageUsage::ColorAttachment,
+            ImageUsage::SwapChainSubmit
         );
+
         frame->commands->End();
         
         render_queue->WaitSemaphore(swap_chain->GetAcquireSemaphore());
@@ -384,12 +380,12 @@ namespace Rc::Render
         static bool barier = true;
         if (barier)
         {
-            frame->commands->MemoryBarier(
+            frame->commands->MemoryBarrier(
                 resource_manager->GetBufferRegion(test_model->vb_handle),
                 BufferUsage::Undefined,
                 BufferUsage::VertexBuffer
             );
-            frame->commands->MemoryBarier(
+            frame->commands->MemoryBarrier(
                 resource_manager->GetBufferRegion(test_model->ib_handle),
                 BufferUsage::Undefined,
                 BufferUsage::IndexBuffer
@@ -436,9 +432,9 @@ namespace Rc::Render
         // Transfer the staging buffer.
         render_commands->Reset();
         render_commands->Begin();
-        render_commands->MemoryBarier(buffer, BufferUsage::Undefined, BufferUsage::TransferWrite);
+        render_commands->MemoryBarrier(buffer, BufferUsage::Undefined, BufferUsage::TransferWrite);
         render_commands->TransferBuffer(staging_region, buffer);
-        render_commands->MemoryBarier(buffer, BufferUsage::TransferWrite, BufferUsage::ResourceDescriptorHeap);
+        render_commands->MemoryBarrier(buffer, BufferUsage::TransferWrite, BufferUsage::ResourceDescriptorHeap);
         render_commands->End();
 
         // Submit commands.
@@ -466,9 +462,21 @@ namespace Rc::Render
         // Transfer the staging buffer.
         render_commands->Reset();
         render_commands->Begin();
-        render_commands->MemoryBarier(buffer, BufferUsage::Undefined, BufferUsage::TransferWrite);
+
+        render_commands->MemoryBarrier(
+            buffer,
+            BufferUsage::Undefined,
+            BufferUsage::TransferWrite
+        );
+
         render_commands->TransferBuffer(staging_region, buffer);
-        render_commands->MemoryBarier(buffer, BufferUsage::TransferWrite, BufferUsage::SamplerDescriptorHeap);
+
+        render_commands->MemoryBarrier(
+            buffer,
+            BufferUsage::TransferWrite,
+            BufferUsage::SamplerDescriptorHeap
+        );
+
         render_commands->End();
 
         // Submit commands.

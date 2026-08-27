@@ -1,7 +1,6 @@
 #include "frame_renderer.h"
 #include "constants.h"
-#include <thread>
-#include <chrono>
+
 namespace Rc::Render
 {
     void Frame::Resize(Device const& device, uint32_t width, uint32_t height)
@@ -41,8 +40,7 @@ namespace Rc::Render
         Rectangle<int> const framebuffer_area {0, 0, framebuffer.Width(), framebuffer.Height()};
 
         // Update uniform buffer
-        //static int cnt = 0;
-        /*if (uniform_buffer_index == 1)*/ {
+        {
             auto region = render_pass_uniform_buffer->GetRegion(0, RenderPassConstants::size);
 
             RenderPassConstants constants
@@ -52,7 +50,7 @@ namespace Rc::Render
 
             constants.Write(*render_pass_uniform_buffer, region);
 
-            commands->MemoryBarier(region, BufferUsage::Undefined, BufferUsage::UniformBuffer);  // ------------------------------ NE KAZDY FRAME !!!!!!!!!!!!!!!!
+            commands->MemoryBarrier(region, BufferUsage::Undefined, BufferUsage::UniformBuffer);  // ------------------------------ NE KAZDY FRAME !!!!!!!!!!!!!!!!
         }
 
         // Begin rendering
@@ -81,30 +79,22 @@ namespace Rc::Render
         commands->BindSamplerDescriptorHeap(sampler_descriptor_heap);
         commands->EnableColorAttachment(RenderTargetSlot::FrameBuffer, framebuffer);
 
-        commands->RenderTargetBarier(
+        commands->RenderTargetBarrier(
             framebuffer,
-            ImageUsage::Undefined,
-            ImageUsage::ColorAttachmentWrite,
-            ImageLayout::Present,
-            ImageLayout::ColorAttachment,
-            ImageAccess::None,
-            ImageAccess::ColorAttachmentWrite
+            ImageUsage::SwapChainAcquire,
+            ImageUsage::ColorAttachment
         );
-
+        
         commands->DisableStencilTest(); // -------------- redundantni? Reset state?
         commands->EnableDepthTest();
         commands->EnableDepthWrite();
         commands->SetDepthCompareGreater();
         commands->AttachDepthBuffer(*depth_buffer_view);
         
-        commands->RenderTargetBarier(
+        commands->RenderTargetBarrier(
             *depth_buffer_view,
             ImageUsage::Undefined,
-            ImageUsage::DepthStencilTest,
-            ImageLayout::Undefined,
-            ImageLayout::DeptAttachment,
-            ImageAccess::None,
-            ImageAccess::DepthStencilTest
+            ImageUsage::DepthBuffer
         );
 
         commands->ClearRenderTarget(RenderTargetSlot::FrameBuffer, Color(0, 0, 0, 1));

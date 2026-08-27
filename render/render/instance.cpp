@@ -141,7 +141,7 @@ namespace Rc::Render
         VkDebugUtilsMessengerCallbackDataEXT const* callback_data,
         [[maybe_unused]] void* user_data)
     {
-        Log::Debug(std::format("Validation Layer: {}", callback_data->pMessage));
+        Log::Debug(std::format("\nValidation Layer:\n {}", callback_data->pMessage));
         return VK_FALSE;  
     }
 

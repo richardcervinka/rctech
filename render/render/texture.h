@@ -102,11 +102,6 @@ namespace Rc::Render
         uint32_t height {0};
 
         VkImage vk_image {VK_NULL_HANDLE};
-        //bool ovner {false};
-
-        // VkImageLayout layout {VK_IMAGE_LAYOUT_UNDEFINED};
-        // VkAccessFlags2 access_flags {VK_ACCESS_NONE};
-        // VkPipelineStageFlags stage_flags {VK_PIPELINE_STAGE_NONE};
     };
 
 } // Rc::Render

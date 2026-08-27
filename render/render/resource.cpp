@@ -85,8 +85,15 @@ namespace Rc::Render
         BufferWriter writer(staging_memory);
         writer_callback(writer);
 
-        transfer_commands->MemoryBarier(region,  BufferUsage::Undefined, BufferUsage::TransferWrite);
+        transfer_commands->MemoryBarrier(
+            region, 
+            BufferUsage::Undefined,
+            BufferUsage::TransferWrite
+        );
+        
         transfer_commands->TransferBuffer(*staging_region, region);
+
+        //-------------------------------- Release
 
         return transfer_buffer->TimelineValue();
     }
@@ -96,15 +103,27 @@ namespace Rc::Render
         assert(writer_callback != nullptr);
 
         auto staging_region = transfer_buffer->Allocate(texture.GetLinearDataSize());  // -------------- Reset complete allocations, see RingAllocator
-        // // TODO: Throw when vb_region is nullopt? Or Fallback --------------------------------------------------------
+        // TODO: Throw when vb_region is nullopt? Or Fallback --------------------------------------------------------
         auto staging_memory = transfer_buffer->Map<std::byte>(*staging_region);
 
         BufferWriter writer(staging_memory);
         writer_callback(writer);
 
-        transfer_commands->BarierAcquireTextureTransfer(texture);
+        transfer_commands->Texture2dBarrier(
+            texture,
+            ImageUsage::Undefined,
+            ImageUsage::TransferWrite
+        );
+
         transfer_commands->TransferTexture(*staging_region, texture);
-        transfer_commands->BarierReleaseTextureTransfer(texture, render_queue_family_index);
+
+        transfer_commands->Texture2dBarrier(
+            texture,
+            ImageUsage::TransferWrite,
+            ImageUsage::TransferImageRelease,
+            transfer_queue->FamilyIndex(),
+            render_queue_family_index
+        );
 
         return transfer_buffer->TimelineValue();
     }

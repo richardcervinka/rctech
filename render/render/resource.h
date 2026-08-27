@@ -207,7 +207,7 @@ namespace Rc::Render
 
         std::atomic<bool> pending {false};
 
-        uint32_t render_queue_family_index {};
+        uint32_t render_queue_family_index {}; // -------------------------------------
     };
 
 } // Rc::Render

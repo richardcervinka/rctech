@@ -32,6 +32,18 @@ namespace Rc::Render
         uint32_t ubo_index;
     };
 
+    enum class BufferUsage
+    {
+        Undefined,
+        VertexBuffer,
+        IndexBuffer,
+        UniformBuffer,
+        //TransferRead,
+        TransferWrite,
+        ResourceDescriptorHeap,
+        SamplerDescriptorHeap
+    };
+
     // Undefined,
     // VertexBufferRead,
     // IndexBufferRead,
@@ -45,46 +57,24 @@ namespace Rc::Render
     // ColorAttachmentWrite,
     // DepthAttachmentWrite,
     // PresentSrc,
+
     enum class ImageUsage
     {
         Undefined,
-        DepthStencilTest,
-        ColorAttachmentWrite,
-        Present  // PresentDst
-    };
-
-    enum class ImageLayout
-    {
-        Undefined,
+        DepthBuffer,
+        SwapChainAcquire,
+        SwapChainSubmit,
         ColorAttachment,
-        DeptAttachment,
-        Present
-    };
-
-    enum class ImageAccess
-    {
-        None,
-        DepthStencilTest,
-        ColorAttachmentWrite
-    };
-
-    enum class BufferUsage
-    {
-        Undefined,
-        VertexBuffer,
-        IndexBuffer,
-        UniformBuffer,
-        //TransferRead,
         TransferWrite,
-        ResourceDescriptorHeap,
-        SamplerDescriptorHeap
-        // Transfer,
-        // DescriptorHeap,
-        // UniformBuffer
-        // DepthStencilTest,
-        // ColorAttachmentWrite,
-        // Present  // PresentDst
+
+        // Release image from queue family
+        TransferImageRelease,
+
+        // Acquire image from queue family
+        //TransferAcquire
     };
+
+    // TODO: TransferBarrier
 
     class RenderCommandBuffer
     {
@@ -100,9 +90,7 @@ namespace Rc::Render
 
         void Reset();
 
-        // Bedin base render commands.
         void Begin();
-
         void End();
 
         void EnableColorAttachment(RenderTargetSlot slot, RenderTargetView const& render_target);
@@ -163,26 +151,38 @@ namespace Rc::Render
         void EnableStencilTest();
         void DisableStencilTest();
 
-
-
-        //enum class ImageAccess
-
-        //enum class AccessStage 
-
-        void RenderTargetBarier(
-            RenderTargetView const& render_target,
-            ImageUsage before_usage,
-            ImageUsage after_usage,
-            ImageLayout before_layout,
-            ImageLayout after_layout,
-            ImageAccess before_access,
-            ImageAccess after_access
-        );
-
-        void MemoryBarier(
+        void MemoryBarrier(
             BufferRegion const& region,
             BufferUsage before_usage,
             BufferUsage after_usage
+        );
+
+        void MemoryBarrier(
+            BufferRegion const& region,
+            BufferUsage before_usage,
+            BufferUsage after_usage,
+            uint32_t before_queue_family_index,
+            uint32_t after_queue_family_index
+        );
+
+        void RenderTargetBarrier(
+            RenderTargetView const& render_target,
+            ImageUsage before_usage,
+            ImageUsage after_usage
+        );
+
+        void Texture2dBarrier(
+            Texture2d const& texture,
+            ImageUsage before_usage,
+            ImageUsage after_usage
+        );
+
+        void Texture2dBarrier(
+            Texture2d const& texture,
+            ImageUsage before_usage,
+            ImageUsage after_usage,
+            uint32_t before_queue_family_index,
+            uint32_t after_queue_family_index
         );
 
         VkCommandBuffer Underlying() const
@@ -223,38 +223,42 @@ namespace Rc::Render
 
         void Reset();
 
-        // Bedin base render commands.
         void Begin();
-
         void End();
 
-        void RenderTargetBarier(
-            RenderTargetView const& render_target,
-            ImageUsage before_usage,
-            ImageUsage after_usage,
-            ImageLayout before_layout,
-            ImageLayout after_layout,
-            ImageAccess before_access,
-            ImageAccess after_access
-        );
-
-        void MemoryBarier(
+        void MemoryBarrier(
             BufferRegion const& region,
             BufferUsage before_usage,
             BufferUsage after_usage
         );
 
-        // New bariers
-
-        void BarierAcquireTextureTransfer(Texture2d const& texture);
-        void BarierReleaseTextureTransfer(Texture2d const& texture, uint32_t dst_queue_family_index);
-
-        void TransferBuffer(
-            BufferRegion const& src,
-            BufferRegion& dst,
-            uint32_t dst_queue_family_index = 0
+        void MemoryBarrier(
+            BufferRegion const& region,
+            BufferUsage before_usage,
+            BufferUsage after_usage,
+            uint32_t before_queue_family_index,
+            uint32_t after_queue_family_index
         );
 
+        void Texture2dBarrier(
+            Texture2d const& texture,
+            ImageUsage before_usage,
+            ImageUsage after_usage
+        );
+
+        void Texture2dBarrier(
+            Texture2d const& texture,
+            ImageUsage before_usage,
+            ImageUsage after_usage,
+            uint32_t before_queue_family_index,
+            uint32_t after_queue_family_index
+        );
+
+        // New bariers
+
+        //void BarierReleaseTextureTransfer(Texture2d const& texture, uint32_t dst_queue_family_index);
+
+        void TransferBuffer(BufferRegion const& src, BufferRegion& dst);
         void TransferTexture(BufferRegion const& src, Texture2d& dst);
         
         VkCommandBuffer Underlying() const
