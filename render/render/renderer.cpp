@@ -161,14 +161,20 @@ namespace Rc::Render
             );
         }
 
-        UploadResourceDescriptorHeap(*resource_descriptor_heap);
-        UploadSamplerDescriptorHeap(*sampler_descriptor_heap);
+        CopyBuffer(
+            resource_descriptor_heap->Data(),
+            resource_descriptor_heap->GetBufferRegion(),
+            BufferUsage::ResourceDescriptorHeap
+        );
+
+        CopyBuffer(
+            sampler_descriptor_heap->Data(),
+            sampler_descriptor_heap->GetBufferRegion(),
+            BufferUsage::SamplerDescriptorHeap
+        );
 
         // Create embedded shaders.
         InitializeShaders();
-
-        // Handle window resizing.
-        window.OnEventSize(on_window_size);
 
         resource_manager = std::make_unique<ResourceManager>(*device);
         resource_uploader = std::make_unique<ResourceUploader>(*device);
@@ -198,6 +204,9 @@ namespace Rc::Render
             });
             test_vertex_pipeline = factory.Create();
         }
+
+        // Handle window resizing.
+        window.OnEventSize(on_window_size);
 
         Log::Debug("Renderer initialized");
     }
@@ -231,8 +240,10 @@ namespace Rc::Render
         resource_uploader->QueryCounter();
 
         frame->Begin(swap_chain->GetRenderTargetView());
+        frame->BindResourceDescriptorHeap(*resource_descriptor_heap);
+        frame->BindSamplerDescriptorHeap(*sampler_descriptor_heap);
 
-        if (test_model != nullptr)
+        if (Rc::Dev::initialized)
         {
             Test();
         }
@@ -259,9 +270,7 @@ namespace Rc::Render
             {
                 resource_uploader->Transfer();
             }
-        }
-
-        
+        }      
     }
 
     static Gfx::PerspectiveCamera CreateTestCamera()
@@ -364,7 +373,7 @@ namespace Rc::Render
         render_pass_context.camera = &camera;
 
         // Build instance buffer.
-        for (auto& instnace : test_model->instances)
+        for (auto& instnace : Rc::Dev::instances)
         {
             frame->WriteInstance({
                 .local_transformations = instnace.Local().To<float>(),
@@ -377,12 +386,12 @@ namespace Rc::Render
         if (barier)
         {
             frame->commands->MemoryBarrier(
-                resource_manager->GetBufferRegion(test_model->vb_handle),
+                resource_manager->GetBufferRegion(Rc::Dev::vb_handle),
                 BufferUsage::Undefined,
                 BufferUsage::VertexBuffer
             );
             frame->commands->MemoryBarrier(
-                resource_manager->GetBufferRegion(test_model->ib_handle),
+                resource_manager->GetBufferRegion(Rc::Dev::ib_handle),
                 BufferUsage::Undefined,
                 BufferUsage::IndexBuffer
             );
@@ -399,8 +408,6 @@ namespace Rc::Render
 
         frame->BeginTestRenderPass(
             *test_vertex_pipeline,
-            *resource_descriptor_heap,
-            *sampler_descriptor_heap,
             swap_chain->GetRenderTargetView(),
             render_pass_context
         );
@@ -412,78 +419,37 @@ namespace Rc::Render
         frame->Draw(36, 420 * 420, 0, 0, 0);
 
         frame->EndRenderPass();
-
-        // const auto render_time = stopwatch.Elapsed<std::chrono::milliseconds>();
-        // return;
     }
 
-    void Renderer::UploadResourceDescriptorHeap(ResourceDescriptorHeap& descriptor_heap)
+    void Renderer::CopyBuffer(std::span<const std::byte> src, BufferRegion dst, BufferUsage usage)
     {
-        auto const data = descriptor_heap.Data();
-        auto buffer = descriptor_heap.GetBufferRegion();
-
-        auto transfer_buffer = device->AllocateStagingBuffer(data.size());
-        auto const staging_region = transfer_buffer->GetRegion(0, data.size());
+        auto transfer_buffer = device->AllocateStagingBuffer(src.size());
+        auto const staging_region = transfer_buffer->GetRegion(0, src.size());
         // TODO: Throw when vb_region is nullopt? --------------------------------------------------------
 
         // Write data heap to the transfer buffer.
         auto const memory = transfer_buffer->Map(staging_region);
-        std::copy(data.begin(), data.end(), memory.begin());
+        std::copy(src.begin(), src.end(), memory.data());
 
         render_fence->Wait();
 
         // Transfer the staging buffer.
         render_commands->Reset();
         render_commands->Begin();
-        render_commands->MemoryBarrier(buffer, BufferUsage::Undefined, BufferUsage::TransferWrite);
-        render_commands->TransferBuffer(staging_region, buffer);
-        render_commands->MemoryBarrier(buffer, BufferUsage::TransferWrite, BufferUsage::ResourceDescriptorHeap);
-        render_commands->End();
-
-        // Submit commands.
-        //auto fence = device->CreateFence(); // ---------------- Sdilene, stejne jako render_commands
-        render_fence->Reset();
-        render_queue->Submit(*render_commands, *render_fence);
-        render_fence->Wait();
-    }
-
-    void Renderer::UploadSamplerDescriptorHeap(SamplerDescriptorHeap& descriptor_heap)
-    {
-        auto const data = descriptor_heap.Data();
-        auto buffer = descriptor_heap.GetBufferRegion();
-
-        auto transfer_buffer = device->AllocateStagingBuffer(data.size());
-        auto const staging_region = transfer_buffer->GetRegion(0, data.size());
-        // TODO: Throw when vb_region is nullopt? --------------------------------------------------------
-
-        // Write data heap to the transfer buffer.
-        auto const memory = transfer_buffer->Map(staging_region);
-        std::copy(data.begin(), data.end(), memory.data());
-
-        render_fence->Wait();
-
-        // Transfer the staging buffer.
-        render_commands->Reset();
-        render_commands->Begin();
-
         render_commands->MemoryBarrier(
-            buffer,
+            dst,
             BufferUsage::Undefined,
             BufferUsage::TransferWrite
         );
-
-        render_commands->TransferBuffer(staging_region, buffer);
-
+        render_commands->TransferBuffer(staging_region, dst);
         render_commands->MemoryBarrier(
-            buffer,
+            dst,
             BufferUsage::TransferWrite,
-            BufferUsage::SamplerDescriptorHeap
+            usage
         );
-
         render_commands->End();
 
         // Submit commands.
-        //auto fence = device->CreateFence(); // ---------------- Sdilene, stejne jako render_commands
         render_fence->Reset();
         render_queue->Submit(*render_commands, *render_fence);
         render_fence->Wait();

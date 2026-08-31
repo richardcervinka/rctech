@@ -2,6 +2,7 @@
 
 #include "texture.h"
 #include "buffer_linear_allocator.h"
+#include "buffer_writer.h"
 #include "descriptor_heap.h"
 #include "pipeline_state.h"
 #include "fence.h"
@@ -37,20 +38,18 @@ namespace Rc::Render
 
         void Resize(Device const& device, uint32_t width, uint32_t height); // ---------------- Remove ?
 
-        void Begin(
-            RenderTargetView const& framebuffer
-            //FrameData const& data
-        );
+        void Begin(RenderTargetView const& framebuffer);
 
         void End(RenderTargetView const& framebuffer);
 
         void BeginTestRenderPass(
             Pipeline const& pipeline,
-            ResourceDescriptorHeap const& resource_descriptor_heap,
-            SamplerDescriptorHeap const& sampler_descriptor_heap,
             RenderTargetView const& framebuffer,
             RenderPassContext const& context
         );
+
+        void BindResourceDescriptorHeap(ResourceDescriptorHeap const& heap);
+        void BindSamplerDescriptorHeap(SamplerDescriptorHeap const& heap);
 
         void BindVertexBuffer(Buffer const& buffer, uint64_t offset);
         void BindInstanceBuffer(uint64_t offset);

@@ -7,6 +7,7 @@
 #include <array>
 #include "core/vertex.h"
 #include "texture.h"
+#include "shader.h"
 
 namespace Rc::Render
 {
@@ -62,14 +63,14 @@ namespace Rc::Render
 
         void SetOutputFormat(PixelFormat format);
 
-        void SetVertexShader(VkShaderModule vs)
+        void SetVertexShader(Shader const& vs)
         {
-            this->vs = vs;
+            this->vs = vs.Underlying();
         }
 
-        void SetPixelShader(VkShaderModule ps)
+        void SetPixelShader(Shader const& ps)
         {
-            this->ps = ps;
+            this->ps = ps.Underlying();
         }
 
         void SetPipelineLayout(std::shared_ptr<PipelineLayout> layout)

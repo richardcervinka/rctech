@@ -790,44 +790,6 @@ namespace Rc::Render
         );
     }
 
-    // void TransferCommandBuffer::BarierReleaseTextureTransfer(Texture2d const& texture, uint32_t dst_queue_family_index)
-    // {
-    //     VkImageMemoryBarrier2 const barrier
-    //     {
-    //         .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
-    //         .pNext = nullptr,
-    //         .srcStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT,
-    //         .srcAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT,
-    //         .dstStageMask = VK_PIPELINE_STAGE_2_NONE,
-    //         .dstAccessMask = VK_ACCESS_2_NONE,
-    //         .oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-    //         .newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-    //         .srcQueueFamilyIndex = vk_queue_family_index,
-    //         .dstQueueFamilyIndex = dst_queue_family_index,
-    //         .image = texture.Underlying(),
-    //         .subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-    //         .subresourceRange.baseMipLevel = 0,
-    //         .subresourceRange.levelCount = 1,
-    //         .subresourceRange.baseArrayLayer = 0,
-    //         .subresourceRange.layerCount = 1
-    //     };
-
-    //     VkDependencyInfo const dependency_info
-    //     {
-    //         .sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
-    //         .pNext = nullptr,
-    //         .dependencyFlags = {},
-    //         .memoryBarrierCount = 0,
-    //         .pMemoryBarriers = nullptr,
-    //         .bufferMemoryBarrierCount = 0,
-    //         .pBufferMemoryBarriers = nullptr,
-    //         .imageMemoryBarrierCount = 1,
-    //         .pImageMemoryBarriers = &barrier
-    //     };
-
-    //     vk_device.CmdPipelineBarrier2(vk_command_buffer, dependency_info);
-    // }
-
     void TransferCommandBuffer::MemoryBarrier(
         BufferRegion const& region,
         BufferUsage before_usage,

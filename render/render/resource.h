@@ -6,6 +6,7 @@
 #include <mutex>
 #include "buffer_linear_allocator.h"
 #include "buffer_ring_allocator.h"
+#include "buffer_writer.h"
 #include "render/device.h"
 
 namespace Rc::Render

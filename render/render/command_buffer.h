@@ -44,20 +44,6 @@ namespace Rc::Render
         SamplerDescriptorHeap
     };
 
-    // Undefined,
-    // VertexBufferRead,
-    // IndexBufferRead,
-    // UniformReadVS,
-    // UniformReadFS,
-    // StorageReadCS,
-    // StorageWriteCS,
-    // SampledReadFS,
-    // TransferSrc,
-    // TransferDst,
-    // ColorAttachmentWrite,
-    // DepthAttachmentWrite,
-    // PresentSrc,
-
     enum class ImageUsage
     {
         Undefined,
@@ -67,12 +53,6 @@ namespace Rc::Render
         ColorAttachment,
         TransferWrite,
         SampledImage
-
-        // Release image from queue family
-        //TransferImageRelease,
-
-        // Acquire image from queue family
-        //TransferAcquire
     };
 
     // TODO: TransferBarrier
@@ -192,10 +172,6 @@ namespace Rc::Render
         // Primary command buffers.
         VkCommandBuffer vk_command_buffer {VK_NULL_HANDLE};
 
-        // seconday command buffers...
-
-        //static constexpr int attachments_count = 4;
-
         // Dynamic rendering color attachments (outputs)
         std::array<VkRenderingAttachmentInfo, 4> color_attachments {};
 
@@ -238,10 +214,6 @@ namespace Rc::Render
             uint32_t queue_family_before,
             uint32_t queue_family_after
         );
-
-        // New bariers
-
-        //void BarierReleaseTextureTransfer(Texture2d const& texture, uint32_t dst_queue_family_index);
 
         void TransferBuffer(BufferRegion const& src, BufferRegion& dst);
         void TransferTexture(BufferRegion const& src, Texture2d& dst);

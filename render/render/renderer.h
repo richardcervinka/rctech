@@ -15,15 +15,6 @@
 #include "resource.h"
 #include "development.h"
 
-struct TestModel
-{
-    Rc::Render::VertexBufferHandle vb_handle;
-    Rc::Render::IndexBufferHandle ib_handle; 
-    //Rc::Render::Texture2dHandle texture;
-
-    std::vector<Rc::Gfx::Transformations> instances;
-};
-
 namespace Rc::Render
 {
     enum class VertexShaderSlot
@@ -32,6 +23,7 @@ namespace Rc::Render
         Test,
         Overlay,
 
+        // Number of slots.
         Count
     };
 
@@ -39,6 +31,7 @@ namespace Rc::Render
     {
         Null,
 
+        // Number of slots.
         Count
     };
 
@@ -61,13 +54,6 @@ namespace Rc::Render
     class Renderer
     {
     public:
-
-        // TEST rendering -----------------------
-
-        std::unique_ptr<TestModel> test_model;
-
-        // --------------------------------------
-
         Renderer();
         ~Renderer();
 
@@ -152,23 +138,23 @@ namespace Rc::Render
         // Assign vertex shader to the slot.
         void SetVertexShader(VertexShaderSlot slot, std::unique_ptr<Shader> shader)
         {
-            vertex_shaders[static_cast<std::size_t>(slot)] = std::move(shader);
+            vertex_shaders[std::to_underlying(slot)] = std::move(shader);
         }
 
         // Assign pixel shader to the slot.
         void SetPixelShader(PixelShaderSlot slot, std::unique_ptr<Shader> shader)
         {
-            pixel_shaders[static_cast<std::size_t>(slot)] = std::move(shader);
+            pixel_shaders[std::to_underlying(slot)] = std::move(shader);
         }
 
-        VkShaderModule GetVertexShader(VertexShaderSlot slot)
+        Shader const& GetVertexShader(VertexShaderSlot slot)
         {
-            return vertex_shaders[static_cast<std::size_t>(slot)]->Underlying();
+            return *vertex_shaders[std::to_underlying(slot)];
         }
 
-        VkShaderModule GetPixelShader(PixelShaderSlot slot)
+        Shader const& GetPixelShader(PixelShaderSlot slot)
         {
-            return pixel_shaders[static_cast<std::size_t>(slot)]->Underlying();
+            return *pixel_shaders[std::to_underlying(slot)];
         }
 
         void OnWindowSize(Window::EventSize::Payload const& e)
@@ -176,8 +162,7 @@ namespace Rc::Render
             Resize(e.w, e.h);
         }
 
-        void UploadResourceDescriptorHeap(ResourceDescriptorHeap& descriptor_heap);
-        void UploadSamplerDescriptorHeap(SamplerDescriptorHeap& descriptor_heap);
+        void CopyBuffer(std::span<const std::byte> src, BufferRegion dst, BufferUsage usage);
 
         std::unique_ptr<Instance> instance;
         
@@ -190,8 +175,8 @@ namespace Rc::Render
         std::unique_ptr<RenderCommandQueue> render_queue;
         std::unique_ptr<TransferCommandQueue> transfer_queue;
 
-        std::unique_ptr<RenderCommandBuffer> render_commands;  //---------------------- Rename? Prefix render_ ?
-        std::unique_ptr<Fence> render_fence; //---------------------- Rename? Prefix render_ ?
+        std::unique_ptr<RenderCommandBuffer> render_commands;
+        std::unique_ptr<Fence> render_fence;
 
         std::array<std::unique_ptr<Shader>, std::to_underlying(VertexShaderSlot::Count)> vertex_shaders;
         std::array<std::unique_ptr<Shader>, std::to_underlying(PixelShaderSlot::Count)> pixel_shaders;

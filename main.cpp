@@ -1,5 +1,6 @@
 ﻿#include "generic/application.h"
 #include "base/float.h"
+#include "render/development.h"
 #include <iostream>
 
 using namespace Rc;
@@ -15,20 +16,16 @@ public:
     {
         Generic::Application::BeginFrame();
         
-        if (test_model != nullptr)
+        if (!Rc::Dev::initialized)
         {
-            if (GetRenderer().QueryUpload(resource_timeline))
-            {
-                GetRenderer().test_model = std::move(test_model);
-                test_model = nullptr;
-            }
+            Rc::Dev::initialized = GetRenderer().QueryUpload(Rc::Dev::resource_timeline);
         }
 
         static double step = 0;
         step += 0.020;
 
         // Test animation
-        if (auto& tm = GetRenderer().test_model)
+        if (Rc::Dev::initialized)
         {
             int size = 420;
 
@@ -36,16 +33,13 @@ public:
             {
                 for (int c = 0; c < size; c++)
                 {
-                    tm->instances[r * size + c].y = Math::Sin(step + ((Math::pi * r) / 10.0) + ((Math::pi * c) / 10.0)) * 0.3;
-                    tm->instances[r * size + c].scale = 0.35 + Math::Sin(step + ((Math::pi * r) / 10.0) + ((Math::pi * c) / 10.0)) * 0.03;
+                    Rc::Dev::instances[r * size + c].y = Math::Sin(step + ((Math::pi * r) / 10.0) + ((Math::pi * c) / 10.0)) * 0.3;
+                    Rc::Dev::instances[r * size + c].scale = 0.35 + Math::Sin(step + ((Math::pi * r) / 10.0) + ((Math::pi * c) / 10.0)) * 0.03;
                     //tm->instances[r * size + c].yaw = step;
                 }
             }
         }
     }
-
-    std::unique_ptr<TestModel> test_model;
-    uint64_t resource_timeline {0};
 };
 
 void TestApplication::Initialize()
@@ -57,48 +51,48 @@ void TestApplication::Initialize()
     //auto& renderer = GetRenderer();
     //auto& rm = GetResourceManager();
 
-    test_model = std::make_unique<TestModel>();
+    Rc::Dev::initialized = false;
 
     renderer.BeginUpload();
 
-    test_model->vb_handle = renderer.AllocateVertexBuffer(Render::ResourceFamily{0}, sizeof(Gfx::VertexBasic) * 24);
+    Rc::Dev::vb_handle = renderer.AllocateVertexBuffer(Render::ResourceFamily{0}, sizeof(Gfx::VertexBasic) * 24);
 
-    resource_timeline = renderer.Upload(test_model->vb_handle, [](Render::BufferWriter& writer) {
+    Rc::Dev::resource_timeline = renderer.Upload(Rc::Dev::vb_handle, [](Render::BufferWriter& writer) {
         // Front
-        writer << Float3{-1, -1,  1}; writer << Float2{0.01, 0.99};
-        writer << Float3{ 1,  1,  1}; writer << Float2{0.99, 0.01};
-        writer << Float3{-1,  1,  1}; writer << Float2{0.01, 0.01};
-        writer << Float3{ 1, -1,  1}; writer << Float2{0.99, 0.99};
+        writer << Float3{-1, -1,  1} << Float2{0.01, 0.99};
+        writer << Float3{ 1,  1,  1} << Float2{0.99, 0.01};
+        writer << Float3{-1,  1,  1} << Float2{0.01, 0.01};
+        writer << Float3{ 1, -1,  1} << Float2{0.99, 0.99};
         // Baack
-        writer << Float3{-1, -1, -1}; writer << Float2{0.01, 0.99};
-        writer << Float3{ 1,  1, -1}; writer << Float2{0.99, 0.01};
-        writer << Float3{-1,  1, -1}; writer << Float2{0.01, 0.01};
-        writer << Float3{ 1, -1, -1}; writer << Float2{0.99, 0.99};
+        writer << Float3{-1, -1, -1} << Float2{0.01, 0.99};
+        writer << Float3{ 1,  1, -1} << Float2{0.99, 0.01};
+        writer << Float3{-1,  1, -1} << Float2{0.01, 0.01};
+        writer << Float3{ 1, -1, -1} << Float2{0.99, 0.99};
         // Left
-        writer << Float3{-1, -1, -1}; writer << Float2{0.01, 0.99};
-        writer << Float3{-1,  1,  1}; writer << Float2{0.99, 0.01};
-        writer << Float3{-1,  1, -1}; writer << Float2{0.01, 0.01};
-        writer << Float3{-1, -1,  1}; writer << Float2{0.99, 0.99};
+        writer << Float3{-1, -1, -1} << Float2{0.01, 0.99};
+        writer << Float3{-1,  1,  1} << Float2{0.99, 0.01};
+        writer << Float3{-1,  1, -1} << Float2{0.01, 0.01};
+        writer << Float3{-1, -1,  1} << Float2{0.99, 0.99};
         // Right
-        writer << Float3{ 1, -1,  1}; writer << Float2{0.01, 0.99};
-        writer << Float3{ 1,  1, -1}; writer << Float2{0.99, 0.01};
-        writer << Float3{ 1,  1,  1}; writer << Float2{0.01, 0.01};
-        writer << Float3{ 1, -1, -1}; writer << Float2{0.99, 0.99};
+        writer << Float3{ 1, -1,  1} << Float2{0.01, 0.99};
+        writer << Float3{ 1,  1, -1} << Float2{0.99, 0.01};
+        writer << Float3{ 1,  1,  1} << Float2{0.01, 0.01};
+        writer << Float3{ 1, -1, -1} << Float2{0.99, 0.99};
         // Top
-        writer << Float3{-1,  1,  1}; writer << Float2{0.01, 0.99};
-        writer << Float3{ 1,  1, -1}; writer << Float2{0.99, 0.01};
-        writer << Float3{-1,  1, -1}; writer << Float2{0.01, 0.01};
-        writer << Float3{ 1,  1,  1}; writer << Float2{0.99, 0.99};
+        writer << Float3{-1,  1,  1} << Float2{0.01, 0.99};
+        writer << Float3{ 1,  1, -1} << Float2{0.99, 0.01};
+        writer << Float3{-1,  1, -1} << Float2{0.01, 0.01};
+        writer << Float3{ 1,  1,  1} << Float2{0.99, 0.99};
         // Bottom
-        writer << Float3{-1, -1, -1}; writer << Float2{0.01, 0.99};
-        writer << Float3{ 1, -1,  1}; writer << Float2{0.99, 0.01};
-        writer << Float3{-1, -1,  1}; writer << Float2{0.01, 0.01};
-        writer << Float3{ 1, -1, -1}; writer << Float2{0.99, 0.99};
+        writer << Float3{-1, -1, -1} << Float2{0.01, 0.99};
+        writer << Float3{ 1, -1,  1} << Float2{0.99, 0.01};
+        writer << Float3{-1, -1,  1} << Float2{0.01, 0.01};
+        writer << Float3{ 1, -1, -1} << Float2{0.99, 0.99};
     });
     
-    test_model->ib_handle = renderer.AllocateIndexBuffer(Render::ResourceFamily{0}, sizeof(uint16_t) * 36);
+    Rc::Dev::ib_handle = renderer.AllocateIndexBuffer(Render::ResourceFamily{0}, sizeof(uint16_t) * 36);
 
-    resource_timeline = renderer.Upload(test_model->ib_handle, [](Render::BufferWriter& writer) {
+    Rc::Dev::resource_timeline = renderer.Upload(Rc::Dev::ib_handle, [](Render::BufferWriter& writer) {
         writer << std::array<uint16_t, 36>{
             // front
             0, 1, 2,
@@ -121,7 +115,7 @@ void TestApplication::Initialize()
         };
     });
 
-    resource_timeline = renderer.Upload(Rc::Render::Texture2dHandle{}, [](Render::BufferWriter& writer) {
+    Rc::Dev::resource_timeline = renderer.Upload(Rc::Render::Texture2dHandle{}, [](Render::BufferWriter& writer) {
 
         static const uint32_t data[256]
         {
@@ -159,9 +153,7 @@ void TestApplication::Initialize()
             tm.scale = 0.35;
             tm.x = -210 + r;
             tm.z = -210 + c;
-            //tm.y = Math::Sin(((Math::pi * r) / 10.0) + ((Math::pi * c) / 10.0)) * 0.2;
-
-            test_model->instances.push_back(tm);
+            Rc::Dev::instances.push_back(tm);
         }
     }
 

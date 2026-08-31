@@ -7,6 +7,7 @@ add_library(render STATIC
     "buffer_ring_allocator.h"
     "buffer_ring_allocator.cpp"
     "buffer_pool_allocator.h"
+    "buffer_writer.h"
     "resource.h"
     "resource.cpp"
     "constants.h"

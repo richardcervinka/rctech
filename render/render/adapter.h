@@ -47,11 +47,9 @@ namespace Rc::Render
         std::unique_ptr<Device> CreateDevice(Surface const& surface);
 
     private:
-        // Reference to a parent object.
         VulkanContext const& context;
         VulkanInstance const& instance;
 
-        // Physical device handle.
         VkPhysicalDevice vk_physical_device {VK_NULL_HANDLE};
         
         VkPhysicalDeviceProperties vk_properties {};

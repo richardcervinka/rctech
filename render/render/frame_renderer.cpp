@@ -14,13 +14,12 @@ namespace Rc::Render
         // std::atomic_signal_fence(std::memory_order_seq_cst);
 
         fence->Wait();
-        fence->Reset(); // ----------------- Do End() ?
         staging_buffer->Reset();
         
         commands->Reset();
         commands->Begin();
 
-        commands->RenderTargetBarrier( //----------------- v render passu? Nemelo vy vyt na vyssi vrstve?
+        commands->RenderTargetBarrier(
             framebuffer,
             ImageUsage::SwapChainAcquire,
             ImageUsage::ColorAttachment
@@ -36,13 +35,14 @@ namespace Rc::Render
             ImageUsage::ColorAttachment,
             ImageUsage::SwapChainSubmit
         );
+        
         commands->End();
+
+        fence->Reset();
     }
 
     void Frame::BeginTestRenderPass(
         Pipeline const& pipeline,
-        ResourceDescriptorHeap const& resource_descriptor_heap,
-        SamplerDescriptorHeap const& sampler_descriptor_heap,
         RenderTargetView const& framebuffer,
         RenderPassContext const& context)
     {
@@ -84,8 +84,6 @@ namespace Rc::Render
             .ubo_index = uniform_buffer_index
         });
 
-        commands->BindResourceDescriptorHeap(resource_descriptor_heap);
-        commands->BindSamplerDescriptorHeap(sampler_descriptor_heap);
         commands->EnableColorAttachment(RenderTargetSlot::FrameBuffer, framebuffer);
         
         commands->DisableStencilTest(); // -------------- redundantni? Reset state?
@@ -108,6 +106,16 @@ namespace Rc::Render
     void Frame::EndRenderPass()
     {
         commands->EndRendering();
+    }
+
+    void Frame::BindResourceDescriptorHeap(ResourceDescriptorHeap const& heap)
+    {
+        commands->BindResourceDescriptorHeap(heap);
+    }
+
+    void Frame::BindSamplerDescriptorHeap(SamplerDescriptorHeap const& heap)
+    {
+        commands->BindSamplerDescriptorHeap(heap);
     }
 
     void Frame::BindVertexBuffer(Buffer const& buffer, uint64_t offset)
