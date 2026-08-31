@@ -37,9 +37,12 @@ namespace Rc::Render
 
         void Resize(Device const& device, uint32_t width, uint32_t height); // ---------------- Remove ?
 
-        void Begin(/*FrameData const& data*/);
+        void Begin(
+            RenderTargetView const& framebuffer
+            //FrameData const& data
+        );
 
-        // void End(SwapChain const& swap_chain);
+        void End(RenderTargetView const& framebuffer);
 
         void BeginTestRenderPass(
             Pipeline const& pipeline,

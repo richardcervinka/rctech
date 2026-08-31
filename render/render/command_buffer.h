@@ -66,9 +66,10 @@ namespace Rc::Render
         SwapChainSubmit,
         ColorAttachment,
         TransferWrite,
+        SampledImage
 
         // Release image from queue family
-        TransferImageRelease,
+        //TransferImageRelease,
 
         // Acquire image from queue family
         //TransferAcquire
@@ -157,14 +158,6 @@ namespace Rc::Render
             BufferUsage after_usage
         );
 
-        void MemoryBarrier(
-            BufferRegion const& region,
-            BufferUsage before_usage,
-            BufferUsage after_usage,
-            uint32_t before_queue_family_index,
-            uint32_t after_queue_family_index
-        );
-
         void RenderTargetBarrier(
             RenderTargetView const& render_target,
             ImageUsage before_usage,
@@ -177,12 +170,12 @@ namespace Rc::Render
             ImageUsage after_usage
         );
 
-        void Texture2dBarrier(
+        void BarrierTexture2dAcquire(
             Texture2d const& texture,
             ImageUsage before_usage,
             ImageUsage after_usage,
-            uint32_t before_queue_family_index,
-            uint32_t after_queue_family_index
+            uint32_t queue_family_before,
+            uint32_t queue_family_after
         );
 
         VkCommandBuffer Underlying() const
@@ -232,26 +225,18 @@ namespace Rc::Render
             BufferUsage after_usage
         );
 
-        void MemoryBarrier(
-            BufferRegion const& region,
-            BufferUsage before_usage,
-            BufferUsage after_usage,
-            uint32_t before_queue_family_index,
-            uint32_t after_queue_family_index
-        );
-
         void Texture2dBarrier(
             Texture2d const& texture,
             ImageUsage before_usage,
             ImageUsage after_usage
         );
 
-        void Texture2dBarrier(
+        void BarrierTexture2dRelease(
             Texture2d const& texture,
             ImageUsage before_usage,
             ImageUsage after_usage,
-            uint32_t before_queue_family_index,
-            uint32_t after_queue_family_index
+            uint32_t queue_family_before,
+            uint32_t queue_family_after
         );
 
         // New bariers

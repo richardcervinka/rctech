@@ -1,5 +1,6 @@
 ﻿#include "generic/application.h"
 #include "base/float.h"
+#include <iostream>
 
 using namespace Rc;
 

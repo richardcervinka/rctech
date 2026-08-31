@@ -53,6 +53,7 @@ namespace Rc::Render
 
         render_fence = nullptr;
         render_commands = nullptr;
+        transfer_queue = nullptr;
         render_queue = nullptr;
         swap_chain = nullptr;
         surface = nullptr;
@@ -117,6 +118,7 @@ namespace Rc::Render
         device = CreateDevice();
         swap_chain = device->CreateSwapChain(*surface, window, ColorProfile::SDR);
         render_queue = device->CreateGraphicsQueue();
+        transfer_queue = device->CreateTransferQueue();
         render_commands = render_queue->CreateCommandBuffer();
         render_fence = device->CreateFence();
         pipeline_layout = device->CreatePipelineLayout();
@@ -169,7 +171,7 @@ namespace Rc::Render
         window.OnEventSize(on_window_size);
 
         resource_manager = std::make_unique<ResourceManager>(*device);
-        resource_uploader = std::make_unique<ResourceUploader>(*device, render_queue->FamilyIndex());
+        resource_uploader = std::make_unique<ResourceUploader>(*device);
 
         resource_manager->ReserveVertexBuffer(ResourceFamily{0}, 2048 * 32);
         resource_manager->ReserveIndexBuffer(ResourceFamily{0}, 2048 * 32);
@@ -228,7 +230,7 @@ namespace Rc::Render
 
         resource_uploader->QueryCounter();
 
-        frame->Begin();
+        frame->Begin(swap_chain->GetRenderTargetView());
 
         if (test_model != nullptr)
         {
@@ -238,13 +240,7 @@ namespace Rc::Render
 
     void Renderer::EndFrame()
     {
-        frame->commands->RenderTargetBarrier(
-            swap_chain->GetRenderTargetView(),
-            ImageUsage::ColorAttachment,
-            ImageUsage::SwapChainSubmit
-        );
-
-        frame->commands->End();
+        frame->End(swap_chain->GetRenderTargetView());
         
         render_queue->WaitSemaphore(swap_chain->GetAcquireSemaphore());
         render_queue->SignalSemaphore(swap_chain->GetPresentSemaphore());
@@ -389,6 +385,13 @@ namespace Rc::Render
                 resource_manager->GetBufferRegion(test_model->ib_handle),
                 BufferUsage::Undefined,
                 BufferUsage::IndexBuffer
+            );
+            frame->commands->BarrierTexture2dAcquire(
+                *Rc::Dev::test_texture,
+                ImageUsage::SampledImage,
+                ImageUsage::SampledImage,
+                transfer_queue->FamilyIndex(),
+                render_queue->FamilyIndex()
             );
 
             barier = false;

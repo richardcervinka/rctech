@@ -77,8 +77,10 @@ namespace Rc::Render
                 };
             case ImageUsage::TransferWrite:
                 return VK_PIPELINE_STAGE_2_TRANSFER_BIT;
-            case ImageUsage::TransferImageRelease:
-                return VK_PIPELINE_STAGE_2_NONE;
+            case ImageUsage::SampledImage:
+                return VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT;
+            // case ImageUsage::TransferImageRelease:
+            //     return VK_PIPELINE_STAGE_2_NONE;
         }
 
         std::unreachable();
@@ -91,7 +93,7 @@ namespace Rc::Render
             case ImageUsage::Undefined:
                 return VK_IMAGE_LAYOUT_UNDEFINED;
             case ImageUsage::SwapChainAcquire:
-                return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+                return VK_IMAGE_LAYOUT_UNDEFINED;
             case ImageUsage::SwapChainSubmit:
                 return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
             case ImageUsage::ColorAttachment:
@@ -100,8 +102,10 @@ namespace Rc::Render
                 return VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
             case ImageUsage::TransferWrite:
                 return VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-            case ImageUsage::TransferImageRelease:
+            case ImageUsage::SampledImage:
                 return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            // case ImageUsage::TransferImageRelease:
+            //     return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         }
 
         std::unreachable();
@@ -126,8 +130,10 @@ namespace Rc::Render
                 };
             case ImageUsage::TransferWrite:
                 return VK_ACCESS_2_TRANSFER_WRITE_BIT;
-            case ImageUsage::TransferImageRelease:
-                return VK_ACCESS_2_NONE;
+            case ImageUsage::SampledImage:
+                return VK_ACCESS_2_SHADER_SAMPLED_READ_BIT;
+            // case ImageUsage::TransferImageRelease:
+            //     return VK_ACCESS_2_NONE;
         }
 
         std::unreachable();
@@ -516,16 +522,6 @@ namespace Rc::Render
         BufferUsage before_usage,
         BufferUsage after_usage)
     {
-        MemoryBarrier(region, before_usage, after_usage, VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED);
-    }
-
-    void RenderCommandBuffer::MemoryBarrier(
-        BufferRegion const& region,
-        BufferUsage before_usage,
-        BufferUsage after_usage,
-        uint32_t before_queue_family_index,
-        uint32_t after_queue_family_index)
-    {
         VkBufferMemoryBarrier2 const barrier
         {
             .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2,
@@ -534,8 +530,8 @@ namespace Rc::Render
             .srcAccessMask = ToVkAccessFlags2(before_usage),
             .dstStageMask = ToVkPipelineStageFlags2(after_usage),
             .dstAccessMask = ToVkAccessFlags2(after_usage),
-            .srcQueueFamilyIndex = before_queue_family_index,
-            .dstQueueFamilyIndex = after_queue_family_index,
+            .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+            .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
             .buffer = region.Underlying(),
             .offset = VkDeviceSize{region.Offset()},
             .size = VkDeviceSize{region.Size()}
@@ -603,16 +599,6 @@ namespace Rc::Render
         ImageUsage before_usage,
         ImageUsage after_usage)
     {
-        Texture2dBarrier(texture, before_usage, after_usage, VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED);
-    }
-
-    void RenderCommandBuffer::Texture2dBarrier(
-        Texture2d const& texture,
-        ImageUsage before_usage,
-        ImageUsage after_usage,
-        uint32_t before_queue_family_index,
-        uint32_t after_queue_family_index)
-    {
         VkImageMemoryBarrier2 const barrier
         {
             .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
@@ -623,8 +609,51 @@ namespace Rc::Render
             .dstAccessMask = ToVkAccessFlags2(after_usage),
             .oldLayout = ToVkImageLayout(before_usage),
             .newLayout = ToVkImageLayout(after_usage),
-            .srcQueueFamilyIndex = before_queue_family_index,
-            .dstQueueFamilyIndex = after_queue_family_index,
+            .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+            .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+            .image = texture.Underlying(),
+            .subresourceRange.aspectMask = ToVkImageAspectFlags(after_usage),
+            .subresourceRange.baseMipLevel = 0, //----------------------------------------- from texture
+            .subresourceRange.levelCount = 1,  //----------------------------------------- from texture
+            .subresourceRange.baseArrayLayer = 0,  //----------------------------------------- from texture
+            .subresourceRange.layerCount = 1  //----------------------------------------- from texture
+        };
+
+        VkDependencyInfo const dependency_info
+        {
+            .sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
+            .pNext = nullptr,
+            .dependencyFlags = {},
+            .memoryBarrierCount = 0,
+            .pMemoryBarriers = nullptr,
+            .bufferMemoryBarrierCount = 0,
+            .pBufferMemoryBarriers = nullptr,
+            .imageMemoryBarrierCount = 1,
+            .pImageMemoryBarriers = &barrier
+        };
+
+        vk_device.CmdPipelineBarrier2(vk_command_buffer, dependency_info);
+    }
+
+    void RenderCommandBuffer::BarrierTexture2dAcquire(
+        Texture2d const& texture,
+        ImageUsage before_usage,
+        ImageUsage after_usage,
+        uint32_t queue_family_before,
+        uint32_t queue_family_after)
+    {
+        VkImageMemoryBarrier2 const barrier
+        {
+            .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
+            .pNext = nullptr,
+            .srcStageMask = VK_PIPELINE_STAGE_2_NONE,
+            .srcAccessMask = VK_PIPELINE_STAGE_2_NONE,
+            .dstStageMask = ToVkPipelineStageFlags2(after_usage),
+            .dstAccessMask = ToVkAccessFlags2(after_usage),
+            .oldLayout = ToVkImageLayout(before_usage),
+            .newLayout = ToVkImageLayout(after_usage),
+            .srcQueueFamilyIndex = queue_family_before,
+            .dstQueueFamilyIndex = queue_family_after,
             .image = texture.Underlying(),
             .subresourceRange.aspectMask = ToVkImageAspectFlags(after_usage),
             .subresourceRange.baseMipLevel = 0, //----------------------------------------- from texture
@@ -804,16 +833,6 @@ namespace Rc::Render
         BufferUsage before_usage,
         BufferUsage after_usage)
     {
-        MemoryBarrier(region, before_usage, after_usage, VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED);
-    }
-
-    void TransferCommandBuffer::MemoryBarrier(
-        BufferRegion const& region,
-        BufferUsage before_usage,
-        BufferUsage after_usage,
-        uint32_t before_queue_family_index,
-        uint32_t after_queue_family_index)
-    {
         VkBufferMemoryBarrier2 const barrier
         {
             .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2,
@@ -822,8 +841,8 @@ namespace Rc::Render
             .srcAccessMask = ToVkAccessFlags2(before_usage),
             .dstStageMask = ToVkPipelineStageFlags2(after_usage),
             .dstAccessMask = ToVkAccessFlags2(after_usage),
-            .srcQueueFamilyIndex = before_queue_family_index,
-            .dstQueueFamilyIndex = after_queue_family_index,
+            .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+            .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
             .buffer = region.Underlying(),
             .offset = VkDeviceSize{region.Offset()},
             .size = VkDeviceSize{region.Size()}
@@ -850,16 +869,6 @@ namespace Rc::Render
         ImageUsage before_usage,
         ImageUsage after_usage)
     {
-        Texture2dBarrier(texture, before_usage, after_usage, VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED);
-    }
-
-    void TransferCommandBuffer::Texture2dBarrier(
-        Texture2d const& texture,
-        ImageUsage before_usage,
-        ImageUsage after_usage,
-        uint32_t before_queue_family_index,
-        uint32_t after_queue_family_index)
-    {
         VkImageMemoryBarrier2 const barrier
         {
             .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
@@ -870,8 +879,51 @@ namespace Rc::Render
             .dstAccessMask = ToVkAccessFlags2(after_usage),
             .oldLayout = ToVkImageLayout(before_usage),
             .newLayout = ToVkImageLayout(after_usage),
-            .srcQueueFamilyIndex = before_queue_family_index,
-            .dstQueueFamilyIndex = after_queue_family_index,
+            .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+            .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+            .image = texture.Underlying(),
+            .subresourceRange.aspectMask = ToVkImageAspectFlags(after_usage),
+            .subresourceRange.baseMipLevel = 0, //----------------------------------------- from texture
+            .subresourceRange.levelCount = 1,  //----------------------------------------- from texture
+            .subresourceRange.baseArrayLayer = 0,  //----------------------------------------- from texture
+            .subresourceRange.layerCount = 1  //----------------------------------------- from texture
+        };
+
+        VkDependencyInfo const dependency_info
+        {
+            .sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
+            .pNext = nullptr,
+            .dependencyFlags = {},
+            .memoryBarrierCount = 0,
+            .pMemoryBarriers = nullptr,
+            .bufferMemoryBarrierCount = 0,
+            .pBufferMemoryBarriers = nullptr,
+            .imageMemoryBarrierCount = 1,
+            .pImageMemoryBarriers = &barrier
+        };
+
+        vk_device.CmdPipelineBarrier2(vk_command_buffer, dependency_info);
+    }
+
+    void TransferCommandBuffer::BarrierTexture2dRelease(
+        Texture2d const& texture,
+        ImageUsage before_usage,
+        ImageUsage after_usage,
+        uint32_t queue_family_before,
+        uint32_t queue_family_after)
+    {
+        VkImageMemoryBarrier2 const barrier
+        {
+            .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
+            .pNext = nullptr,
+            .srcStageMask = ToVkPipelineStageFlags2(before_usage),
+            .srcAccessMask = ToVkAccessFlags2(before_usage),
+            .dstStageMask = VK_PIPELINE_STAGE_2_NONE,
+            .dstAccessMask = VK_PIPELINE_STAGE_2_NONE,
+            .oldLayout = ToVkImageLayout(before_usage),
+            .newLayout = ToVkImageLayout(after_usage),
+            .srcQueueFamilyIndex = queue_family_before,
+            .dstQueueFamilyIndex = queue_family_after,
             .image = texture.Underlying(),
             .subresourceRange.aspectMask = ToVkImageAspectFlags(after_usage),
             .subresourceRange.baseMipLevel = 0, //----------------------------------------- from texture

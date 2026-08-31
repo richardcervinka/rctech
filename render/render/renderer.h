@@ -145,7 +145,7 @@ namespace Rc::Render
         uint64_t Upload(Texture2dHandle handle, std::function<void(BufferWriter&)> writer_callback)
         {
             auto lock = std::lock_guard{*resource_uploader};
-            return resource_uploader->Upload(*Rc::Dev::test_texture, writer_callback);
+            return resource_uploader->Upload(*Rc::Dev::test_texture, *render_queue, writer_callback);
         }
 
     private:
@@ -188,6 +188,7 @@ namespace Rc::Render
         std::unique_ptr<SwapChain> swap_chain;
 
         std::unique_ptr<RenderCommandQueue> render_queue;
+        std::unique_ptr<TransferCommandQueue> transfer_queue;
 
         std::unique_ptr<RenderCommandBuffer> render_commands;  //---------------------- Rename? Prefix render_ ?
         std::unique_ptr<Fence> render_fence; //---------------------- Rename? Prefix render_ ?

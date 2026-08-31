@@ -148,7 +148,7 @@ namespace Rc::Render
     class ResourceUploader
     {
     public:
-        ResourceUploader(Device& device, uint32_t render_queue_family_index);
+        ResourceUploader(Device& device);
 
         void BeginUpload();
 
@@ -164,8 +164,16 @@ namespace Rc::Render
         bool Complete(uint64_t counter) const;
 
         // TODO: Renam to UploadBuffer, UploadTexture2d
-        uint64_t Upload(BufferRegion region, std::function<void(BufferWriter&)>& writer_callback);
-        uint64_t Upload(Texture2d& texture, std::function<void(BufferWriter&)>& writer_callback);
+        uint64_t Upload(
+            BufferRegion region,
+            std::function<void(BufferWriter&)>& writer_callback
+        );
+
+        uint64_t Upload(
+            Texture2d& texture,
+            RenderCommandQueue const& dst_queue,
+            std::function<void(BufferWriter&)>& writer_callback
+        );
 
         bool PendingTransfer() const
         {
@@ -207,7 +215,7 @@ namespace Rc::Render
 
         std::atomic<bool> pending {false};
 
-        uint32_t render_queue_family_index {}; // -------------------------------------
+        //uint32_t render_queue_family_index {}; // -------------------------------------
     };
 
 } // Rc::Render

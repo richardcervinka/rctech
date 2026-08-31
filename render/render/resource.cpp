@@ -59,9 +59,7 @@ namespace Rc::Render
 
     // ResourceUploader
 
-    ResourceUploader::ResourceUploader(Device& device, uint32_t render_queue_family_index) :
-        device{device},
-        render_queue_family_index{render_queue_family_index}
+    ResourceUploader::ResourceUploader(Device& device) : device{device}
     {
         transfer_queue = device.CreateTransferQueue();
         transfer_commands = transfer_queue->CreateCommandBuffer();
@@ -98,7 +96,10 @@ namespace Rc::Render
         return transfer_buffer->TimelineValue();
     }
 
-    uint64_t ResourceUploader::Upload(Texture2d& texture, std::function<void(BufferWriter&)>& writer_callback)
+    uint64_t ResourceUploader::Upload(
+        Texture2d& texture,
+        RenderCommandQueue const& dst_queue,
+        std::function<void(BufferWriter&)>& writer_callback)
     {
         assert(writer_callback != nullptr);
 
@@ -117,12 +118,12 @@ namespace Rc::Render
 
         transfer_commands->TransferTexture(*staging_region, texture);
 
-        transfer_commands->Texture2dBarrier(
+        transfer_commands->BarrierTexture2dRelease(
             texture,
             ImageUsage::TransferWrite,
-            ImageUsage::TransferImageRelease,
+            ImageUsage::SampledImage,
             transfer_queue->FamilyIndex(),
-            render_queue_family_index
+            dst_queue.FamilyIndex()
         );
 
         return transfer_buffer->TimelineValue();

@@ -9,9 +9,8 @@ namespace Rc::Render
         depth_buffer_view = depth_buffer->CreateDepthBufferView();
     }
 
-    void Frame::Begin()
+    void Frame::Begin(RenderTargetView const& framebuffer)
     {
-        //std::this_thread::sleep_for(std::chrono::milliseconds(10));
         // std::atomic_signal_fence(std::memory_order_seq_cst);
 
         fence->Wait();
@@ -21,14 +20,24 @@ namespace Rc::Render
         commands->Reset();
         commands->Begin();
 
+        commands->RenderTargetBarrier( //----------------- v render passu? Nemelo vy vyt na vyssi vrstve?
+            framebuffer,
+            ImageUsage::SwapChainAcquire,
+            ImageUsage::ColorAttachment
+        );
+
         instance_writer = BufferWriter(instance_buffer->Map());
     }
 
-    // void End(SwapChain const& swap_chain)
-    // {
-    //     commands->UsePresentingFramebuffer(m_swap_chain->GetRenderTargetView());
-    //     commands->End();
-    // }
+    void Frame::End(RenderTargetView const& framebuffer)
+    {
+        commands->RenderTargetBarrier(
+            framebuffer,
+            ImageUsage::ColorAttachment,
+            ImageUsage::SwapChainSubmit
+        );
+        commands->End();
+    }
 
     void Frame::BeginTestRenderPass(
         Pipeline const& pipeline,
@@ -78,12 +87,6 @@ namespace Rc::Render
         commands->BindResourceDescriptorHeap(resource_descriptor_heap);
         commands->BindSamplerDescriptorHeap(sampler_descriptor_heap);
         commands->EnableColorAttachment(RenderTargetSlot::FrameBuffer, framebuffer);
-
-        commands->RenderTargetBarrier(
-            framebuffer,
-            ImageUsage::SwapChainAcquire,
-            ImageUsage::ColorAttachment
-        );
         
         commands->DisableStencilTest(); // -------------- redundantni? Reset state?
         commands->EnableDepthTest();
