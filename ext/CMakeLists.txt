@@ -30,3 +30,6 @@ set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 set(BUILD_GMOCK ON CACHE BOOL "Enable/Disable gmock" FORCE)
 
 add_subdirectory("googletest")
+
+# ISPC Texture Compressor (Intel)
+# stb_image_resize2

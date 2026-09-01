@@ -1,6 +1,3 @@
-[submodule "ext/compressonator"]
-	path = ext/compressonator
-	url = https://github.com/richardcervinka/compressonator.git
 [submodule "ext/googletest"]
 	path = ext/googletest
 	url = https://github.com/richardcervinka/googletest.git
