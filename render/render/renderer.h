@@ -182,10 +182,10 @@ namespace Rc::Render
         std::array<std::unique_ptr<Shader>, std::to_underlying(PixelShaderSlot::Count)> pixel_shaders;
 
         // Frames-In-Flight
-        std::vector<Frame> frames;
+        std::vector<FrameRenderer> frames;
 
         // Current render frame, updated by the BeginFrame()
-        Frame* frame {nullptr};
+        FrameRenderer* frame {nullptr};
 
         // Position in the m_frames. Updated by the EndFrame()
         uint64_t frame_number {0};

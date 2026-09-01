@@ -95,9 +95,7 @@ namespace Rc::Render
             {
                 Log::Debug(std::format("Adapter {} vulkan {}\n", adapter->Name(), Str::From(adapter->ApiVersion())));
                 
-                auto device = adapter->CreateDevice(*surface);
-
-                return device;
+                return adapter->CreateDevice(*surface);
             }
             catch (std::exception const& e)
             {
@@ -125,7 +123,6 @@ namespace Rc::Render
         resource_descriptor_heap = device->CreateResourceDescriptorHeap(32 * 1024);
         sampler_descriptor_heap = device->CreateSamplerDescriptorHeap(256);
 
-        // TEST
         // ---------------------------- TEST ----------------------------
         Rc::Dev::test_texture = device->AllocateTexture2d(16, 16, PixelFormat::ColorRGBA);
         assert(Rc::Dev::test_texture != nullptr);
@@ -276,8 +273,7 @@ namespace Rc::Render
     static Gfx::PerspectiveCamera CreateTestCamera()
     {
         Gfx::PerspectiveCamera camera;
-        camera.transformations.z = 3.0; // TODO: ------------ world_to_view=translate(−cameraPosition)
-        //camera.transformations.yaw = Math::pi;
+        camera.transformations.y = 3.0;
         camera.fov = Math::DegToRad(75.0);
         return camera;
     }

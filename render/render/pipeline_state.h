@@ -50,6 +50,9 @@ namespace Rc::Render
         VkPipelineLayout vk_pipeline_layout {VK_NULL_HANDLE};
     };
 
+    //
+    // Pipeline state factory.
+    //
     // Setup vertex buffer:
     // 1. SetVertexInputBinding
     // 2. SetVertexInputAttributes

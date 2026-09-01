@@ -61,6 +61,7 @@ namespace Rc::Render
 
     //
     // Linear subresource handle allocator.
+    // The Handle must be of type ResourceHandle<T>.
     //
     template<typename Handle>
     class ResourceAllocator
@@ -215,8 +216,6 @@ namespace Rc::Render
         uint64_t counter {0};
 
         std::atomic<bool> pending {false};
-
-        //uint32_t render_queue_family_index {}; // -------------------------------------
     };
 
 } // Rc::Render

@@ -21,7 +21,4 @@ namespace Rc
         static inline uint64_t resource_timeline {0};
     };
 
-    // Replace Renderer::test_model
-    // std::unique_ptr<TestModel> test_model;
-
 } // Rc

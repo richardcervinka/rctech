@@ -3,13 +3,13 @@
 
 namespace Rc::Render
 {
-    void Frame::Resize(Device const& device, uint32_t width, uint32_t height)
+    void FrameRenderer::Resize(Device const& device, uint32_t width, uint32_t height)
     {
         depth_buffer = device.AllocateDepthBuffer(width, height);
         depth_buffer_view = depth_buffer->CreateDepthBufferView();
     }
 
-    void Frame::Begin(RenderTargetView const& framebuffer)
+    void FrameRenderer::Begin(RenderTargetView const& framebuffer)
     {
         // std::atomic_signal_fence(std::memory_order_seq_cst);
 
@@ -28,7 +28,7 @@ namespace Rc::Render
         instance_writer = BufferWriter(instance_buffer->Map());
     }
 
-    void Frame::End(RenderTargetView const& framebuffer)
+    void FrameRenderer::End(RenderTargetView const& framebuffer)
     {
         commands->RenderTargetBarrier(
             framebuffer,
@@ -41,7 +41,7 @@ namespace Rc::Render
         fence->Reset();
     }
 
-    void Frame::BeginTestRenderPass(
+    void FrameRenderer::BeginTestRenderPass(
         Pipeline const& pipeline,
         RenderTargetView const& framebuffer,
         RenderPassContext const& context)
@@ -103,42 +103,42 @@ namespace Rc::Render
         commands->BeginRendering(framebuffer_area);
     }
 
-    void Frame::EndRenderPass()
+    void FrameRenderer::EndRenderPass()
     {
         commands->EndRendering();
     }
 
-    void Frame::BindResourceDescriptorHeap(ResourceDescriptorHeap const& heap)
+    void FrameRenderer::BindResourceDescriptorHeap(ResourceDescriptorHeap const& heap)
     {
         commands->BindResourceDescriptorHeap(heap);
     }
 
-    void Frame::BindSamplerDescriptorHeap(SamplerDescriptorHeap const& heap)
+    void FrameRenderer::BindSamplerDescriptorHeap(SamplerDescriptorHeap const& heap)
     {
         commands->BindSamplerDescriptorHeap(heap);
     }
 
-    void Frame::BindVertexBuffer(Buffer const& buffer, uint64_t offset)
+    void FrameRenderer::BindVertexBuffer(Buffer const& buffer, uint64_t offset)
     {
         commands->BindVertexBuffer(buffer, 0, offset);
     }
 
-    void Frame::BindInstanceBuffer(uint64_t offset)
+    void FrameRenderer::BindInstanceBuffer(uint64_t offset)
     {
         commands->BindVertexBuffer(*instance_buffer, 1, offset);
     }
 
-    void Frame::BindIndexBuffer(Buffer const& buffer, IndexType type, uint64_t offset)
+    void FrameRenderer::BindIndexBuffer(Buffer const& buffer, IndexType type, uint64_t offset)
     {
         commands->BindIndexBuffer(buffer, type, offset);
     }
 
-    void Frame::Draw(uint32_t index_count, uint32_t instance_count, uint32_t first_index, int32_t vertex_offset, uint32_t first_instance)
+    void FrameRenderer::Draw(uint32_t index_count, uint32_t instance_count, uint32_t first_index, int32_t vertex_offset, uint32_t first_instance)
     {
         commands->DrawIndexed(index_count, instance_count, first_index, vertex_offset, first_instance);
     }
 
-    void Frame::Wait() const
+    void FrameRenderer::Wait() const
     {
         fence->Wait();
     }

@@ -1,7 +1,6 @@
 ﻿#include "generic/application.h"
 #include "base/float.h"
 #include "render/development.h"
-#include <iostream>
 
 using namespace Rc;
 
@@ -27,14 +26,16 @@ public:
         // Test animation
         if (Rc::Dev::initialized)
         {
-            int size = 420;
+            int const size = 420;
+            double const scale = 10.0;
 
             for (int r = 0; r < size; r++)
             {
                 for (int c = 0; c < size; c++)
                 {
-                    Rc::Dev::instances[r * size + c].y = Math::Sin(step + ((Math::pi * r) / 10.0) + ((Math::pi * c) / 10.0)) * 0.3;
-                    Rc::Dev::instances[r * size + c].scale = 0.35 + Math::Sin(step + ((Math::pi * r) / 10.0) + ((Math::pi * c) / 10.0)) * 0.03;
+                    auto sin = Math::Sin(step + ((Math::pi * r) / scale) + ((Math::pi * c) / scale));
+                    Rc::Dev::instances[r * size + c].y = sin * 0.3;
+                    Rc::Dev::instances[r * size + c].scale = 0.35 + sin * 0.03;
                     //tm->instances[r * size + c].yaw = step;
                 }
             }

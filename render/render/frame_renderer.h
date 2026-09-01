@@ -18,19 +18,12 @@ namespace Rc::Render
         //
     };
 
-    // struct RenderPassVertexBinding
-    // {
-    //     Buffer const* buffer;
-    //     uint64_t offset;
-
-    // };
-
     struct RenderPassContext
     {
         Gfx::Camera const* camera;
     };
 
-    class Frame
+    class FrameRenderer
     {
     public:
         //static constexpr uint64_t staging_buffer_size = 2048;
@@ -74,8 +67,6 @@ namespace Rc::Render
 
         uint32_t uniform_buffer_index {};
 
-        //std::unique_ptr<RenderCommandQueue> queue;
-
         std::unique_ptr<Fence> fence;
         
         std::unique_ptr<RenderCommandBuffer> commands;
@@ -92,9 +83,6 @@ namespace Rc::Render
 
         std::unique_ptr<Texture2d> depth_buffer;
         std::unique_ptr<RenderTargetView> depth_buffer_view;
-
-    private:
-        // Internal members...
     };
 
 } // Rc::Render
