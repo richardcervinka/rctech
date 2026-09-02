@@ -18,6 +18,8 @@
     "str.cpp"
     "jsonstream.h"
     "jsonstream.cpp"
+    "image.h"
+    "image.cpp"
 )
 
 target_compile_features(base
@@ -31,4 +33,8 @@ target_compile_options(base
     PRIVATE $<$<CXX_COMPILER_ID:GNU>:-fexec-charset=UTF-8>
     PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/utf-8>
     PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/execution-charset:utf-8>
+)
+
+target_link_libraries(base
+    PRIVATE lodepng
 )

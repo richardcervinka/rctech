@@ -90,3 +90,11 @@ add_executable(test_jsonstream "test_jsonstream.cpp")
 target_link_libraries(test_jsonstream
     PRIVATE test_base
 )
+
+# image
+
+add_executable(test_image "test_image.cpp")
+
+target_link_libraries(test_image
+    PRIVATE test_base
+)
