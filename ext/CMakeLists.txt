@@ -31,5 +31,9 @@ set(BUILD_GMOCK ON CACHE BOOL "Enable/Disable gmock" FORCE)
 
 add_subdirectory("googletest")
 
+# lodepng
+
+add_subdirectory("lodepng")
+
 # ISPC Texture Compressor (Intel)
 # stb_image_resize2
