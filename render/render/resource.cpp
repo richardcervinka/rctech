@@ -35,9 +35,14 @@ namespace Rc::Render
         return pools[std::to_underlying(name)].index_buffer_allocator->Allocate(name, size);
     }
 
-    Texture2dHandle ResourceManager::AllocateTexture2d(ResourceFamily name, uint32_t width, uint32_t height, PixelFormat format)
+    Texture2dHandle ResourceManager::AllocateTexture2d(
+        ResourceFamily name,
+        uint32_t width,
+        uint32_t height,
+        uint32_t mip_levels,
+        PixelFormat format)
     {
-        Rc::Dev::test_texture = device.AllocateTexture2d(width, height, format);
+        Rc::Dev::test_texture = device.AllocateTexture2d(width, height, mip_levels, format);
         return {}; // ----------------------------------------------------------------------
     }
 

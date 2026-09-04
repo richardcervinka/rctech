@@ -94,9 +94,9 @@ namespace Rc::Render
             return resource_manager->AllocateIndexBuffer(family, size);
         }
 
-        Texture2dHandle AllocateTexture2d(ResourceFamily family, uint32_t width, uint32_t height, PixelFormat format)
+        Texture2dHandle AllocateTexture2d(ResourceFamily family, uint32_t width, uint32_t height, uint32_t mip_levels, PixelFormat format)
         {
-            return resource_manager->AllocateTexture2d(family, width, height, format);
+            return resource_manager->AllocateTexture2d(family, width, height, mip_levels, format);
         }
 
         void BeginUpload()

@@ -68,14 +68,6 @@ namespace Rc::Render
         {
             images.emplace_back(image);
 
-            auto texture = std::make_unique<Texture2d>(
-                vk_device,
-                image,
-                Format(),
-                vk_info.imageExtent.width,
-                vk_info.imageExtent.height
-            );
-
             auto render_target = std::make_unique<RenderTargetView>(
                 vk_device,
                 image,
@@ -85,7 +77,7 @@ namespace Rc::Render
                 vk_info.imageExtent.height
             );
 
-            back_buffers.emplace_back(std::move(texture), std::move(render_target));
+            back_buffers.emplace_back(std::move(render_target));
 
             acquire_semaphores.push_back(std::make_unique<Semaphore>(vk_device));
             acquire_semaphores.push_back(std::make_unique<Semaphore>(vk_device));

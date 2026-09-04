@@ -598,15 +598,18 @@ namespace Rc::Render
         return std::make_unique<Texture2d>(
             *device,
             vma_allocator,
-            PixelFormat::Depth,
+            PixelFormat::DepthFloat,
             width,
             height,
-            VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
-            VK_IMAGE_LAYOUT_UNDEFINED
+            1
         );
     }
 
-    std::unique_ptr<Texture2d> Device::AllocateTexture2d(uint32_t width, uint32_t height, PixelFormat format) const
+    std::unique_ptr<Texture2d> Device::AllocateTexture2d(
+        uint32_t width,
+        uint32_t height,
+        uint32_t mip_levels,
+        PixelFormat format) const
     {
         return std::make_unique<Texture2d>(
             *device,
@@ -614,8 +617,7 @@ namespace Rc::Render
             format,
             width,
             height,
-            VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
-            VK_IMAGE_LAYOUT_UNDEFINED
+            mip_levels
         );
     }
 

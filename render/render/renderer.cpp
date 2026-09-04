@@ -124,7 +124,7 @@ namespace Rc::Render
         sampler_descriptor_heap = device->CreateSamplerDescriptorHeap(256);
 
         // ---------------------------- TEST ----------------------------
-        Rc::Dev::test_texture = device->AllocateTexture2d(16, 16, PixelFormat::ColorRGBA);
+        Rc::Dev::test_texture = device->AllocateTexture2d(256, 256, 2, PixelFormat::ColorSRGBA);
         assert(Rc::Dev::test_texture != nullptr);
         resource_descriptor_heap->WriteTexture2dDescriptor(4, *Rc::Dev::test_texture);
         sampler_descriptor_heap->WriteDefaultSampler(0);

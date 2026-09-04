@@ -43,6 +43,12 @@ namespace Rc::Render
             ptr += value.size();
         }
 
+        void Write(std::span<uint8_t const> value)
+        {
+            std::memcpy(ptr, value.data(), value.size());
+            ptr += value.size();
+        }
+
         BufferWriter& operator<<(uint32_t value)
         {
             Write(value);
@@ -89,6 +95,12 @@ namespace Rc::Render
         BufferWriter& operator<<(std::span<uint16_t const> value)
         {
             Write(std::as_bytes(value));
+            return *this;
+        }
+
+        BufferWriter& operator<<(std::span<uint8_t const> value)
+        {
+            Write(value);
             return *this;
         }
 

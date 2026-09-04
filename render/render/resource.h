@@ -125,7 +125,14 @@ namespace Rc::Render
 
         VertexBufferHandle AllocateVertexBuffer(ResourceFamily name, uint64_t size);
         IndexBufferHandle AllocateIndexBuffer(ResourceFamily name, uint64_t size);
-        Texture2dHandle AllocateTexture2d(ResourceFamily name, uint32_t width, uint32_t height, PixelFormat format);
+
+        Texture2dHandle AllocateTexture2d(
+            ResourceFamily name,
+            uint32_t width,
+            uint32_t height,
+            uint32_t mip_levels,
+            PixelFormat format
+        );
 
         Buffer const& GetVertexBuffer(ResourceFamily family)
         {

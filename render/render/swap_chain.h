@@ -59,7 +59,7 @@ namespace Rc::Render
 
         RenderTargetView const& GetRenderTargetView() const
         {
-            return *back_buffers.at(image_index).render_target;
+            return *back_buffers.at(image_index);
         }
 
         // Texture2D const& GetTexture() const // ------------------------ rename to framebuffer
@@ -101,14 +101,8 @@ namespace Rc::Render
         //std::vector<Texture2D> images;
         std::vector<VkImage> images;
 
-        struct BackBuffer
-        {
-            std::unique_ptr<Texture2d> texture;
-            std::unique_ptr<RenderTargetView> render_target;
-        };
-
         // Indexed by the m_index.
-        std::vector<BackBuffer> back_buffers;
+        std::vector<std::unique_ptr<RenderTargetView>> back_buffers;
 
         std::vector<std::unique_ptr<Semaphore>> acquire_semaphores;
 
