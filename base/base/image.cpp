@@ -1,5 +1,4 @@
 #include "image.h"
-#include <cmath>
 #include <cassert>
 #include "lodepng.h"
 
@@ -54,6 +53,18 @@ namespace Rc
         }
 
         return {width, height, std::move(image)};
+    }
+
+    void Image::Save(std::filesystem::path const& path)
+    {
+        auto const ext = path.extension();
+
+        if (ext == ".png")
+        {
+            SavePng(path);
+        }
+
+        throw std::runtime_error("Invalid image file format");
     }
 
     void Image::SavePng(std::filesystem::path const& path)

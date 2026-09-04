@@ -18,6 +18,7 @@ namespace Rc
         static Image Load(std::filesystem::path const& path);
         static Image LoadPng(std::filesystem::path const& path);
 
+        void Save(std::filesystem::path const& path);
         void SavePng(std::filesystem::path const& path);
 
         std::span<uint8_t const> Raw() const
