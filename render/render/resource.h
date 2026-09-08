@@ -181,7 +181,7 @@ namespace Rc::Render
         uint64_t Upload(
             Texture2d& texture,
             RenderCommandQueue const& dst_queue,
-            std::function<void(BufferWriter&)>& writer_callback
+            std::function<void(uint32_t mip, uint32_t w, uint32_t h, std::span<std::byte> dst)>& writer_callback
         );
 
         bool PendingTransfer() const

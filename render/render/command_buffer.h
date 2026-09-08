@@ -5,7 +5,9 @@
 #include "buffer.h"
 #include "base/geometry.h"
 #include "base/color.h"
+#include "core/core.h"
 #include <cstdint>
+#include <functional>
 #include "texture.h"
 #include "pipeline_state.h"
 #include "descriptor_heap.h"
@@ -55,8 +57,6 @@ namespace Rc::Render
         SampledImage
     };
 
-    // TODO: TransferBarrier
-
     class RenderCommandBuffer
     {
     public:
@@ -86,6 +86,7 @@ namespace Rc::Render
         void LoadRenderTarget(RenderTargetSlot slot);
 
         void TransferBuffer(BufferRegion const& src, BufferRegion& dst);
+        void TransferTexture(BufferRegion const& src, std::span<TextureLayout const> layout, Texture2d& dst);
 
         //void TransferResourceDescriptorHeap()
 
@@ -217,7 +218,7 @@ namespace Rc::Render
 
         void TransferBuffer(BufferRegion const& src, BufferRegion& dst);
         void TransferTexture(BufferRegion const& src, Texture2d& dst);
-        
+
         VkCommandBuffer Underlying() const
         {
             return vk_command_buffer;

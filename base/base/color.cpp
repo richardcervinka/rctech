@@ -22,15 +22,14 @@ namespace Rc
         
         switch (hi)
         {
-            case 0: *this = Color(hsv.v, t, p, hsv.a);
-            case 1: *this = Color(q, hsv.v, p, hsv.a);
-            case 2: *this = Color(p, hsv.v, t, hsv.a);
-            case 3: *this = Color(p, q, hsv.v, hsv.a);
-            case 4: *this = Color(t, p, hsv.v, hsv.a);
-            case 5: *this = Color(hsv.v, p, q, hsv.a);
+            case 0: *this = Color(hsv.v, t, p, hsv.a); break;
+            case 1: *this = Color(q, hsv.v, p, hsv.a); break;
+            case 2: *this = Color(p, hsv.v, t, hsv.a); break;
+            case 3: *this = Color(p, q, hsv.v, hsv.a); break;
+            case 4: *this = Color(t, p, hsv.v, hsv.a); break;
+            case 5: *this = Color(hsv.v, p, q, hsv.a); break;
+            default: std::unreachable();
         }
-
-        std::unreachable();
     }
 
     Color::operator Hsva() const noexcept

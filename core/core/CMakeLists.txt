@@ -1,10 +1,13 @@
 add_library(core STATIC
+    "core.h"
     "vertex.h"
     "vertex.cpp"
     "transformations.h"
     "transformations.cpp"
     "camera.h"
     "camera.cpp"
+    "ktx.h"
+    "ktx.cpp"
 )
 
 target_compile_features(core
@@ -13,6 +16,7 @@ target_compile_features(core
 
 target_link_libraries(core
     PUBLIC base
+    PUBLIC std26
 )
 
 target_compile_options(core

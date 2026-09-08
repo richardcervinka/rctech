@@ -20,6 +20,8 @@
     "jsonstream.cpp"
     "image.h"
     "image.cpp"
+    "file.h"
+    "file.cpp"
 )
 
 target_compile_features(base

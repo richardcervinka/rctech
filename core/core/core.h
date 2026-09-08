@@ -1,9 +1,12 @@
 #pragma once
 
+#include <cstdint>
+
 namespace Rc
 {    
     enum class PixelFormat
     {
+        // D32
         DepthFloat,
 
         // RGBA8_SRGB texture
@@ -23,6 +26,16 @@ namespace Rc
 
         // HdrRGB
         // HdrRGBA
+    };
+
+    struct TextureLayout
+    {
+        uint32_t width {0};
+        uint32_t height {0};
+        uint32_t mip_level {0};
+        uint32_t array_level {0};
+        uint32_t offset {0};
+        uint32_t size {0};
     };
     
 } // Rc

@@ -2,6 +2,7 @@
 
 #include "vulkan/device.h"
 #include "core/core.h"
+#include "base/math.h"
 #include "render_target.h"
 
 namespace Rc::Render
@@ -9,13 +10,15 @@ namespace Rc::Render
     class Texture2d
     {
     public:
+        static constexpr uint32_t max_mip_levels = 16;
+
         Texture2d(
             VulkanDevice const& vk_device,
             VmaAllocator vma_allocator,
             PixelFormat format,
             uint32_t width,
             uint32_t height,
-            uint32_t mip_levels
+            bool mips
         );
 
         ~Texture2d();
@@ -50,11 +53,20 @@ namespace Rc::Render
             return mip_levels;
         }
 
-        uint32_t Channels() const;
+        uint32_t MipWidth(uint32_t mip_level) const
+        {
+            return std::max<uint32_t>(1, width / Math::Exp2(mip_level));
+        }
 
-        // Total number of bytes in linear image layout.
-        // Use this value to allocate staging buffer.
-        uint64_t GetLinearDataSize() const;
+        uint32_t MipHeight(uint32_t mip_level) const
+        {
+            return std::max<uint32_t>(1, height / Math::Exp2(mip_level));
+        }
+
+        // Get number of bytes of the mip level.
+        uint32_t MipSize(uint32_t mip_level) const;
+
+        uint32_t Channels() const;
 
         std::unique_ptr<RenderTargetView> CreateDepthBufferView() const;
 

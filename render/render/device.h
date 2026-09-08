@@ -77,7 +77,7 @@ namespace Rc::Render
         std::unique_ptr<Texture2d> AllocateTexture2d(
             uint32_t width,
             uint32_t height,
-            uint32_t mip_levels,
+            bool mips,
             PixelFormat format
         ) const;
 

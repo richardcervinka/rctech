@@ -104,16 +104,43 @@ namespace Rc::Render
     uint64_t ResourceUploader::Upload(
         Texture2d& texture,
         RenderCommandQueue const& dst_queue,
-        std::function<void(BufferWriter&)>& writer_callback)
+        std::function<void(uint32_t mip, uint32_t w, uint32_t h, std::span<std::byte> dst)>& writer_callback)
     {
         assert(writer_callback != nullptr);
+/*
+        auto const layout = texture.Layout();
 
-        auto staging_region = transfer_buffer->Allocate(texture.GetLinearDataSize());  // -------------- Reset complete allocations, see RingAllocator
+        // Texture size in bytes.
+        uint32_t size = 0;
+        for (auto mip : layout)
+        {
+            size += mip.size;
+        }
+
+        auto staging_region = transfer_buffer->Allocate(size);  // -------------- Reset complete allocations, see RingAllocator
         // TODO: Throw when vb_region is nullopt? Or Fallback --------------------------------------------------------
         auto staging_memory = transfer_buffer->Map<std::byte>(*staging_region);
 
-        BufferWriter writer(staging_memory);
-        writer_callback(writer);
+        for (auto mip : layout)
+        {
+            writer_callback(
+                mip.mip_level,
+                mip.width,
+                mip.height,
+                staging_memory.subspan(mip.offset, mip.size));
+        }
+
+        //BufferWriter writer(staging_memory);
+        // writer_callback(writer);
+
+        // TextureRegion const src
+        // {
+        //     .buffer = *staging_region,
+        //     .width = texture.Width(),
+        //     .height = texture.Height(),
+        //     .mip_level = 0,
+        //     .array_level = 0
+        // };
 
         transfer_commands->Texture2dBarrier(
             texture,
@@ -132,6 +159,8 @@ namespace Rc::Render
         );
 
         return transfer_buffer->TimelineValue();
+*/
+        return 0;
     }
 
     void ResourceUploader::BeginUpload()

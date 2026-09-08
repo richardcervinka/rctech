@@ -128,7 +128,7 @@ namespace Rc::Render
             return resource_uploader->Upload(resource_manager->GetBufferRegion(handle), writer_callback);
         }
 
-        uint64_t Upload(Texture2dHandle handle, std::function<void(BufferWriter&)> writer_callback)
+        uint64_t Upload(Texture2dHandle handle, std::function<void(uint32_t mip, uint32_t w, uint32_t h, std::span<std::byte> dst)> writer_callback)
         {
             auto lock = std::lock_guard{*resource_uploader};
             return resource_uploader->Upload(*Rc::Dev::test_texture, *render_queue, writer_callback);
@@ -162,7 +162,9 @@ namespace Rc::Render
             Resize(e.w, e.h);
         }
 
-        void CopyBuffer(std::span<const std::byte> src, BufferRegion dst, BufferUsage usage);
+        void CopyBuffer(std::span<std::byte const> src, BufferRegion dst, BufferUsage usage);
+
+        void CopyTexture2d(std::span<std::byte const> src, std::span<TextureLayout const> layout, Texture2d& dst);
 
         std::unique_ptr<Instance> instance;
         

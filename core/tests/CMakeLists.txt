@@ -15,3 +15,16 @@ target_link_libraries(test_transformations
     PRIVATE core
     PRIVATE gtest_main
 )
+
+# ktx
+
+add_executable(test_ktx "test_ktx.cpp")
+
+target_compile_features(test_ktx
+    PUBLIC cxx_std_26
+)
+
+target_link_libraries(test_ktx
+    PRIVATE core
+    PRIVATE gtest_main
+)

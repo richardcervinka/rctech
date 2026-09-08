@@ -18,7 +18,7 @@ namespace Rc::Render
         }
     }
 
-    std::optional<BufferRegion> BufferRingAllocator::Allocate(uint64_t required)
+    std::optional<BufferRegion> BufferRingAllocator::Allocate(uint64_t required) // ------- throw exception? std::error?
     {
         if (required > chunk_size)
         {

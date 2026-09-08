@@ -14,7 +14,6 @@ namespace Rc::Gfx
         virtual Matrix4<double> GetProjectionMatrix(int viewport_width, int viewport_height) const = 0;
     };
 
-
     class PerspectiveCamera : public Camera
     {
     public:

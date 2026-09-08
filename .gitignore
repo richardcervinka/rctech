@@ -3,5 +3,6 @@
 /.vscode/
 /bin/
 /build/
+/dev/
 compile_commands.json
 notes.md

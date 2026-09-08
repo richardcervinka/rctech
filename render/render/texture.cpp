@@ -1,5 +1,6 @@
 #include "texture.h"
 #include "error.h"
+#include "base/math.h"
 
 namespace Rc::Render
 {
@@ -37,9 +38,21 @@ namespace Rc::Render
         std::unreachable();
     }
 
-    static VkImageLayout ToVkImageLayout(PixelFormat)
+    static uint32_t TextureSize(PixelFormat format, uint32_t width, uint32_t height)
     {
-        return VK_IMAGE_LAYOUT_UNDEFINED;
+        switch (format)
+        {
+            case PixelFormat::DepthFloat:
+                return 4 * width * height;
+            case PixelFormat::ColorSRGBA:
+                return 4 * width * height;
+            case PixelFormat::SurfaceBGRA:
+                return 4 * width * height;
+            case PixelFormat::SurfaceRGBA:
+                return 4 * width * height;
+        }
+
+        std::unreachable();
     }
 
     Texture2d::Texture2d(
@@ -48,15 +61,19 @@ namespace Rc::Render
         PixelFormat format,
         uint32_t width,
         uint32_t height,
-        uint32_t mip_levels
+        bool mips
     ) :
         vk_device{vk_device},
         format{format},
         vk_format{ToVkFormat(format)},
         width{width},
-        height{height},
-        mip_levels{mip_levels}
+        height{height}
     {
+        if (mips)
+        {
+            mip_levels = static_cast<uint32_t>(Math::Log2(std::max(width, height))) + 1u;
+        }
+
         VmaAllocationCreateInfo alloc_info {};
         alloc_info.usage = VMA_MEMORY_USAGE_AUTO;
         alloc_info.flags = 0;
@@ -76,7 +93,7 @@ namespace Rc::Render
             .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
             .queueFamilyIndexCount = 0,
             .pQueueFamilyIndices = nullptr,
-            .initialLayout = ToVkImageLayout(format)
+            .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED
         };
 
         auto const vk_result = vmaCreateImage(
@@ -121,19 +138,9 @@ namespace Rc::Render
         );
     }
 
-    uint64_t Texture2d::GetLinearDataSize() const
+    uint32_t Texture2d::MipSize(uint32_t mip_level) const
     {
-        switch(format)
-        {
-            case PixelFormat::DepthFloat:
-                return uint64_t{width} * uint64_t{height} * uint64_t{4};
-            case PixelFormat::ColorSRGBA:
-            case PixelFormat::SurfaceBGRA:
-            case PixelFormat::SurfaceRGBA:
-                return uint64_t{width} * uint64_t{height} * uint64_t{4};
-        }
-
-        std::unreachable();
+        return TextureSize(format, MipWidth(mip_level), MipHeight(mip_level));
     }
 
 } // Rc::Render

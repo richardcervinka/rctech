@@ -21,9 +21,9 @@ namespace Rc
         void Save(std::filesystem::path const& path);
         void SavePng(std::filesystem::path const& path);
 
-        std::span<uint8_t const> Raw() const
+        std::span<std::byte const> Raw() const
         {
-            return data;
+            return std::as_bytes(std::span{data});
         }
 
         std::span<uint8_t> Raw()

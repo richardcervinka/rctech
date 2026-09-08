@@ -1,5 +1,6 @@
 ﻿#include "generic/application.h"
 #include "base/float.h"
+#include "base/image.h"
 #include "render/development.h"
 
 using namespace Rc;
@@ -54,41 +55,42 @@ void TestApplication::Initialize()
 
     Rc::Dev::initialized = false;
 
+
     renderer.BeginUpload();
 
     Rc::Dev::vb_handle = renderer.AllocateVertexBuffer(Render::ResourceFamily{0}, sizeof(Gfx::VertexBasic) * 24);
 
     Rc::Dev::resource_timeline = renderer.Upload(Rc::Dev::vb_handle, [](Render::BufferWriter& writer) {
         // Front
-        writer << Float3{-1, -1,  1} << Float2{0.01, 0.99};
-        writer << Float3{ 1,  1,  1} << Float2{0.99, 0.01};
-        writer << Float3{-1,  1,  1} << Float2{0.01, 0.01};
-        writer << Float3{ 1, -1,  1} << Float2{0.99, 0.99};
+        writer << Float3{-1, -1,  1} << Float2{0, 1};
+        writer << Float3{ 1,  1,  1} << Float2{1, 0};
+        writer << Float3{-1,  1,  1} << Float2{0, 0};
+        writer << Float3{ 1, -1,  1} << Float2{1, 1};
         // Baack
-        writer << Float3{-1, -1, -1} << Float2{0.01, 0.99};
-        writer << Float3{ 1,  1, -1} << Float2{0.99, 0.01};
-        writer << Float3{-1,  1, -1} << Float2{0.01, 0.01};
-        writer << Float3{ 1, -1, -1} << Float2{0.99, 0.99};
+        writer << Float3{-1, -1, -1} << Float2{0, 1};
+        writer << Float3{ 1,  1, -1} << Float2{1, 0};
+        writer << Float3{-1,  1, -1} << Float2{0, 0};
+        writer << Float3{ 1, -1, -1} << Float2{1, 1};
         // Left
-        writer << Float3{-1, -1, -1} << Float2{0.01, 0.99};
-        writer << Float3{-1,  1,  1} << Float2{0.99, 0.01};
-        writer << Float3{-1,  1, -1} << Float2{0.01, 0.01};
-        writer << Float3{-1, -1,  1} << Float2{0.99, 0.99};
+        writer << Float3{-1, -1, -1} << Float2{0, 1};
+        writer << Float3{-1,  1,  1} << Float2{1, 0};
+        writer << Float3{-1,  1, -1} << Float2{0, 0};
+        writer << Float3{-1, -1,  1} << Float2{1, 1};
         // Right
-        writer << Float3{ 1, -1,  1} << Float2{0.01, 0.99};
-        writer << Float3{ 1,  1, -1} << Float2{0.99, 0.01};
-        writer << Float3{ 1,  1,  1} << Float2{0.01, 0.01};
-        writer << Float3{ 1, -1, -1} << Float2{0.99, 0.99};
+        writer << Float3{ 1, -1,  1} << Float2{0, 1};
+        writer << Float3{ 1,  1, -1} << Float2{1, 0};
+        writer << Float3{ 1,  1,  1} << Float2{0, 0};
+        writer << Float3{ 1, -1, -1} << Float2{1, 1};
         // Top
-        writer << Float3{-1,  1,  1} << Float2{0.01, 0.99};
-        writer << Float3{ 1,  1, -1} << Float2{0.99, 0.01};
-        writer << Float3{-1,  1, -1} << Float2{0.01, 0.01};
-        writer << Float3{ 1,  1,  1} << Float2{0.99, 0.99};
+        writer << Float3{-1,  1,  1} << Float2{0, 1};
+        writer << Float3{ 1,  1, -1} << Float2{1, 0};
+        writer << Float3{-1,  1, -1} << Float2{0, 0};
+        writer << Float3{ 1,  1,  1} << Float2{1, 1};
         // Bottom
-        writer << Float3{-1, -1, -1} << Float2{0.01, 0.99};
-        writer << Float3{ 1, -1,  1} << Float2{0.99, 0.01};
-        writer << Float3{-1, -1,  1} << Float2{0.01, 0.01};
-        writer << Float3{ 1, -1, -1} << Float2{0.99, 0.99};
+        writer << Float3{-1, -1, -1} << Float2{0, 1};
+        writer << Float3{ 1, -1,  1} << Float2{1, 0};
+        writer << Float3{-1, -1,  1} << Float2{0, 0};
+        writer << Float3{ 1, -1, -1} << Float2{1, 1};
     });
     
     Rc::Dev::ib_handle = renderer.AllocateIndexBuffer(Render::ResourceFamily{0}, sizeof(uint16_t) * 36);
@@ -116,33 +118,7 @@ void TestApplication::Initialize()
         };
     });
 
-    Rc::Dev::resource_timeline = renderer.Upload(Rc::Render::Texture2dHandle{}, [](Render::BufferWriter& writer) {
-
-        static const uint32_t data[256]
-        {
-            0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0xFF30D0FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF30D0FF, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-            0x00000000, 0x00000000, 0x00000000, 0xFF30D0FF, 0xFF80E8FF, 0xFFC0F0FF, 0xFFC0F0FF, 0xFFC0F0FF, 0xFFC0F0FF, 0xFFC0F0FF, 0xFFC0F0FF, 0xFF80E8FF, 0xFF30D0FF, 0x00000000, 0x00000000, 0x00000000,
-            0x00000000, 0x00000000, 0xFF30D0FF, 0xFF80E8FF, 0xFFC0F0FF, 0xFFC0F0FF, 0xFFC0F0FF, 0xFFC0F0FF, 0xFFC0F0FF, 0xFFC0F0FF, 0xFFC0F0FF, 0xFFC0F0FF, 0xFF80E8FF, 0xFF30D0FF, 0x00000000, 0x00000000,
-            0x00000000, 0xFF30D0FF, 0xFF80E8FF, 0xFFC0F0FF, 0xFFC0F0FF, 0xFFC0F0FF, 0xFFC0F0FF, 0xFFC0F0FF, 0xFFC0F0FF, 0xFFC0F0FF, 0xFFC0F0FF, 0xFFC0F0FF, 0xFFC0F0FF, 0xFF80E8FF, 0xFF30D0FF, 0x00000000,
-            0x00000000, 0xFF30D0FF, 0xFF80E8FF, 0xFFC0F0FF, 0xFF202020, 0xFF202020, 0xFFC0F0FF, 0xFFC0F0FF, 0xFFC0F0FF, 0xFFC0F0FF, 0xFF202020, 0xFF202020, 0xFFC0F0FF, 0xFF80E8FF, 0xFF30D0FF, 0x00000000,
-            0xFF30D0FF, 0xFF80E8FF, 0xFFC0F0FF, 0x80303030, 0xFF202020, 0xFF202020, 0x80303030, 0xFFC0F0FF, 0xFFC0F0FF, 0x80303030, 0xFF202020, 0xFF202020, 0x80303030, 0xFFC0F0FF, 0xFF80E8FF, 0xFF30D0FF,
-            0xFF30D0FF, 0xFF80E8FF, 0xFF80E8FF, 0x80303030, 0xFF202020, 0xFF202020, 0x80303030, 0xFF80E8FF, 0xFF80E8FF, 0x80303030, 0xFF202020, 0xFF202020, 0x80303030, 0xFF80E8FF, 0xFF80E8FF, 0xFF30D0FF,
-            0xFF30D0FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF30D0FF,
-            0xFF30D0FF, 0xFF30D0FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF30D0FF, 0xFF30D0FF, 0xFF30D0FF,
-            0xFF30D0FF, 0xFF10A0FF, 0xFF30D0FF, 0x80303030, 0xFF80E8FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF80E8FF, 0x80303030, 0xFF30D0FF, 0xFF10A0FF, 0xFF30D0FF, 0xFF30D0FF,
-            0xFF10A0FF, 0xFF10A0FF, 0xFF10A0FF, 0xFF30D0FF, 0xFF202020, 0xFF80E8FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF80E8FF, 0xFF202020, 0xFF30D0FF, 0xFF10A0FF, 0xFF10A0FF, 0xFF30D0FF, 0xFF30D0FF,
-            0x00000000, 0xFF10A0FF, 0xFF10A0FF, 0xFF10A0FF, 0xFF30D0FF, 0xFF202020, 0xFF202020, 0xFF202020, 0xFF202020, 0xFF202020, 0xFF30D0FF, 0xFF10A0FF, 0xFF10A0FF, 0xFF10A0FF, 0xFF30D0FF, 0x00000000,
-            0x00000000, 0xFF30D0FF, 0xFF10A0FF, 0xFF10A0FF, 0xFF10A0FF, 0xFF10A0FF, 0xFF10A0FF, 0xFF10A0FF, 0xFF10A0FF, 0xFF10A0FF, 0xFF10A0FF, 0xFF10A0FF, 0xFF10A0FF, 0xFF30D0FF, 0x00000000, 0x00000000,
-            0x00000000, 0x00000000, 0xFF30D0FF, 0xFF10A0FF, 0xFF10A0FF, 0xFF10A0FF, 0xFF10A0FF, 0xFF10A0FF, 0xFF10A0FF, 0xFF10A0FF, 0xFF10A0FF, 0xFF10A0FF, 0xFF30D0FF, 0x00000000, 0x00000000, 0x00000000,
-            0x00000000, 0x00000000, 0x00000000, 0xFF0070DD, 0xFF30D0FF, 0xFF10A0FF, 0xFF10A0FF, 0xFF10A0FF, 0xFF10A0FF, 0xFF10A0FF, 0xFF30D0FF, 0xFF0070DD, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-            0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0xFF0070DD, 0xFF0070DD, 0xFF0070DD, 0xFF0070DD, 0xFF0070DD, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000
-        };
-        
-        for (auto pixel : data)
-        {
-            writer << pixel;
-        }
-    });
+    //Rc::Render::TextureBuffer tb(
 
     renderer.EndUpload();
 

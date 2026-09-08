@@ -77,17 +77,59 @@ namespace Rc
 
     Image Image::GenerateMip() const
     {
+        if (width == 1 && height == 1)
+        {
+            throw std::runtime_error("Unable to create MIP from 1x1 image");
+        }
+
         auto data = Data();
 
         Image result;
-
-        result.width = width / 2;
-        result.height = height / 2;
+        result.width = std::max(1u, width / 2u);
+        result.height = std::max(1u, height / 2u);
         result.data.reserve(result.width * result.height * 4);
 
-        for (std::size_t row = 0; row < height; row += 2)
+        if (height == 1)
         {
-            for (std::size_t col = 0; col < width; col += 2)
+            for (std::size_t col = 0; (col + 1) < width; col += 2)
+            {
+                auto const a = Color(data[0, col + 0]).DecodeSrgba();
+                auto const b = Color(data[0, col + 1]).DecodeSrgba();
+
+                auto const average = (a + b) / 2.0;
+                Rgba const srgba = average.EncodeSrgba();
+
+                result.data.push_back(srgba.r);
+                result.data.push_back(srgba.g);
+                result.data.push_back(srgba.b);
+                result.data.push_back(srgba.a);
+            }
+
+            return result;
+        }
+
+        if (width == 1)
+        {
+            for (std::size_t row = 0; (row + 1) < height; row += 2)
+            {
+                auto const a = Color(data[row + 0, 0]).DecodeSrgba();
+                auto const b = Color(data[row + 1, 0]).DecodeSrgba();
+
+                auto const average = (a + b) / 2.0;
+                Rgba const srgba = average.EncodeSrgba();
+
+                result.data.push_back(srgba.r);
+                result.data.push_back(srgba.g);
+                result.data.push_back(srgba.b);
+                result.data.push_back(srgba.a);
+            }
+
+            return result;
+        }
+
+        for (std::size_t row = 0; (row + 1) < height; row += 2)
+        {
+            for (std::size_t col = 0; (col + 1) < width; col += 2)
             {
                 auto const a = Color(data[row + 0, col + 0]).DecodeSrgba();
                 auto const b = Color(data[row + 0, col + 1]).DecodeSrgba();

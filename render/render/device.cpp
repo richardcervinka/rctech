@@ -608,7 +608,7 @@ namespace Rc::Render
     std::unique_ptr<Texture2d> Device::AllocateTexture2d(
         uint32_t width,
         uint32_t height,
-        uint32_t mip_levels,
+        bool mips, //------------------------------------------------------------------------ use enum
         PixelFormat format) const
     {
         return std::make_unique<Texture2d>(
@@ -617,7 +617,7 @@ namespace Rc::Render
             format,
             width,
             height,
-            mip_levels
+            mips
         );
     }
 

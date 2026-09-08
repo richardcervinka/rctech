@@ -1,5 +1,6 @@
 #include "command_buffer.h"
-
+#include "base/math.h"
+#include "std26/inplace_vector.h"
 // ----------test
 #include "base/color.h"
 #include <utility>
@@ -385,6 +386,41 @@ namespace Rc::Render
         vk_device.CmdCopyBuffer(vk_command_buffer, src.Underlying(), dst.Underlying(), {&region, 1});
     }
 
+    void RenderCommandBuffer::TransferTexture(
+        BufferRegion const& src,
+        std::span<TextureLayout const> layout,
+        Texture2d& dst)
+    {
+        std26::inplace_vector<VkBufferImageCopy, Texture2d::max_mip_levels> regions;
+
+        for (auto const& layout : layout)
+        {
+            regions.push_back({
+                .bufferOffset = src.Offset() + layout.offset,
+                .bufferRowLength = 0, //---------------------- see
+                .bufferImageHeight = 0, //-------------------- see
+                .imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                .imageSubresource.mipLevel = layout.mip_level,
+                .imageSubresource.baseArrayLayer = 0,
+                .imageSubresource.layerCount = 1,
+                .imageOffset.x = 0,
+                .imageOffset.y = 0,
+                .imageOffset.z = 0,
+                .imageExtent.width = layout.width,
+                .imageExtent.height = layout.height,
+                .imageExtent.depth = 1
+            });
+        }
+
+        vk_device.CmdCopyBufferToImage(
+            vk_command_buffer,
+            src.Underlying(),
+            dst.Underlying(),
+            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+            {regions.data(), regions.size()}
+        );
+    }
+
     void RenderCommandBuffer::BindVertexBuffer(Buffer const& vb, int slot, uint64_t offset)
     {
         // TODO: Assert Buffer::usage
@@ -742,7 +778,7 @@ namespace Rc::Render
         BufferRegion const& src,
         BufferRegion& dst)
     {
-                assert(src.Size() == dst.Size());
+        assert(src.Size() == dst.Size());
 
         struct VkBufferCopy region
         {
@@ -756,38 +792,36 @@ namespace Rc::Render
 
     void TransferCommandBuffer::TransferTexture(BufferRegion const& src, Texture2d& dst)
     {
-        // assert(src.Size() == dst.Size());
+        /*
+        std26::inplace_vector<VkBufferImageCopy, Texture2d::max_mip_levels> regions;
 
-        VkBufferImageCopy region
+        for (auto const& layout : dst.Layout())
         {
-            .bufferOffset = src.Offset(),
-            .bufferRowLength = 0, //---------------------- see
-            .bufferImageHeight = 0, //-------------------- see
-            .imageSubresource = {
-                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                .mipLevel = 0,
-                .baseArrayLayer = 0,
-                .layerCount = 1
-            },
-            .imageOffset = {
-                .x = 0,
-                .y = 0,
-                .z = 0
-            },
-            .imageExtent = {
-                .width = dst.Width(),
-                .height = dst.Height(),
-                .depth = 1
-            }
-        };
-        
+            regions.push_back({
+                .bufferOffset = src.Offset() + layout.offset,
+                .bufferRowLength = 0, //---------------------- see
+                .bufferImageHeight = 0, //-------------------- see
+                .imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                .imageSubresource.mipLevel = layout.mip_level,
+                .imageSubresource.baseArrayLayer = 0,
+                .imageSubresource.layerCount = 1,
+                .imageOffset.x = 0,
+                .imageOffset.y = 0,
+                .imageOffset.z = 0,
+                .imageExtent.width = layout.width,
+                .imageExtent.height = layout.height,
+                .imageExtent.depth = 1
+            });
+        }
+
         vk_device.CmdCopyBufferToImage(
             vk_command_buffer,
             src.Underlying(),
             dst.Underlying(),
             VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-            {&region, 1}
+            {regions.data(), regions.size()}
         );
+        */
     }
 
     void TransferCommandBuffer::MemoryBarrier(

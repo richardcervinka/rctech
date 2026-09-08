@@ -1,4 +1,5 @@
 #include "resources.h"
+#include <array>
 #include <cstddef>
 
 namespace Rc::Res::Vs
