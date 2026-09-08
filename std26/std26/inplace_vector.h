@@ -137,6 +137,36 @@ namespace std26
             m_size = 0;
         }
 
+        constexpr iterator begin() noexcept
+        {
+            return m_data.begin();
+        }
+
+        constexpr const_iterator begin() const noexcept
+        {
+            return m_data.begin();
+        }
+        
+        constexpr const_iterator cbegin() const noexcept
+        {
+            return m_data.cbegin();
+        }
+
+        constexpr iterator end() noexcept
+        {
+            return m_data.begin() + m_size;
+        }
+
+        constexpr const_iterator end() const noexcept
+        {
+            return m_data.begin() + m_size;
+        }
+
+        constexpr const_iterator cend() const noexcept
+        {
+            return m_data.cbegin() + m_size;
+        }
+
     private:
         std::array<T, N> m_data;
         size_type m_size {0};
