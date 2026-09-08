@@ -74,5 +74,35 @@ namespace Rc::Math
         }
         return std::sin(x * pi) / (x * pi);
     }
+
+    constexpr double Log2(double x)
+    {
+        return std::log2(x);
+    }
+
+    constexpr double Log(double x)
+    {
+        return std::log(x);
+    }
+
+    constexpr double Pow(double base, double x)
+    {
+        return std::pow(base, x);
+    }
+
+    constexpr uint64_t Exp2(uint64_t x)
+    {
+        return uint64_t{1} << x;
+    }
+
+    constexpr uint32_t Exp2(uint32_t x)
+    {
+        return uint32_t{1} << x;
+    }
+
+    constexpr double Exp2(double x)
+    {
+        return std::exp2(x);
+    }
     
 } // Rc::Math
