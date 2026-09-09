@@ -26,9 +26,9 @@ namespace Rc
             return std::as_bytes(std::span{data});
         }
 
-        std::span<uint8_t> Raw()
+        std::span<std::byte> Raw()
         {
-            return data;
+            return std::as_writable_bytes(std::span{data});
         }
 
         std::mdspan<Rgba, std::dextents<std::size_t, 2>, std::layout_right> Data()

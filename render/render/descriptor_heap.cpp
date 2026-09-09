@@ -107,7 +107,7 @@ namespace Rc::Render
             .subresourceRange = {
                 .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
                 .baseMipLevel = 0,
-                .levelCount = 1,
+                .levelCount = texture.MipLevels(),
                 .baseArrayLayer = 0,
                 .layerCount = 1
             }
@@ -183,9 +183,9 @@ namespace Rc::Render
             .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
             .magFilter = VK_FILTER_LINEAR,
             .minFilter = VK_FILTER_LINEAR,
-            .mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST,
+            .mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR,
             .minLod = 0.0f,
-            .maxLod = 0.0f,
+            .maxLod = VK_LOD_CLAMP_NONE,
             .mipLodBias = 0.0f,
             .addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT,
             .addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT,

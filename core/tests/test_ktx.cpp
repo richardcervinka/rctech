@@ -7,13 +7,14 @@ using namespace Rc;
 
 TEST(KtxReader, ReadHeader)
 {
-    auto data = Rc::ReadFile("C:\\Users\\richa\\cpp\\rctech\\dev\\valid_R8G8B8A8_SRGB_2D.ktx2");
+    auto data = Rc::ReadFile("C:\\Users\\richa\\cpp\\rctech\\dev\\default_256.ktx2");
 
     KtxReader ktx(data);
 
     auto w = ktx.Width();
     auto h = ktx.Height();
     auto l = ktx.LevelCount();
+    ktx.Layout();
 
     SUCCEED();
     // std::ifstream file(path, std::ios::binary | std::ios::ate);

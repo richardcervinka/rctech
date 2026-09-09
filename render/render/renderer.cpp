@@ -18,6 +18,9 @@
 #include <thread>
 #include <chrono>
 #include "base/image.h"
+#include "core/ktx.h"
+#include "std26/inplace_vector.h"
+#include "base/file.h"
 
 namespace Rc::Render
 {
@@ -125,25 +128,55 @@ namespace Rc::Render
         sampler_descriptor_heap = device->CreateSamplerDescriptorHeap(256);
 
         // ---------------------------- TEST ----------------------------
-        Rc::Dev::test_texture = device->AllocateTexture2d(256, 256, false, PixelFormat::ColorSRGBA);
+        Rc::Dev::test_texture = device->AllocateTexture2d(256, 256, true, PixelFormat::ColorSRGBA);
         assert(Rc::Dev::test_texture != nullptr);
-
-        std::array<TextureLayout, 1> layout
-        {
-            TextureLayout
-            {
-                .width = 256,
-                .height = 256,
-                .mip_level = 0,
-                .array_level = 0,
-                .offset = 0,
-                .size = 256 * 256 * 4
-            }
-        };
         
-        auto const image = Image::Load("C:\\Users\\richa\\Pictures\\test.png");
+        // Initialize test texture
+        {
+            //auto image = Image::Load("C:\\Users\\richa\\cpp\\rctech\\dev\\default_256.ktx2");
+            auto image = ReadFile("C:\\Users\\richa\\cpp\\rctech\\dev\\default_256.ktx2");
 
-        CopyTexture2d(image.Raw(), layout, *Rc::Dev::test_texture);
+            KtxReader ktx(image);
+
+            auto layout = ktx.Layout();
+
+
+
+
+            // std26::inplace_vector<TextureLayout, Texture2d::max_mip_levels> layouts;
+
+            // std::vector<std::byte> data;
+
+            // for (uint32_t mip_level = 0; mip_level < Rc::Dev::test_texture->MipLevels(); mip_level++)
+            // {
+            //     auto const mip_width = Rc::Dev::test_texture->MipWidth(mip_level);
+            //     auto const mip_height = Rc::Dev::test_texture->MipHeight(mip_level);
+            //     auto const mip_size = Rc::Dev::test_texture->MipSize(mip_level);
+            //     auto const mip_offset = static_cast<uint32_t>(data.size());
+
+            //     layouts.push_back({
+            //         .width = mip_width,
+            //         .height = mip_height,
+            //         .mip_level = mip_level,
+            //         .array_level = 0,
+            //         .offset = mip_offset,
+            //         .size = mip_size
+            //     });
+
+            //     data.resize(data.size() + mip_size);
+            //     std::copy(image.Raw().begin(), image.Raw().end(), data.begin() + mip_offset);
+
+
+            //     image = image.GenerateMip();
+            // }
+
+
+
+            //auto const mip_levels = Rc::Dev::test_texture->MipLevels();
+
+            InitializeTexture2d(image, layout, *Rc::Dev::test_texture);
+
+        }
 
 
 
@@ -179,13 +212,13 @@ namespace Rc::Render
             );
         }
 
-        CopyBuffer(
+        InitializeBuffer(
             resource_descriptor_heap->Data(),
             resource_descriptor_heap->GetBufferRegion(),
             BufferUsage::ResourceDescriptorHeap
         );
 
-        CopyBuffer(
+        InitializeBuffer(
             sampler_descriptor_heap->Data(),
             sampler_descriptor_heap->GetBufferRegion(),
             BufferUsage::SamplerDescriptorHeap
@@ -438,7 +471,7 @@ namespace Rc::Render
         frame->EndRenderPass();
     }
 
-    void Renderer::CopyBuffer(std::span<std::byte const> src, BufferRegion dst, BufferUsage usage)
+    void Renderer::InitializeBuffer(std::span<std::byte const> src, BufferRegion dst, BufferUsage usage)
     {
         auto buffer = device->AllocateStagingBuffer(src.size());
         auto region = buffer->GetRegion(0, src.size()); // TODO: Throw when vb_region is nullopt? --------------------------------------------------------
@@ -462,7 +495,7 @@ namespace Rc::Render
         render_fence->Wait();
     }
 
-    void Renderer::CopyTexture2d(std::span<std::byte const> src, std::span<TextureLayout const> layout, Texture2d& dst)
+    void Renderer::InitializeTexture2d(std::span<std::byte const> src, std::span<TextureLayout const> layout, Texture2d& dst)
     {
         auto buffer = device->AllocateStagingBuffer(src.size());
         auto region = buffer->GetRegion();  // TODO: Throw when vb_region is nullopt? Or Fallback --------------------------------------------------------

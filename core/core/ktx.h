@@ -22,6 +22,21 @@ namespace Rc
         uint32_t face_count;
         uint32_t level_count;
         uint32_t supercompression_scheme;
+
+        // Index 
+        uint32_t dfd_byte_offset;
+        uint32_t dfd_byte_length;
+        uint32_t kvd_byte_offset;
+        uint32_t kvd_byte_length;
+        uint64_t sgd_byte_offset;
+        uint64_t sgd_byte_length;
+    };
+
+    struct KtxLevel
+    {
+        uint64_t byte_offset;
+        uint64_t byte_length;
+        uint64_t uncompressed_byte_length;
     };
 
     class KtxReader
@@ -45,6 +60,8 @@ namespace Rc
         uint32_t LevelCount() const;
 
         std26::inplace_vector<TextureLayout, 16> Layout() const;
+
+        std::span<std::byte const> ImageData() const;
 
     private:
         KtxHeader const& Header() const

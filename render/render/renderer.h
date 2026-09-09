@@ -162,9 +162,17 @@ namespace Rc::Render
             Resize(e.w, e.h);
         }
 
-        void CopyBuffer(std::span<std::byte const> src, BufferRegion dst, BufferUsage usage);
+        void InitializeBuffer(
+            std::span<std::byte const> src,
+            BufferRegion dst,
+            BufferUsage usage
+        );
 
-        void CopyTexture2d(std::span<std::byte const> src, std::span<TextureLayout const> layout, Texture2d& dst);
+        void InitializeTexture2d(
+            std::span<std::byte const> src,
+            std::span<TextureLayout const> layout,
+            Texture2d& dst
+        );
 
         std::unique_ptr<Instance> instance;
         

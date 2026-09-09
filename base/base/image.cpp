@@ -79,7 +79,8 @@ namespace Rc
     {
         if (width == 1 && height == 1)
         {
-            throw std::runtime_error("Unable to create MIP from 1x1 image");
+            return *this;
+            //throw std::runtime_error("Unable to create MIP from 1x1 image");
         }
 
         auto data = Data();

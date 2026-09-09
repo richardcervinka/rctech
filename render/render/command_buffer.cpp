@@ -650,7 +650,7 @@ namespace Rc::Render
             .image = texture.Underlying(),
             .subresourceRange.aspectMask = ToVkImageAspectFlags(after_usage),
             .subresourceRange.baseMipLevel = 0, //----------------------------------------- from texture
-            .subresourceRange.levelCount = 1,  //----------------------------------------- from texture
+            .subresourceRange.levelCount = texture.MipLevels(),
             .subresourceRange.baseArrayLayer = 0,  //----------------------------------------- from texture
             .subresourceRange.layerCount = 1  //----------------------------------------- from texture
         };
