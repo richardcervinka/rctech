@@ -1,4 +1,5 @@
 #include "ktx.h"
+#include <stdexcept>
 
 namespace Rc
 {
@@ -12,6 +13,21 @@ namespace Rc
         };
 
         return Header().identifier == identifier;
+    }
+
+    PixelFormat KtxReader::Format() const
+    {
+        switch (Header().vk_format)
+        {
+            case 43: // VK_FORMAT_R8G8B8A8_SRGB
+                return PixelFormat::ColorSRGBA;
+            case 126: // VK_FORMAT_D32_SFLOAT
+                return PixelFormat::DepthFloat;
+            case 146: // VK_FORMAT_BC7_SRGB_BLOCK
+                return PixelFormat::ColorBC7;
+        }
+
+        throw std::runtime_error("KTX format not supported");
     }
 
     uint32_t KtxReader::Width() const

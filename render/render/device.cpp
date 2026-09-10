@@ -601,14 +601,14 @@ namespace Rc::Render
             PixelFormat::DepthFloat,
             width,
             height,
-            1
+            Mips::None
         );
     }
 
     std::unique_ptr<Texture2d> Device::AllocateTexture2d(
         uint32_t width,
         uint32_t height,
-        bool mips, //------------------------------------------------------------------------ use enum
+        Mips mips,
         PixelFormat format) const
     {
         return std::make_unique<Texture2d>(

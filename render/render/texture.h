@@ -7,18 +7,22 @@
 
 namespace Rc::Render
 {
+    enum class Mips
+    {
+        None,
+        Full
+    };
+
     class Texture2d
     {
     public:
-        static constexpr uint32_t max_mip_levels = 16;
-
         Texture2d(
             VulkanDevice const& vk_device,
             VmaAllocator vma_allocator,
             PixelFormat format,
             uint32_t width,
             uint32_t height,
-            bool mips
+            Mips mips
         );
 
         ~Texture2d();

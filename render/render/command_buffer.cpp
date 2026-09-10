@@ -391,7 +391,7 @@ namespace Rc::Render
         std::span<TextureLayout const> layout,
         Texture2d& dst)
     {
-        std26::inplace_vector<VkBufferImageCopy, Texture2d::max_mip_levels> regions;
+        std26::inplace_vector<VkBufferImageCopy, TextureInfo::max_mip_levels> regions;
 
         for (auto const& layout : layout)
         {

@@ -14,6 +14,7 @@ TEST(KtxReader, ReadHeader)
     auto w = ktx.Width();
     auto h = ktx.Height();
     auto l = ktx.LevelCount();
+    ktx.Format();
     ktx.Layout();
 
     SUCCEED();

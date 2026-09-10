@@ -7,11 +7,7 @@
 #include <functional>
 #include "shader.h"
 #include "descriptor_heap.h"
-#include "core/camera.h"
-#include "core/vertex.h"
 #include "frame_renderer.h"
-#include "buffer_linear_allocator.h"
-#include "buffer_ring_allocator.h"
 #include "resource.h"
 #include "development.h"
 
@@ -94,9 +90,9 @@ namespace Rc::Render
             return resource_manager->AllocateIndexBuffer(family, size);
         }
 
-        Texture2dHandle AllocateTexture2d(ResourceFamily family, uint32_t width, uint32_t height, uint32_t mip_levels, PixelFormat format)
+        Texture2dHandle AllocateTexture2d(ResourceFamily family, uint32_t width, uint32_t height, Mips mips, PixelFormat format)
         {
-            return resource_manager->AllocateTexture2d(family, width, height, mip_levels, format);
+            return resource_manager->AllocateTexture2d(family, width, height, mips, format);
         }
 
         void BeginUpload()
@@ -168,11 +164,7 @@ namespace Rc::Render
             BufferUsage usage
         );
 
-        void InitializeTexture2d(
-            std::span<std::byte const> src,
-            std::span<TextureLayout const> layout,
-            Texture2d& dst
-        );
+        void InitializeTexture2d(TextureInfo const& src, Texture2d& dst);
 
         std::unique_ptr<Instance> instance;
         

@@ -15,12 +15,7 @@
 #include "generic/input.h"
 #include "constants.h"
 #include "development.h"
-#include <thread>
-#include <chrono>
-#include "base/image.h"
 #include "core/ktx.h"
-#include "std26/inplace_vector.h"
-#include "base/file.h"
 
 namespace Rc::Render
 {
@@ -128,57 +123,9 @@ namespace Rc::Render
         sampler_descriptor_heap = device->CreateSamplerDescriptorHeap(256);
 
         // ---------------------------- TEST ----------------------------
-        Rc::Dev::test_texture = device->AllocateTexture2d(256, 256, true, PixelFormat::ColorSRGBA);
+        Rc::Dev::test_texture = device->AllocateTexture2d(256, 256, Mips::Full, PixelFormat::ColorSRGBA);
         assert(Rc::Dev::test_texture != nullptr);
-        
-        // Initialize test texture
-        {
-            //auto image = Image::Load("C:\\Users\\richa\\cpp\\rctech\\dev\\default_256.ktx2");
-            auto image = ReadFile("C:\\Users\\richa\\cpp\\rctech\\dev\\default_256.ktx2");
-
-            KtxReader ktx(image);
-
-            auto layout = ktx.Layout();
-
-
-
-
-            // std26::inplace_vector<TextureLayout, Texture2d::max_mip_levels> layouts;
-
-            // std::vector<std::byte> data;
-
-            // for (uint32_t mip_level = 0; mip_level < Rc::Dev::test_texture->MipLevels(); mip_level++)
-            // {
-            //     auto const mip_width = Rc::Dev::test_texture->MipWidth(mip_level);
-            //     auto const mip_height = Rc::Dev::test_texture->MipHeight(mip_level);
-            //     auto const mip_size = Rc::Dev::test_texture->MipSize(mip_level);
-            //     auto const mip_offset = static_cast<uint32_t>(data.size());
-
-            //     layouts.push_back({
-            //         .width = mip_width,
-            //         .height = mip_height,
-            //         .mip_level = mip_level,
-            //         .array_level = 0,
-            //         .offset = mip_offset,
-            //         .size = mip_size
-            //     });
-
-            //     data.resize(data.size() + mip_size);
-            //     std::copy(image.Raw().begin(), image.Raw().end(), data.begin() + mip_offset);
-
-
-            //     image = image.GenerateMip();
-            // }
-
-
-
-            //auto const mip_levels = Rc::Dev::test_texture->MipLevels();
-
-            InitializeTexture2d(image, layout, *Rc::Dev::test_texture);
-
-        }
-
-
+        InitializeTexture2d(Res::Textures::Default256x256sRgba(), *Rc::Dev::test_texture);
 
         resource_descriptor_heap->WriteTexture2dDescriptor(4, *Rc::Dev::test_texture);
         sampler_descriptor_heap->WriteDefaultSampler(0);
@@ -234,12 +181,12 @@ namespace Rc::Render
         resource_manager->ReserveIndexBuffer(ResourceFamily{0}, 2048 * 32);
 
         {
-            auto factory = device->CreatePipelineFactory();
-            factory.SetPipelineLayout(pipeline_layout);
-            factory.SetVertexShader(GetVertexShader(VertexShaderSlot::Overlay));
-            factory.SetPixelShader(GetPixelShader(PixelShaderSlot::Null));
-            factory.SetOutputFormat(swap_chain->Format());
-            test_pipeline = factory.Create();
+            // auto factory = device->CreatePipelineFactory();
+            // factory.SetPipelineLayout(pipeline_layout);
+            // factory.SetVertexShader(GetVertexShader(VertexShaderSlot::Overlay));
+            // factory.SetPixelShader(GetPixelShader(PixelShaderSlot::Null));
+            // factory.SetOutputFormat(swap_chain->Format());
+            // test_pipeline = factory.Create();
         }
         {
             auto factory = device->CreatePipelineFactory();
@@ -264,9 +211,9 @@ namespace Rc::Render
 
     void Renderer::InitializeShaders()
     {
-        SetVertexShader(VertexShaderSlot::Null, device->CreateShader(Res::Vs::Dummy()));
+        //SetVertexShader(VertexShaderSlot::Null, device->CreateShader(Res::Vs::Dummy()));
         SetVertexShader(VertexShaderSlot::Test, device->CreateShader(Res::Vs::Test()));
-        SetVertexShader(VertexShaderSlot::Overlay, device->CreateShader(Res::Vs::Overlay()));
+        //SetVertexShader(VertexShaderSlot::Overlay, device->CreateShader(Res::Vs::Overlay()));
         SetPixelShader(PixelShaderSlot::Null, device->CreateShader(Res::Ps::Dummy()));
     }
 
@@ -495,19 +442,19 @@ namespace Rc::Render
         render_fence->Wait();
     }
 
-    void Renderer::InitializeTexture2d(std::span<std::byte const> src, std::span<TextureLayout const> layout, Texture2d& dst)
+    void Renderer::InitializeTexture2d(TextureInfo const& src, Texture2d& dst)
     {
-        auto buffer = device->AllocateStagingBuffer(src.size());
+        auto buffer = device->AllocateStagingBuffer(src.data.size());
         auto region = buffer->GetRegion();  // TODO: Throw when vb_region is nullopt? Or Fallback --------------------------------------------------------
         auto memory = buffer->Map(region);
 
-        std::copy(src.begin(), src.end(), memory.data());
+        std::copy(src.data.begin(), src.data.end(), memory.data());
         
         // Transfer the staging buffer.
         render_commands->Reset();
         render_commands->Begin();
         render_commands->Texture2dBarrier(dst, ImageUsage::Undefined, ImageUsage::TransferWrite);
-        render_commands->TransferTexture(region, layout, dst);
+        render_commands->TransferTexture(region, src.layout, dst);
         render_commands->Texture2dBarrier(dst, ImageUsage::TransferWrite, ImageUsage::SampledImage);
         render_commands->End();
 

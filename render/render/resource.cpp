@@ -39,10 +39,10 @@ namespace Rc::Render
         ResourceFamily name,
         uint32_t width,
         uint32_t height,
-        uint32_t mip_levels,
+        Mips mips,
         PixelFormat format)
     {
-        Rc::Dev::test_texture = device.AllocateTexture2d(width, height, mip_levels, format);
+        Rc::Dev::test_texture = device.AllocateTexture2d(width, height, mips, format);
         return {}; // ----------------------------------------------------------------------
     }
 

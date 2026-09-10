@@ -18,6 +18,10 @@ target_include_directories(resources
     PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}"
 )
 
+target_link_libraries(resources
+    PUBLIC core
+)
+
 target_compile_options(resources
     PRIVATE $<$<CXX_COMPILER_ID:Clang>:-finput-charset=UTF-8>
     PRIVATE $<$<CXX_COMPILER_ID:Clang>:-fexec-charset=UTF-8>

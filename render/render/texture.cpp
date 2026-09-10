@@ -16,6 +16,8 @@ namespace Rc::Render
                 return VK_FORMAT_B8G8R8A8_SRGB;
             case PixelFormat::SurfaceRGBA:
                 return VK_FORMAT_R8G8B8A8_SRGB;
+            case PixelFormat::ColorBC7:
+                return VK_FORMAT_BC7_SRGB_BLOCK;
         }
 
         std::unreachable();
@@ -61,7 +63,7 @@ namespace Rc::Render
         PixelFormat format,
         uint32_t width,
         uint32_t height,
-        bool mips
+        Mips mips
     ) :
         vk_device{vk_device},
         format{format},
@@ -69,7 +71,7 @@ namespace Rc::Render
         width{width},
         height{height}
     {
-        if (mips)
+        if (mips == Mips::Full)
         {
             mip_levels = static_cast<uint32_t>(Math::Log2(std::max(width, height))) + 1u;
         }

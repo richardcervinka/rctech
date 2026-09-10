@@ -130,7 +130,7 @@ namespace Rc::Render
             ResourceFamily name,
             uint32_t width,
             uint32_t height,
-            uint32_t mip_levels,
+            Mips mips,
             PixelFormat format
         );
 

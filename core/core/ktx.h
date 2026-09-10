@@ -50,6 +50,8 @@ namespace Rc
 
         operator bool() const;
 
+        PixelFormat Format() const;
+
         // Pixel width
         uint32_t Width() const;
 
@@ -62,6 +64,18 @@ namespace Rc
         std26::inplace_vector<TextureLayout, 16> Layout() const;
 
         std::span<std::byte const> ImageData() const;
+
+        TextureInfo Info() const
+        {
+            return
+            {
+                .data = src,
+                .format = Format(),
+                .width = Width(),
+                .height = Height(),
+                .layout = Layout()
+            };
+        }
 
     private:
         KtxHeader const& Header() const
