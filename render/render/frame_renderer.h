@@ -81,7 +81,7 @@ namespace Rc::Render
 
         std::unique_ptr<Buffer> render_pass_uniform_buffer;
 
-        std::unique_ptr<Texture2d> depth_buffer;
+        std::unique_ptr<Texture2D> depth_buffer;
         std::unique_ptr<RenderTargetView> depth_buffer_view;
     };
 

@@ -13,10 +13,10 @@ namespace Rc::Render
         Full
     };
 
-    class Texture2d
+    class Texture2D
     {
     public:
-        Texture2d(
+        Texture2D(
             VulkanDevice const& vk_device,
             VmaAllocator vma_allocator,
             PixelFormat format,
@@ -25,7 +25,7 @@ namespace Rc::Render
             Mips mips
         );
 
-        ~Texture2d();
+        ~Texture2D();
 
         VkImage const& Underlying() const
         {

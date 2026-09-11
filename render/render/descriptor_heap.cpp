@@ -83,9 +83,9 @@ namespace Rc::Render
         vk_device.WriteResourceDescriptorEXT(resource_descriptor_info, host_address);
     }
 
-    void ResourceDescriptorHeap::WriteTexture2dDescriptor(
+    void ResourceDescriptorHeap::WriteTexture2DDescriptor(
         uint64_t index,
-        Texture2d const& texture)
+        Texture2D const& texture)
     {
         assert(index >= begin_texture_index);
         assert(index < end_texture_index);

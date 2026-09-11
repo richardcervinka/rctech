@@ -123,11 +123,11 @@ namespace Rc::Render
         sampler_descriptor_heap = device->CreateSamplerDescriptorHeap(256);
 
         // ---------------------------- TEST ----------------------------
-        Rc::Dev::test_texture = device->AllocateTexture2d(256, 256, Mips::Full, PixelFormat::ColorSRGBA);
+        Rc::Dev::test_texture = device->AllocateTexture2D(256, 256, Mips::Full, PixelFormat::ColorSRGBA);
         assert(Rc::Dev::test_texture != nullptr);
-        InitializeTexture2d(Res::Textures::Default256x256sRgba(), *Rc::Dev::test_texture);
+        InitializeTexture2D(Res::Textures::Default256x256sRgba(), *Rc::Dev::test_texture);
 
-        resource_descriptor_heap->WriteTexture2dDescriptor(4, *Rc::Dev::test_texture);
+        resource_descriptor_heap->WriteTexture2DDescriptor(4, *Rc::Dev::test_texture);
         sampler_descriptor_heap->WriteDefaultSampler(0);
 
         // Create frames in flight.
@@ -392,7 +392,7 @@ namespace Rc::Render
                 BufferUsage::Undefined,
                 BufferUsage::IndexBuffer
             );
-            // frame->commands->BarrierTexture2dAcquire(
+            // frame->commands->BarrierTexture2DAcquire(
             //     *Rc::Dev::test_texture,
             //     ImageUsage::SampledImage,
             //     ImageUsage::SampledImage,
@@ -424,7 +424,7 @@ namespace Rc::Render
         auto region = buffer->GetRegion(0, src.size()); // TODO: Throw when vb_region is nullopt? --------------------------------------------------------
         auto memory = buffer->Map(region);
 
-        // Write data heap to the transfer buffer.
+        // Copy data to the staging buffer.
         std::copy(src.begin(), src.end(), memory.data());
 
         // Transfer the staging buffer.
@@ -442,20 +442,21 @@ namespace Rc::Render
         render_fence->Wait();
     }
 
-    void Renderer::InitializeTexture2d(TextureInfo const& src, Texture2d& dst)
+    void Renderer::InitializeTexture2D(TextureInfo const& src, Texture2D& dst)
     {
         auto buffer = device->AllocateStagingBuffer(src.data.size());
         auto region = buffer->GetRegion();  // TODO: Throw when vb_region is nullopt? Or Fallback --------------------------------------------------------
         auto memory = buffer->Map(region);
 
+        // Copy texture to the staging buffer.
         std::copy(src.data.begin(), src.data.end(), memory.data());
         
         // Transfer the staging buffer.
         render_commands->Reset();
         render_commands->Begin();
-        render_commands->Texture2dBarrier(dst, ImageUsage::Undefined, ImageUsage::TransferWrite);
+        render_commands->Texture2DBarrier(dst, ImageUsage::Undefined, ImageUsage::TransferWrite);
         render_commands->TransferTexture(region, src.layout, dst);
-        render_commands->Texture2dBarrier(dst, ImageUsage::TransferWrite, ImageUsage::SampledImage);
+        render_commands->Texture2DBarrier(dst, ImageUsage::TransferWrite, ImageUsage::SampledImage);
         render_commands->End();
 
         // Submit commands.

@@ -57,7 +57,7 @@ namespace Rc::Render
         std::unreachable();
     }
 
-    Texture2d::Texture2d(
+    Texture2D::Texture2D(
         VulkanDevice const& vk_device,
         VmaAllocator vma_allocator,
         PixelFormat format,
@@ -115,7 +115,7 @@ namespace Rc::Render
         this->vma_allocator = vma_allocator;   
     }
 
-    Texture2d::~Texture2d()
+    Texture2D::~Texture2D()
     {
         if (vma_allocator != VK_NULL_HANDLE)
         {
@@ -123,12 +123,12 @@ namespace Rc::Render
         }
     }
 
-    uint32_t Texture2d::Channels() const
+    uint32_t Texture2D::Channels() const
     {
         // TODO: Format to number of channels
     };
 
-    std::unique_ptr<RenderTargetView> Texture2d::CreateDepthBufferView() const
+    std::unique_ptr<RenderTargetView> Texture2D::CreateDepthBufferView() const
     {
         return std::make_unique<RenderTargetView>(
             vk_device,
@@ -140,7 +140,7 @@ namespace Rc::Render
         );
     }
 
-    uint32_t Texture2d::MipSize(uint32_t mip_level) const
+    uint32_t Texture2D::MipSize(uint32_t mip_level) const
     {
         return TextureSize(format, MipWidth(mip_level), MipHeight(mip_level));
     }

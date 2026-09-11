@@ -90,9 +90,9 @@ namespace Rc::Render
             return resource_manager->AllocateIndexBuffer(family, size);
         }
 
-        Texture2dHandle AllocateTexture2d(ResourceFamily family, uint32_t width, uint32_t height, Mips mips, PixelFormat format)
+        Texture2DHandle AllocateTexture2D(ResourceFamily family, uint32_t width, uint32_t height, Mips mips, PixelFormat format)
         {
-            return resource_manager->AllocateTexture2d(family, width, height, mips, format);
+            return resource_manager->AllocateTexture2D(family, width, height, mips, format);
         }
 
         void BeginUpload()
@@ -124,7 +124,7 @@ namespace Rc::Render
             return resource_uploader->Upload(resource_manager->GetBufferRegion(handle), writer_callback);
         }
 
-        uint64_t Upload(Texture2dHandle handle, std::function<void(uint32_t mip, uint32_t w, uint32_t h, std::span<std::byte> dst)> writer_callback)
+        uint64_t Upload(Texture2DHandle handle, std::function<void(uint32_t mip, uint32_t w, uint32_t h, std::span<std::byte> dst)> writer_callback)
         {
             auto lock = std::lock_guard{*resource_uploader};
             return resource_uploader->Upload(*Rc::Dev::test_texture, *render_queue, writer_callback);
@@ -164,7 +164,7 @@ namespace Rc::Render
             BufferUsage usage
         );
 
-        void InitializeTexture2d(TextureInfo const& src, Texture2d& dst);
+        void InitializeTexture2D(TextureInfo const& src, Texture2D& dst);
 
         std::unique_ptr<Instance> instance;
         

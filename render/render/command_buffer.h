@@ -86,7 +86,7 @@ namespace Rc::Render
         void LoadRenderTarget(RenderTargetSlot slot);
 
         void TransferBuffer(BufferRegion const& src, BufferRegion& dst);
-        void TransferTexture(BufferRegion const& src, std::span<TextureLayout const> layout, Texture2d& dst);
+        void TransferTexture(BufferRegion const& src, std::span<TextureLayout const> layout, Texture2D& dst);
 
         //void TransferResourceDescriptorHeap()
 
@@ -145,14 +145,14 @@ namespace Rc::Render
             ImageUsage after_usage
         );
 
-        void Texture2dBarrier(
-            Texture2d const& texture,
+        void Texture2DBarrier(
+            Texture2D const& texture,
             ImageUsage before_usage,
             ImageUsage after_usage
         );
 
-        void BarrierTexture2dAcquire(
-            Texture2d const& texture,
+        void BarrierTexture2DAcquire(
+            Texture2D const& texture,
             ImageUsage before_usage,
             ImageUsage after_usage,
             uint32_t queue_family_before,
@@ -202,14 +202,14 @@ namespace Rc::Render
             BufferUsage after_usage
         );
 
-        void Texture2dBarrier(
-            Texture2d const& texture,
+        void Texture2DBarrier(
+            Texture2D const& texture,
             ImageUsage before_usage,
             ImageUsage after_usage
         );
 
-        void BarrierTexture2dRelease(
-            Texture2d const& texture,
+        void BarrierTexture2DRelease(
+            Texture2D const& texture,
             ImageUsage before_usage,
             ImageUsage after_usage,
             uint32_t queue_family_before,
@@ -217,7 +217,7 @@ namespace Rc::Render
         );
 
         void TransferBuffer(BufferRegion const& src, BufferRegion& dst);
-        void TransferTexture(BufferRegion const& src, Texture2d& dst);
+        void TransferTexture(BufferRegion const& src, Texture2D& dst);
 
         VkCommandBuffer Underlying() const
         {

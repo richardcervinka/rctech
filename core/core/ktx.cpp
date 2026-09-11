@@ -3,8 +3,13 @@
 
 namespace Rc
 {
-    KtxReader::operator bool() const
+    KtxReader::KtxReader(std::span<std::byte const> src) : src{src}
     {
+        if (src.size() < sizeof(KtxHeader))
+        {
+            throw std::runtime_error("Bad KTX size");
+        }
+
         static std::array<uint8_t, 12> const identifier
         {
             0xAB, 0x4B, 0x54, 0x58,
@@ -12,7 +17,10 @@ namespace Rc
             0x0D, 0x0A, 0x1A, 0x0A
         };
 
-        return Header().identifier == identifier;
+        if (Header().identifier != identifier)
+        {
+            throw std::runtime_error("Bad KTX identifier");
+        }
     }
 
     PixelFormat KtxReader::Format() const
@@ -47,14 +55,18 @@ namespace Rc
 
     std26::inplace_vector<TextureLayout, 16> KtxReader::Layout() const
     {
-        // TODO: Check size
+        uint32_t const level_count = LevelCount();
+        uint32_t width = Width();
+        uint32_t height = Height();
+
+        // Check src size
+        if (src.size() < sizeof(KtxHeader) + (level_count * sizeof(KtxLevel)))
+        {
+            throw std::runtime_error("Bad KTX size");
+        }
 
         auto const raw = src.subspan(sizeof(KtxHeader));
         auto const* level = reinterpret_cast<KtxLevel const*>(raw.data());
-
-        uint32_t width = Width();
-        uint32_t height = Height();
-        uint32_t const level_count = LevelCount();
 
         std26::inplace_vector<TextureLayout, 16> result;
 

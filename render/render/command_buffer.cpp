@@ -389,7 +389,7 @@ namespace Rc::Render
     void RenderCommandBuffer::TransferTexture(
         BufferRegion const& src,
         std::span<TextureLayout const> layout,
-        Texture2d& dst)
+        Texture2D& dst)
     {
         std26::inplace_vector<VkBufferImageCopy, TextureInfo::max_mip_levels> regions;
 
@@ -630,8 +630,8 @@ namespace Rc::Render
         vk_device.CmdPipelineBarrier2(vk_command_buffer, dependency_info);
     }
 
-    void RenderCommandBuffer::Texture2dBarrier(
-        Texture2d const& texture,
+    void RenderCommandBuffer::Texture2DBarrier(
+        Texture2D const& texture,
         ImageUsage before_usage,
         ImageUsage after_usage)
     {
@@ -671,8 +671,8 @@ namespace Rc::Render
         vk_device.CmdPipelineBarrier2(vk_command_buffer, dependency_info);
     }
 
-    void RenderCommandBuffer::BarrierTexture2dAcquire(
-        Texture2d const& texture,
+    void RenderCommandBuffer::BarrierTexture2DAcquire(
+        Texture2D const& texture,
         ImageUsage before_usage,
         ImageUsage after_usage,
         uint32_t queue_family_before,
@@ -790,10 +790,10 @@ namespace Rc::Render
         vk_device.CmdCopyBuffer(vk_command_buffer, src.Underlying(), dst.Underlying(), {&region, 1});
     }
 
-    void TransferCommandBuffer::TransferTexture(BufferRegion const& src, Texture2d& dst)
+    void TransferCommandBuffer::TransferTexture(BufferRegion const& src, Texture2D& dst)
     {
         /*
-        std26::inplace_vector<VkBufferImageCopy, Texture2d::max_mip_levels> regions;
+        std26::inplace_vector<VkBufferImageCopy, Texture2D::max_mip_levels> regions;
 
         for (auto const& layout : dst.Layout())
         {
@@ -860,8 +860,8 @@ namespace Rc::Render
         vk_device.CmdPipelineBarrier2(vk_command_buffer, dependency_info);
     }
 
-    void TransferCommandBuffer::Texture2dBarrier(
-        Texture2d const& texture,
+    void TransferCommandBuffer::Texture2DBarrier(
+        Texture2D const& texture,
         ImageUsage before_usage,
         ImageUsage after_usage)
     {
@@ -901,8 +901,8 @@ namespace Rc::Render
         vk_device.CmdPipelineBarrier2(vk_command_buffer, dependency_info);
     }
 
-    void TransferCommandBuffer::BarrierTexture2dRelease(
-        Texture2d const& texture,
+    void TransferCommandBuffer::BarrierTexture2DRelease(
+        Texture2D const& texture,
         ImageUsage before_usage,
         ImageUsage after_usage,
         uint32_t queue_family_before,

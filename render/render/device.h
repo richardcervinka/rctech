@@ -72,9 +72,9 @@ namespace Rc::Render
         std::unique_ptr<Buffer> AllocateUniformBuffer(uint64_t size) const;
         //std::unique_ptr<Buffer> AllocateDescriptorHeapBuffer(uint64_t size) const;
 
-        std::unique_ptr<Texture2d> AllocateDepthBuffer(uint32_t width, uint32_t height) const;
+        std::unique_ptr<Texture2D> AllocateDepthBuffer(uint32_t width, uint32_t height) const;
 
-        std::unique_ptr<Texture2d> AllocateTexture2d(
+        std::unique_ptr<Texture2D> AllocateTexture2D(
             uint32_t width,
             uint32_t height,
             Mips mips,

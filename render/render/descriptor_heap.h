@@ -56,9 +56,9 @@ namespace Rc::Render
             uint64_t size
         );
         
-        void WriteTexture2dDescriptor(
+        void WriteTexture2DDescriptor(
             uint64_t index,
-            Texture2d const& texture
+            Texture2D const& texture
         );
 
         std::span<std::byte const> Data() const

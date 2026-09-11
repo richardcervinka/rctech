@@ -42,13 +42,7 @@ namespace Rc
     class KtxReader
     {
     public:
-        KtxReader(std::span<std::byte const> src) : src{src}
-        {
-            // TODO: Check src size
-            // TODO: Check identifier
-        }
-
-        operator bool() const;
+        KtxReader(std::span<std::byte const> src);
 
         PixelFormat Format() const;
 

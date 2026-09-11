@@ -35,14 +35,14 @@ namespace Rc::Render
         return pools[std::to_underlying(name)].index_buffer_allocator->Allocate(name, size);
     }
 
-    Texture2dHandle ResourceManager::AllocateTexture2d(
+    Texture2DHandle ResourceManager::AllocateTexture2D(
         ResourceFamily name,
         uint32_t width,
         uint32_t height,
         Mips mips,
         PixelFormat format)
     {
-        Rc::Dev::test_texture = device.AllocateTexture2d(width, height, mips, format);
+        Rc::Dev::test_texture = device.AllocateTexture2D(width, height, mips, format);
         return {}; // ----------------------------------------------------------------------
     }
 
@@ -102,7 +102,7 @@ namespace Rc::Render
     }
 
     uint64_t ResourceUploader::Upload(
-        Texture2d& texture,
+        Texture2D& texture,
         RenderCommandQueue const& dst_queue,
         std::function<void(uint32_t mip, uint32_t w, uint32_t h, std::span<std::byte> dst)>& writer_callback)
     {
@@ -142,7 +142,7 @@ namespace Rc::Render
         //     .array_level = 0
         // };
 
-        transfer_commands->Texture2dBarrier(
+        transfer_commands->Texture2DBarrier(
             texture,
             ImageUsage::Undefined,
             ImageUsage::TransferWrite
@@ -150,7 +150,7 @@ namespace Rc::Render
 
         transfer_commands->TransferTexture(*staging_region, texture);
 
-        transfer_commands->BarrierTexture2dRelease(
+        transfer_commands->BarrierTexture2DRelease(
             texture,
             ImageUsage::TransferWrite,
             ImageUsage::SampledImage,

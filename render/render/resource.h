@@ -57,7 +57,7 @@ namespace Rc::Render
 
     using VertexBufferHandle = ResourceHandle<ResourceType::VertexBuffer>;
     using IndexBufferHandle = ResourceHandle<ResourceType::IndexBuffer>;
-    using Texture2dHandle = ResourceHandle<ResourceType::Texture>;
+    using Texture2DHandle = ResourceHandle<ResourceType::Texture>;
 
     //
     // Linear subresource handle allocator.
@@ -126,7 +126,7 @@ namespace Rc::Render
         VertexBufferHandle AllocateVertexBuffer(ResourceFamily name, uint64_t size);
         IndexBufferHandle AllocateIndexBuffer(ResourceFamily name, uint64_t size);
 
-        Texture2dHandle AllocateTexture2d(
+        Texture2DHandle AllocateTexture2D(
             ResourceFamily name,
             uint32_t width,
             uint32_t height,
@@ -172,14 +172,14 @@ namespace Rc::Render
         // Call in render loop
         bool Complete(uint64_t counter) const;
 
-        // TODO: Renam to UploadBuffer, UploadTexture2d
+        // TODO: Renam to UploadBuffer, UploadTexture2D
         uint64_t Upload(
             BufferRegion region,
             std::function<void(BufferWriter&)>& writer_callback
         );
 
         uint64_t Upload(
-            Texture2d& texture,
+            Texture2D& texture,
             RenderCommandQueue const& dst_queue,
             std::function<void(uint32_t mip, uint32_t w, uint32_t h, std::span<std::byte> dst)>& writer_callback
         );

@@ -593,9 +593,9 @@ namespace Rc::Render
         );
     }
 
-    std::unique_ptr<Texture2d> Device::AllocateDepthBuffer(uint32_t width, uint32_t height) const
+    std::unique_ptr<Texture2D> Device::AllocateDepthBuffer(uint32_t width, uint32_t height) const
     {
-        return std::make_unique<Texture2d>(
+        return std::make_unique<Texture2D>(
             *device,
             vma_allocator,
             PixelFormat::DepthFloat,
@@ -605,13 +605,13 @@ namespace Rc::Render
         );
     }
 
-    std::unique_ptr<Texture2d> Device::AllocateTexture2d(
+    std::unique_ptr<Texture2D> Device::AllocateTexture2D(
         uint32_t width,
         uint32_t height,
         Mips mips,
         PixelFormat format) const
     {
-        return std::make_unique<Texture2d>(
+        return std::make_unique<Texture2D>(
             *device,
             vma_allocator,
             format,
