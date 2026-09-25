@@ -15,6 +15,7 @@ add_subdirectory("windows")
 add_subdirectory("generic")
 add_subdirectory("vulkan")
 add_subdirectory("render")
+add_subdirectory("net")
 
 add_executable(app WIN32
     "main.cpp"
