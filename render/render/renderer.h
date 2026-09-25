@@ -63,13 +63,13 @@ namespace Rc::Render
         void Resize(int width, int height);
 
         // Get width of the associated swap chain.
-        int Width() const
+        uint32_t Width() const
         {
             return swap_chain->Width();
         }
 
         // Get height of the associated swap chain.
-        int Height() const
+        uint32_t Height() const
         {
             return swap_chain->Height();
         }
@@ -80,19 +80,33 @@ namespace Rc::Render
         // BeginFrame -> render commands -> EndFrame
         void EndFrame();
 
-        VertexBufferHandle AllocateVertexBuffer(ResourceFamily family, uint64_t size)
+        uint64_t FrameNumber() const
+        {
+            return frame_number;
+        }
+
+        uint32_t FramesInFlight() const
+        {
+            return static_cast<uint32_t>(frames.size());
+        }
+
+        VertexBufferHandle AllocateVertexBuffer(uint32_t family, uint64_t size)
         {
             return resource_manager->AllocateVertexBuffer(family, size);
         }
 
-        IndexBufferHandle AllocateIndexBuffer(ResourceFamily family, uint64_t size)
+        IndexBufferHandle AllocateIndexBuffer(uint32_t family, uint64_t size)
         {
             return resource_manager->AllocateIndexBuffer(family, size);
         }
 
-        Texture2DHandle AllocateTexture2D(ResourceFamily family, uint32_t width, uint32_t height, Mips mips, PixelFormat format)
+        Texture2DHandle AllocateTexture2D(uint32_t family, PixelFormat format, uint32_t width, uint32_t height, Mips mips)
         {
-            return resource_manager->AllocateTexture2D(family, width, height, mips, format);
+            auto texture = device->AllocateTexture2D(format, width, height, mips);
+
+            return {};
+            //textures.RegisterTexture2D(device->AllocateTexture2D(format, width, height, mips), )
+            //return texture; // resource_manager->AllocateTexture2D(family, width, height, mips, format);
         }
 
         void BeginUpload()
@@ -127,7 +141,8 @@ namespace Rc::Render
         uint64_t Upload(Texture2DHandle handle, std::function<void(uint32_t mip, uint32_t w, uint32_t h, std::span<std::byte> dst)> writer_callback)
         {
             auto lock = std::lock_guard{*resource_uploader};
-            return resource_uploader->Upload(*Rc::Dev::test_texture, *render_queue, writer_callback);
+            //return resource_uploader->Upload(*Rc::Dev::test_texture, *render_queue, writer_callback);
+            return 0;
         }
 
     private:
@@ -211,6 +226,10 @@ namespace Rc::Render
         std::unique_ptr<Device> CreateDevice();
 
         void Test();
+
+        // DEV
+
+        std::unique_ptr<TextureManager> textures;
     };
 
 } // Rc::Render

@@ -43,10 +43,10 @@ namespace Rc::Render
         vk_device.DestroySwapchainKHR(vk_swap_chain);
     }
 
-    void SwapChain::Resize(int width, int height) // -------------------- add surface parameter
+    void SwapChain::Resize(uint32_t width, uint32_t height) // -------------------- add surface parameter
     {
-        vk_info.imageExtent.width = static_cast<uint32_t>(width);
-        vk_info.imageExtent.height = static_cast<uint32_t>(height);
+        vk_info.imageExtent.width = width;
+        vk_info.imageExtent.height = height;
         vk_info.oldSwapchain = vk_swap_chain;
 
         Create();

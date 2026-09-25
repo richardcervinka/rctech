@@ -11,7 +11,7 @@ namespace Rc
     public:
         static inline bool initialized {false};
 
-        static inline std::unique_ptr<Render::Texture2D> test_texture;
+        //static inline std::unique_ptr<Render::Texture2D> test_texture;
 
         static inline Rc::Render::VertexBufferHandle vb_handle;
         static inline Rc::Render::IndexBufferHandle ib_handle; 

@@ -30,8 +30,7 @@ namespace Rc::Render
             device->WaitIdle();
         }
 
-        Rc::Dev::test_texture = nullptr;
-
+        textures = nullptr;
         sampler_descriptor_heap = nullptr;
         resource_descriptor_heap = nullptr;
         resource_uploader = nullptr;
@@ -121,13 +120,22 @@ namespace Rc::Render
         pipeline_layout = device->CreatePipelineLayout();
         resource_descriptor_heap = device->CreateResourceDescriptorHeap(32 * 1024);
         sampler_descriptor_heap = device->CreateSamplerDescriptorHeap(256);
+        textures = std::make_unique<TextureManager>();
 
-        // ---------------------------- TEST ----------------------------
-        Rc::Dev::test_texture = device->AllocateTexture2D(256, 256, Mips::Full, PixelFormat::ColorSRGBA);
-        assert(Rc::Dev::test_texture != nullptr);
-        InitializeTexture2D(Res::Textures::Default256x256sRgba(), *Rc::Dev::test_texture);
+        // Create default texture.
+        {
+            auto const info = Res::Textures::Default256x256sRgba();
+            auto texture = device->AllocateTexture2D(info.format, info.width, info.height, Mips::Full);
 
-        resource_descriptor_heap->WriteTexture2DDescriptor(4, *Rc::Dev::test_texture);
+            InitializeTexture2D(info, *texture);
+
+            Texture2DHandle handle(0, 0, resource_descriptor_heap->TranslateTextureSlot(0));
+
+            textures->InsertTexture2D(std::move(texture), handle);
+
+            resource_descriptor_heap->WriteTexture2DDescriptor(handle.Index(), textures->GetTexture2D(handle));
+        }
+
         sampler_descriptor_heap->WriteDefaultSampler(0);
 
         // Create frames in flight.
@@ -177,8 +185,8 @@ namespace Rc::Render
         resource_manager = std::make_unique<ResourceManager>(*device);
         resource_uploader = std::make_unique<ResourceUploader>(*device);
 
-        resource_manager->ReserveVertexBuffer(ResourceFamily{0}, 2048 * 32);
-        resource_manager->ReserveIndexBuffer(ResourceFamily{0}, 2048 * 32);
+        resource_manager->ReserveVertexBuffer(0, 2048 * 32);
+        resource_manager->ReserveIndexBuffer(0, 2048 * 32);
 
         {
             // auto factory = device->CreatePipelineFactory();
@@ -409,9 +417,9 @@ namespace Rc::Render
             render_pass_context
         );
 
-        frame->BindVertexBuffer(resource_manager->GetVertexBuffer(ResourceFamily{0}), 0); // ---------------------- Use VertexBinding !!!!!!!!
+        frame->BindVertexBuffer(resource_manager->GetVertexBuffer(0), 0); // ---------------------- Use VertexBinding !!!!!!!!
         frame->BindInstanceBuffer(0);
-        frame->BindIndexBuffer(resource_manager->GetIndexBuffer(ResourceFamily{0}), IndexType::Uint16, 0);
+        frame->BindIndexBuffer(resource_manager->GetIndexBuffer(0), IndexType::Uint16, 0);
 
         frame->Draw(36, 420 * 420, 0, 0, 0);
 

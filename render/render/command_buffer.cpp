@@ -1,7 +1,6 @@
 #include "command_buffer.h"
 #include "base/math.h"
 #include "std26/inplace_vector.h"
-// ----------test
 #include "base/color.h"
 #include <utility>
 
@@ -282,10 +281,10 @@ namespace Rc::Render
 
         attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
         attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-        attachment.clearValue.color.float32[0] = color.r;
-        attachment.clearValue.color.float32[1] = color.g;
-        attachment.clearValue.color.float32[2] = color.b;
-        attachment.clearValue.color.float32[3] = color.a;
+        attachment.clearValue.color.float32[0] = static_cast<float>(color.r);
+        attachment.clearValue.color.float32[1] = static_cast<float>(color.g);
+        attachment.clearValue.color.float32[2] = static_cast<float>(color.b);
+        attachment.clearValue.color.float32[3] = static_cast<float>(color.a);
     }
 
     void RenderCommandBuffer::LoadRenderTarget(RenderTargetSlot slot)
@@ -792,6 +791,7 @@ namespace Rc::Render
 
     void TransferCommandBuffer::TransferTexture(BufferRegion const& src, Texture2D& dst)
     {
+        std::unreachable();
         /*
         std26::inplace_vector<VkBufferImageCopy, Texture2D::max_mip_levels> regions;
 

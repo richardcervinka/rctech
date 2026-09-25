@@ -7,59 +7,56 @@ namespace Rc::Render
         device{device}
     {}
 
-    void ResourceManager::ReserveVertexBuffer(ResourceFamily family, uint64_t capacity)
+    void ResourceManager::ReserveVertexBuffer(uint32_t family, uint64_t capacity)
     {
-        auto const family_index = std::to_underlying(family);
-        assert(family_index < pools.size());
+        assert(family < pools.size());
 
         auto buffer = device.AllocateVertexBuffer(capacity);
-        pools[family_index].vertex_buffer_allocator = std::make_unique<ResourceAllocator<VertexBufferHandle>>(std::move(buffer));
+        pools[family].vertex_buffer_allocator = std::make_unique<ResourceAllocator<VertexBufferHandle>>(std::move(buffer));
     }
 
-    void ResourceManager::ReserveIndexBuffer(ResourceFamily family, uint64_t capacity)
+    void ResourceManager::ReserveIndexBuffer(uint32_t family, uint64_t capacity)
     {
-        auto const family_index = std::to_underlying(family);
-        assert(family_index < pools.size());
+        assert(family < pools.size());
 
         auto buffer = device.AllocateIndexBuffer(capacity);
-        pools[family_index].index_buffer_allocator = std::make_unique<ResourceAllocator<IndexBufferHandle>>(std::move(buffer));
+        pools[family].index_buffer_allocator = std::make_unique<ResourceAllocator<IndexBufferHandle>>(std::move(buffer));
     }
     
-    VertexBufferHandle ResourceManager::AllocateVertexBuffer(ResourceFamily name, uint64_t size)
+    VertexBufferHandle ResourceManager::AllocateVertexBuffer(uint32_t family, uint64_t size)
     {
-        return pools[std::to_underlying(name)].vertex_buffer_allocator->Allocate(name, size);
+        return pools[family].vertex_buffer_allocator->Allocate(family, size);
     }
 
-    IndexBufferHandle ResourceManager::AllocateIndexBuffer(ResourceFamily name, uint64_t size)
+    IndexBufferHandle ResourceManager::AllocateIndexBuffer(uint32_t family, uint64_t size)
     {
-        return pools[std::to_underlying(name)].index_buffer_allocator->Allocate(name, size);
+        return pools[family].index_buffer_allocator->Allocate(family, size);
     }
 
-    Texture2DHandle ResourceManager::AllocateTexture2D(
-        ResourceFamily name,
-        uint32_t width,
-        uint32_t height,
-        Mips mips,
-        PixelFormat format)
-    {
-        Rc::Dev::test_texture = device.AllocateTexture2D(width, height, mips, format);
-        return {}; // ----------------------------------------------------------------------
-    }
+    // Texture2DHandle ResourceManager::AllocateTexture2D(
+    //     ResourceFamily name,
+    //     uint32_t width,
+    //     uint32_t height,
+    //     Mips mips,
+    //     PixelFormat format)
+    // {
+    //     Rc::Dev::test_texture = device.AllocateTexture2D(width, height, mips, format);
+    //     return {}; // ----------------------------------------------------------------------
+    // }
 
     BufferRegion& ResourceManager::GetBufferRegion(VertexBufferHandle handle)
     {
-        auto const family = std::to_underlying(handle.FamilyName());
+
         // TODO: family assert
 
-        return pools[family].vertex_buffer_allocator->GetRegion(handle);
+        return pools[handle.Family()].vertex_buffer_allocator->GetRegion(handle);
     }
 
     BufferRegion& ResourceManager::GetBufferRegion(IndexBufferHandle handle)
     {
-        auto const family = std::to_underlying(handle.FamilyName());
         // TODO: family assert
 
-        return pools[family].index_buffer_allocator->GetRegion(handle);
+        return pools[handle.Family()].index_buffer_allocator->GetRegion(handle);
     }
 
     // ResourceUploader

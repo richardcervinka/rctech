@@ -32,27 +32,27 @@ namespace Rc::Render
         SwapChain(SwapChain&& other) = delete;
         SwapChain& operator=(SwapChain&& other) = delete;
 
-        void Resize(int width, int height); // uint32_t ? Window ?
+        void Resize(uint32_t width, uint32_t height);
 
-        int Width() const
+        uint32_t Width() const
         {
-            return static_cast<int>(vk_info.imageExtent.width);
+            return vk_info.imageExtent.width;
         }
         
-        int Height() const
+        uint32_t Height() const
         {
-            return static_cast<int>(vk_info.imageExtent.height);
+            return vk_info.imageExtent.height;
         }
 
-        Rectangle<int> RenderArea() const
+        Rectangle<uint32_t> RenderArea() const
         {
             return {0, 0, Width(), Height()};
         }
 
         // Get number of images.
-        int Size()
+        uint32_t Size()
         {
-            return static_cast<int>(images.size());
+            return static_cast<uint32_t>(images.size());
         }
 
         void AcquireNextImage();

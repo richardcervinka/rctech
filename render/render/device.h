@@ -75,10 +75,10 @@ namespace Rc::Render
         std::unique_ptr<Texture2D> AllocateDepthBuffer(uint32_t width, uint32_t height) const;
 
         std::unique_ptr<Texture2D> AllocateTexture2D(
+            PixelFormat format,
             uint32_t width,
             uint32_t height,
-            Mips mips,
-            PixelFormat format
+            Mips mips
         ) const;
 
         void WaitIdle() const noexcept;

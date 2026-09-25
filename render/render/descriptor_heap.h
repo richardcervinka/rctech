@@ -51,9 +51,9 @@ namespace Rc::Render
         }
 
         void WriteUniformBufferDescriptor(
-            uint64_t index,
+            uint64_t index, //------------------------------------- 64 ?
             uint64_t address,
-            uint64_t size
+            uint64_t size  // --------------------------------------- 64 ?
         );
         
         void WriteTexture2DDescriptor(
@@ -64,6 +64,12 @@ namespace Rc::Render
         std::span<std::byte const> Data() const
         {
             return data;
+        }
+
+        // Convert logical resource slot to a descriptor index.
+        uint32_t TranslateTextureSlot(uint32_t slot) const
+        {
+            return slot + begin_texture_index;
         }
 
         //void Write(std::span<std::byte> dst) const; // ----------------- Rename to Copy()

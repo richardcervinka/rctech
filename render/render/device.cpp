@@ -606,10 +606,10 @@ namespace Rc::Render
     }
 
     std::unique_ptr<Texture2D> Device::AllocateTexture2D(
+        PixelFormat format,
         uint32_t width,
         uint32_t height,
-        Mips mips,
-        PixelFormat format) const
+        Mips mips) const
     {
         return std::make_unique<Texture2D>(
             *device,
