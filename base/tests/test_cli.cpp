@@ -32,7 +32,7 @@ public:
     std::optional<bool> flag;
 };
 
-TEST(Cli_Parse, Option)
+TEST(Cli, ParseOption)
 {
     char const* argv[] {"test", "--option=10"};
 
@@ -42,7 +42,7 @@ TEST(Cli_Parse, Option)
     EXPECT_EQ(args.option.value(), "10");
 }
 
-TEST(Cli_Parse, Flag)
+TEST(Cli, ParseFlag)
 {
     char const* argv[] {"test", "--flag"};
 

@@ -3,7 +3,7 @@
 
 using namespace Rc;
 
-TEST(Quaternion_Multiplication, ComponentWise)
+TEST(Quaternion, ComponentWiseMultiplication)
 {
     Quaternion const a {1, 2, 3, 4};
     Quaternion const b {2, 4, 6, 48};
@@ -16,14 +16,14 @@ TEST(Quaternion_Multiplication, ComponentWise)
     EXPECT_FLOAT_EQ(c.z, 56);
 }
 
-TEST(Quaternion_Normalized, LengthEqualsOne)
+TEST(Quaternion, NormalizedLengthEqualsOne)
 {
     auto const q = Quaternion::Normalized({1, 2, 3, 4});
 
     EXPECT_FLOAT_EQ(q.Length(), 1.0f);
 }
 
-TEST(Quaternion_Conjugated, MultipliesSymmetrically)
+TEST(Quaternion, ConjugatedMultipliesSymmetrically)
 {
     auto const q = Quaternion{1, 2, 3, 4};
     auto const a = q * Quaternion::Conjugated(q);
@@ -35,7 +35,7 @@ TEST(Quaternion_Conjugated, MultipliesSymmetrically)
     EXPECT_FLOAT_EQ(a.z, b.z);
 }
 
-TEST(Quaternion_Inversed, EqualsConjugated_ForUnitQuaternion)
+TEST(Quaternion, InversedEqualsConjugatedForUnitQuaternion)
 {
     auto const q = Quaternion::Normalized({1, 2, 3, 4});
     auto const i = Quaternion::Inversed(q);
@@ -47,7 +47,7 @@ TEST(Quaternion_Inversed, EqualsConjugated_ForUnitQuaternion)
     EXPECT_FLOAT_EQ(i.z, c.z);
 }
 
-TEST(Quaternion_Dot, EqualsLengthSquare_ForSameOperand)
+TEST(Quaternion, DotEqualsLengthSquareForSameOperand)
 {
     auto const q = Quaternion{1, 2, 3, 4};
     auto const qq = Quaternion::Dot(q, q);
@@ -56,7 +56,7 @@ TEST(Quaternion_Dot, EqualsLengthSquare_ForSameOperand)
     EXPECT_FLOAT_EQ(qq, sq);
 }
 
-TEST(Quaternion_RotationX, RotatesPointBy90Degrees)
+TEST(Quaternion, RotationXRotatesPointBy90Degrees)
 {
     auto const q = Quaternion::RotationX(Math::pi / 2.f);
     auto const m = q.ToMatrix<double>();
@@ -68,7 +68,7 @@ TEST(Quaternion_RotationX, RotatesPointBy90Degrees)
     EXPECT_NEAR(p.w, 1, 1e-6);
 }
 
-TEST(Quaternion_RotationY, RotatesPointBy90Degrees)
+TEST(Quaternion, RotationYRotatesPointBy90Degrees)
 {
     auto const q = Quaternion::RotationY(Math::pi / 2.f);
     auto const m = q.ToMatrix<double>();
@@ -80,7 +80,7 @@ TEST(Quaternion_RotationY, RotatesPointBy90Degrees)
     EXPECT_NEAR(p.w, 1, 1e-6);
 }
 
-TEST(Quaternion_RotationZ, RotatesPointBy90Degrees)
+TEST(Quaternion, RotationZRotatesPointBy90Degrees)
 {
     auto const q = Quaternion::RotationZ(Math::pi / 2.f);
     auto const m = q.ToMatrix<double>();
@@ -92,7 +92,7 @@ TEST(Quaternion_RotationZ, RotatesPointBy90Degrees)
     EXPECT_NEAR(p.w, 1, 1e-6);
 }
 
-TEST(Quaternion_Slerp, HandlesOppositeQuaternionsCorrectly)
+TEST(Quaternion, SlerpHandlesOppositeQuaternionsCorrectly)
 {
     auto const a = Quaternion{1, 0, 0, 0};
     auto const b = Quaternion{-1, 0, 0, 0};
@@ -107,7 +107,7 @@ TEST(Quaternion_Slerp, HandlesOppositeQuaternionsCorrectly)
     EXPECT_FLOAT_EQ(u.z, v.z);
 }
 
-TEST(Quaternion_Slerp, NegatedEndpointYieldsSameResult)
+TEST(Quaternion, SlerpNegatedEndpointYieldsSameResult)
 {
     auto const a = Quaternion{0.707f, 0.707f, 0, 0};
     auto const b = Quaternion{0.707f, 0, 0.707f, 0};

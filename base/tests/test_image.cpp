@@ -3,7 +3,7 @@
 
 using namespace Rc;
 
-TEST(ImageTest, CreateMip)
+TEST(Image, GenerateMipLevel)
 {
     Image const image(2, 2, {
         111, 112, 113, 0,
@@ -26,7 +26,7 @@ TEST(ImageTest, CreateMip)
     EXPECT_EQ(value.a, 0);
 }
 
-TEST(ImageTest, CreateMip_AlphaIsLinear)
+TEST(Image, AlphaIsLinearInGeneratedMipLevel)
 {
     Image const image(2, 2, {
         0, 255, 0, 255,
@@ -48,7 +48,7 @@ TEST(ImageTest, CreateMip_AlphaIsLinear)
     EXPECT_EQ((data[0, 0]).a, 127);
 }
 
-TEST(ImageTest, CreateMip_SourceHeightEquals1)
+TEST(ImageTest, GenerateMipFromSourceWithHeightEquals1)
 {
     Image const image(4, 1, {
         11, 12, 13, 0,
@@ -75,7 +75,7 @@ TEST(ImageTest, CreateMip_SourceHeightEquals1)
     EXPECT_EQ((data[0, 1]).a, 0);
 }
 
-TEST(ImageTest, CreateMip_SourceWidthEquals1)
+TEST(Image, GenerateMipFromSourceWithWidthEquals1)
 {
     Image const image(1, 4, {
         11, 12, 13, 0,

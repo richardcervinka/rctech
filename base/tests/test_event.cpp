@@ -27,24 +27,24 @@ public:
     MOCK_METHOD(void, OnTestEvent2, (int const& value), (override));
 };
 
-TEST(EventHandler, ConstructFromLambda_ValueParam)
+TEST(EventHandler, ConstructFromLambdaWithValueParam)
 {
     Rc::Event<int>::Handler handler {[](int){}};
     SUCCEED();
 }
 
-TEST(EventHandler, ConstructFromLambda_ConstRefParam)
+TEST(EventHandler, ConstructFromLambdaWithConstRefParam)
 {
     Rc::Event<int>::Handler handler {[](int const&){}};
     SUCCEED();
 }
 
-TEST(EventHandler_Void, ConstructFromLambda_NoParam)
+TEST(EventHandler, ConstructFromLambdaWithNoParam)
 {
     Rc::Event<void>::Handler handler {[](){}};
 }
 
-TEST(EventDispatcher, MultipleHandlers_AllReceiveEvent)
+TEST(EventDispatcher, MultipleHandlersReceiveEvent)
 {
     Dispatcher dispatcher;
     ListenerMock listener;
@@ -58,7 +58,7 @@ TEST(EventDispatcher, MultipleHandlers_AllReceiveEvent)
     dispatcher.event.Dispatch(8);
 }
 
-TEST(EventDispatcher, DuplicateHandler_CalledOnce)
+TEST(EventDispatcher, DuplicateHandlerCalledOnce)
 {
     Dispatcher dispatcher;
     ListenerMock listener;
@@ -71,7 +71,7 @@ TEST(EventDispatcher, DuplicateHandler_CalledOnce)
     dispatcher.event.Dispatch(8);
 }
 
-TEST(EventDispatcher, UnboundHandler_NotCalled)
+TEST(EventDispatcher, UnboundHandlerNotCalled)
 {
     Dispatcher dispatcher;
     ListenerMock listener;

@@ -4,7 +4,7 @@
 using namespace Rc;
 using namespace Rc::Gfx;
 
-TEST(PerspectiveCamera, Projection_Perspective)
+TEST(PerspectiveCamera, GetProjectionMatrix)
 {
     PerspectiveCamera camera;
     camera.fov = Math::pi / 2.0;

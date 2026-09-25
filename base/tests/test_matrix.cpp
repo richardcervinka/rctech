@@ -4,10 +4,7 @@
 using namespace Rc;
 using namespace Rc::Math;
 
-TEST(MatrixTest, Construct)
-{}
-
-TEST(MatrixTest, To)
+TEST(Matrix, ConvertDoubleToFloat)
 {
     auto const m = Matrix4<double>::Identity().To<float>();
 
@@ -29,7 +26,7 @@ TEST(MatrixTest, To)
     EXPECT_EQ(m.At(3, 3), 1);
 }
 
-TEST(MatrixTest, At)
+TEST(Matrix, At)
 {
     Matrix4<double> const m {
         0, 0, 0, 0,
@@ -42,7 +39,7 @@ TEST(MatrixTest, At)
     EXPECT_EQ(m.At(3, 2), 0);
 }
 
-TEST(MatrixTest, Identity)
+TEST(Matrix, Identity)
 {
     auto const m = Matrix4<double>::Identity();
     
@@ -64,7 +61,7 @@ TEST(MatrixTest, Identity)
     EXPECT_EQ(m.At(3, 3), 1);
 }
 
-TEST(MatrixTest, Transpose)
+TEST(Matrix, Transpose)
 {
     Matrix4<float> m {
         1,  2,  3,  4,
@@ -93,7 +90,7 @@ TEST(MatrixTest, Transpose)
     EXPECT_FLOAT_EQ(m.At(3, 3), 16);
 }
 
-TEST(MatrixTest, ConstructTranspose)
+TEST(Matrix, ConstructTransposed)
 {
     auto const m = Matrix4<float>::Transpose({
         1,  2,  3,  4,
@@ -120,7 +117,7 @@ TEST(MatrixTest, ConstructTranspose)
     EXPECT_FLOAT_EQ(m.At(3, 3), 16);
 }
 
-TEST(MatrixTest, Invert)
+TEST(Matrix, Invert)
 {
     Matrix4<float> m {
         1,  0,  2, -1,
@@ -149,7 +146,7 @@ TEST(MatrixTest, Invert)
     EXPECT_FLOAT_EQ(m.At(3, 3), 1.f / 5.f);
 }
 
-TEST(MatrixTest, SwapRows)
+TEST(Matrix, SwapRows)
 {
     Matrix4<float> m {
         11, 12, 13, 14,
@@ -170,7 +167,7 @@ TEST(MatrixTest, SwapRows)
     EXPECT_EQ(m.At(3, 3), 24);
 }
 
-TEST(MatrixTest, Transform)
+TEST(Matrix, Transform)
 {
     auto m = Matrix4<double>::Identity();
     m.AppendTranslation(2, 3, 1);
@@ -183,7 +180,7 @@ TEST(MatrixTest, Transform)
     EXPECT_DOUBLE_EQ(v.z, 1);
 }
 
-TEST(MatrixTest, Translation)
+TEST(Matrix, Translate)
 {
     auto const m = Matrix4<double>::Translation(10, -20, 30);
     auto const v = m.Transform({1, 2, 3, 1});
@@ -194,7 +191,7 @@ TEST(MatrixTest, Translation)
     EXPECT_DOUBLE_EQ(v.w, 1);
 }
 
-TEST(MatrixTest, AppendTranslation)
+TEST(Matrix, AppendTranslation)
 {
     auto m = Matrix4<double>::RotationZ(Math::pi / 2.f);
     m.AppendTranslation(4, 5, 6);
@@ -206,7 +203,7 @@ TEST(MatrixTest, AppendTranslation)
     EXPECT_NEAR(v.w, 1, 1e-6);
 }
 
-TEST(MatrixTest, PrependTranslation)
+TEST(Matrix, PrependTranslation)
 {
     auto m = Matrix4<double>::RotationZ(Math::pi / 2.f);
 
@@ -224,7 +221,7 @@ TEST(MatrixTest, PrependTranslation)
     EXPECT_NEAR(v.w, 1, 1e-6);
 }
 
-TEST(MatrixTest, Scale)
+TEST(Matrix, Scale)
 {
     auto const m = Matrix4<double>::Scale(2, 3, 4);
     auto const v = m.Transform({-10, 100, 1000, 1});
@@ -235,7 +232,7 @@ TEST(MatrixTest, Scale)
     EXPECT_DOUBLE_EQ(v.w, 1);
 }
 
-TEST(MatrixTest, RotationX)
+TEST(Matrix, RotationX)
 {
     auto const m = Matrix4<double>::RotationX(Math::pi / 2.0f);
     auto const v = m.Transform({3, 2, 1, 1});
@@ -246,7 +243,7 @@ TEST(MatrixTest, RotationX)
     EXPECT_NEAR(v.w, 1, 1e-6);
 }
 
-TEST(MatrixTest, RotationY)
+TEST(Matrix, RotationY)
 {
     auto const m = Matrix4<double>::RotationY(Math::pi / 2.0f);
     auto const v = m.Transform({1, 3, 2, 1});
@@ -257,7 +254,7 @@ TEST(MatrixTest, RotationY)
     EXPECT_NEAR(v.w, 1, 1e-6);
 }
 
-TEST(MatrixTest, RotationZ)
+TEST(Matrix, RotationZ)
 {
     auto const m = Matrix4<double>::RotationZ(Math::pi / 2.0f);
     auto const v = m.Transform({1, 2, 3, 1});

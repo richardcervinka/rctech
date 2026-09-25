@@ -4,7 +4,7 @@
 using namespace Rc;
 using namespace Rc::Gfx;
 
-TEST(Transformations_Translation, TranslatePoint)
+TEST(Transformations, TranslatePoint)
 {
     Transformations t;
     t.x = 5;
@@ -21,7 +21,7 @@ TEST(Transformations_Translation, TranslatePoint)
     EXPECT_NEAR(q.w, 1, 1e-5);
 }
 
-TEST(Transformations_Scaling, ScalePoint)
+TEST(Transformations, ScalePoint)
 {
     Transformations t;
     t.scale = 3;
@@ -54,7 +54,7 @@ TEST(Transformations_Scaling, ScalePoint)
 //     EXPECT_NEAR(q.w, 1, 1e-5);
 // }
 
-TEST(Transformations_Rotation, Yaw_RotateBy720Degrees)
+TEST(Transformations, YawBy720Degrees)
 {
     Transformations t;
     t.yaw = Math::pi * 4.0;
@@ -69,7 +69,7 @@ TEST(Transformations_Rotation, Yaw_RotateBy720Degrees)
     EXPECT_NEAR(q.w, 1, 1e-5);
 }
 
-TEST(Transformations_Rotation, Yaw_RotateBy90Degrees)
+TEST(Transformations, YawBy90Degrees)
 {
     Transformations t;
     t.yaw = Math::pi / 2.0;
@@ -84,7 +84,7 @@ TEST(Transformations_Rotation, Yaw_RotateBy90Degrees)
     EXPECT_NEAR(q.w, 1, 1e-5);
 }
 
-TEST(Transformations_Rotation, Pitch_RotateBy90Degrees)
+TEST(Transformations, PitchBy90Degrees)
 {
     Transformations t;
     t.pitch = Math::pi / 2.0;
@@ -99,7 +99,7 @@ TEST(Transformations_Rotation, Pitch_RotateBy90Degrees)
     EXPECT_NEAR(q.w, 1, 1e-5);
 }
 
-TEST(Transformations_Rotation, Roll_RotateBy90Degrees)
+TEST(Transformations, RollBy90Degrees)
 {
     Transformations t;
     t.roll = Math::pi / 2.0;
@@ -114,7 +114,7 @@ TEST(Transformations_Rotation, Roll_RotateBy90Degrees)
     EXPECT_NEAR(q.w, 1, 1e-5);
 }
 
-TEST(Transformations_Rotation, YawAndPitch_RotateBy90Degrees)
+TEST(Transformations, YawAndPitchBy90Degrees)
 {
     Transformations t;
     t.yaw = Math::pi / 2.0;
@@ -130,7 +130,7 @@ TEST(Transformations_Rotation, YawAndPitch_RotateBy90Degrees)
     EXPECT_DOUBLE_EQ(q.w, 1);
 }
 
-TEST(Transformations_Rotation, PitchAndRoll_RotateBy90Degrees)
+TEST(Transformations, PitchAndRollBy90Degrees)
 {
     Transformations t;
     t.pitch = Math::pi / 2.0;

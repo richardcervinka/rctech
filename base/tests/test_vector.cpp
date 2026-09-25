@@ -3,7 +3,7 @@
 
 using namespace Rc;
 
-TEST(Vector4_Addition, ComponentWise)
+TEST(Vector4, ComponentWiseAddition)
 {
     auto v = Vector4{1, 2, 3, 4} + Vector4{4, 3, 2, 1};
 
@@ -13,7 +13,7 @@ TEST(Vector4_Addition, ComponentWise)
     EXPECT_FLOAT_EQ(v.w, 5.0f);
 }
 
-TEST(Vector4_Subtraction, ComponentWise)
+TEST(Vector4, ComponentWiseSubtraction)
 {
     auto v = Vector4{4, 3, 2, 1} - Vector4{1, 2, 3, 4};
 
@@ -23,7 +23,7 @@ TEST(Vector4_Subtraction, ComponentWise)
     EXPECT_FLOAT_EQ(v.w, -3.0f);
 }
 
-TEST(Vector4_Multiplication, ComponentsMultipliedByScalar)
+TEST(Vector4, ComponentsMultipliedByScalar)
 {
     auto v = Vector4{1, 2, 3, 4} * 2.0f;
 
@@ -33,7 +33,7 @@ TEST(Vector4_Multiplication, ComponentsMultipliedByScalar)
     EXPECT_FLOAT_EQ(v.w, 8.0f);
 }
 
-TEST(Vector4_Cross, ComponentWise)
+TEST(Vector4, ComponentWiseCrossProduct)
 {
     auto v = Vector4<float>::Cross({2, 5, 6, 1}, {9, 7, 3, 1});
 
@@ -43,7 +43,7 @@ TEST(Vector4_Cross, ComponentWise)
     EXPECT_FLOAT_EQ(v.w, 0.0f);
 }
 
-TEST(Vector4_Normalize, LengthEqualsOne)
+TEST(Vector4, NormalizedLengthEqualsOne)
 {
     Vector4 v {1, 2, 3, 0};
     v.Normalize();
@@ -52,7 +52,7 @@ TEST(Vector4_Normalize, LengthEqualsOne)
     EXPECT_FLOAT_EQ(v.w, 0.0f);
 }
 
-TEST(Vector4_Normal, ProducesUnitNormalWithWZero) {
+TEST(Vector4, NormalVectorProducesUnitNormalWithWZero) {
     auto v = Vector4<float>::Normal({2, 5, 6, 1}, {9, 7, 3, 1});
 
     EXPECT_NEAR(v.x, -0.4272f, 0.0001f);
