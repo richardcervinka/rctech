@@ -6,19 +6,19 @@
 #include <cassert>
 #include <ostream>
 
-namespace Rc::IPv4
+namespace Rc::Net
 {
-    class Address
+    class IPv4Address
     {
     public:
         // Default IP address 0.0.0.0
-        Address() = default;
+        IPv4Address() = default;
 
         // Construct IP address from the 32-bit value in format 0xaabbccdd
-        explicit Address(uint32_t address) : address{address} {}
+        explicit IPv4Address(uint32_t address) : address{address} {}
 
         // Construct IP address from octets: <a>.<b>.<c>.<d>
-        Address(uint8_t a, uint8_t b, uint8_t c, uint8_t d)
+        IPv4Address(uint8_t a, uint8_t b, uint8_t c, uint8_t d)
             : address {
                 (uint32_t{a} << 24) |
                 (uint32_t{b} << 16) |
@@ -27,7 +27,7 @@ namespace Rc::IPv4
             }
         {}
 
-        explicit Address(std::string_view str);
+        explicit IPv4Address(std::string_view str);
 
         // Get separate octets.
         std::array<uint8_t, 4> Bytes() const
@@ -51,7 +51,7 @@ namespace Rc::IPv4
         }
 
         // 127.0.0.1
-        static Address Localhost()
+        static IPv4Address Localhost()
         {
             return {127, 0, 0, 1};
         }
@@ -60,39 +60,39 @@ namespace Rc::IPv4
         uint32_t address {0};
     };
 
-    static inline bool operator==(Address const& lhs, Address const& rhs)
+    static inline bool operator==(IPv4Address const& lhs, IPv4Address const& rhs)
     {
         return lhs.Value() == rhs.Value();
     }
 
-    static inline bool operator!=(Address const& lhs, Address const& rhs)
+    static inline bool operator!=(IPv4Address const& lhs, IPv4Address const& rhs)
     {
         return lhs.Value() != rhs.Value();
     }
 
-    static inline bool operator<(Address const& lhs, Address const rhs)
+    static inline bool operator<(IPv4Address const& lhs, IPv4Address const rhs)
     {
         return lhs.Value() < rhs.Value();
     }
 
-    static inline bool operator<=(Address const& lhs, Address const rhs)
+    static inline bool operator<=(IPv4Address const& lhs, IPv4Address const rhs)
     {
         return lhs.Value() <= rhs.Value();
     }
 
-    static inline bool operator>(Address const& lhs, Address const rhs)
+    static inline bool operator>(IPv4Address const& lhs, IPv4Address const rhs)
     {
         return lhs.Value() > rhs.Value();
     }
 
-    static inline bool operator>=(Address const& lhs, Address const rhs)
+    static inline bool operator>=(IPv4Address const& lhs, IPv4Address const rhs)
     {
         return lhs.Value() >= rhs.Value();
     }
 
-    static inline std::ostream& operator<<(std::ostream& os, Address const& ip)
+    static inline std::ostream& operator<<(std::ostream& os, IPv4Address const& ip)
     {
         return os << ip.Str();
     }
 
-} // namespace Rc::IPv4
+} // namespace Rc::Net

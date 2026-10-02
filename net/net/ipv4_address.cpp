@@ -2,7 +2,7 @@
 #include <format>
 #include <stdexcept>
 
-namespace Rc::IPv4
+namespace Rc::Net
 {
     static constexpr uint32_t ToDigit(char ch)
     {
@@ -14,7 +14,7 @@ namespace Rc::IPv4
         return ch >= '0' && ch <= '9';
     }
 
-    Address::Address(std::string_view str)
+    IPv4Address::IPv4Address(std::string_view str)
     {
         std::array<uint32_t, 4> b = {};
 
@@ -80,7 +80,7 @@ namespace Rc::IPv4
         address = (b[0] << 24) | (b[1] << 16) | (b[2] << 8) | (b[3] << 0);
     }
 
-    std::string Address::Str() const
+    std::string IPv4Address::Str() const
     {
         return std::format("{}.{}.{}.{}",
             (address >> 24) & 0xFF,
@@ -90,4 +90,4 @@ namespace Rc::IPv4
         );
     }
 
-} // Rc::IPv4
+} // Rc::Net
