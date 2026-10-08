@@ -44,15 +44,17 @@ namespace Rc::Res::Ps
 
 namespace Rc::Res::Textures
 {
-    //static consteval GetTextureInfo()
-    TextureInfo Default256x256sRgba()
+    EmbeddedTexture Default256x256sRgba()
     {
         static const uint8_t data[]
         {
             #embed "${CMAKE_SOURCE_DIR}/res/textures/default_256x256.ktx2"
         };
 
-        return KtxReader(std::as_bytes(std::span{data})).Info();
+        return {
+            .data = std::as_bytes(std::span{data}),
+            .info = KtxReader(std::as_bytes(std::span{data})).Info()
+        };
     }
 
 } // namespace Rc::Res::Textures

@@ -63,7 +63,6 @@ namespace Rc
         {
             return
             {
-                .data = src,
                 .format = Format(),
                 .width = Width(),
                 .height = Height(),

@@ -68,6 +68,17 @@ namespace Rc::Render
             };
         }
 
+        template<typename T>
+        std::span<T const> Map(BufferRegion const& region) const
+        {
+            auto raw = buffer->Map(region);
+
+            return {
+                reinterpret_cast<T*>(raw.data()),
+                region.Size() / sizeof(T)
+            };
+        }
+
     private:
         std::unique_ptr<Buffer> buffer;
         uint64_t offset {0};

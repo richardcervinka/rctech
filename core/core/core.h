@@ -48,7 +48,7 @@ namespace Rc
     {
         static constexpr uint32_t max_mip_levels = 16;
 
-        std::span<std::byte const> data;
+        //std::span<std::byte const> data;
         PixelFormat format {PixelFormat::ColorSRGBA};
         uint32_t width {0};
         uint32_t height {0};

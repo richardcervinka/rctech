@@ -12,16 +12,22 @@ namespace Rc::Res::Vs
     // std::span<uint32_t const> Overlay();
     std::span<uint32_t const> Test();
 
-} // namespace Rc::Res::Vs
+} // Rc::Res::Vs
 
 namespace Rc::Res::Ps
 {
     std::span<uint32_t const> Dummy();
 
-} // namespace Rc::Res::Ps
+} // Rc::Res::Ps
 
 namespace Rc::Res::Textures
 {
-    TextureInfo Default256x256sRgba();
+    struct EmbeddedTexture 
+    {
+        std::span<std::byte const> data;
+        TextureInfo info;
+    };
 
-} // namespace Rc::Res::Ps
+    EmbeddedTexture Default256x256sRgba();
+
+} // Rc::Res::Ps

@@ -124,16 +124,22 @@ namespace Rc::Render
 
         // Create default texture.
         {
-            auto const info = Res::Textures::Default256x256sRgba();
-            auto texture = device->AllocateTexture2D(info.format, info.width, info.height, Mips::Full);
+            uint32_t const slot = 0;
+            uint32_t const index = resource_descriptor_heap->TranslateTextureSlot(slot);
 
-            InitializeTexture2D(info, *texture);
+            auto const src = Res::Textures::Default256x256sRgba();
 
-            Texture2DHandle handle(0, 0, resource_descriptor_heap->TranslateTextureSlot(0));
+            auto texture = device->AllocateTexture2D(
+                src.info.format,
+                src.info.width,
+                src.info.height,
+                static_cast<uint32_t>(src.info.layout.size())
+            );
 
-            textures->InsertTexture2D(std::move(texture), handle);
+            InitializeTexture2D(src.data, src.info, *texture);
 
-            resource_descriptor_heap->WriteTexture2DDescriptor(handle.Index(), textures->GetTexture2D(handle));
+            resource_descriptor_heap->WriteTexture2DDescriptor(index, *texture);
+            textures->InsertTexture2D(std::move(texture), slot, index);
         }
 
         sampler_descriptor_heap->WriteDefaultSampler(0);
@@ -450,20 +456,20 @@ namespace Rc::Render
         render_fence->Wait();
     }
 
-    void Renderer::InitializeTexture2D(TextureInfo const& src, Texture2D& dst)
+    void Renderer::InitializeTexture2D(std::span<std::byte const> src, TextureInfo const& info, Texture2D& dst)
     {
-        auto buffer = device->AllocateStagingBuffer(src.data.size());
+        auto buffer = device->AllocateStagingBuffer(src.size());
         auto region = buffer->GetRegion();  // TODO: Throw when vb_region is nullopt? Or Fallback --------------------------------------------------------
         auto memory = buffer->Map(region);
 
         // Copy texture to the staging buffer.
-        std::copy(src.data.begin(), src.data.end(), memory.data());
+        std::copy(src.begin(), src.end(), memory.data());
         
         // Transfer the staging buffer.
         render_commands->Reset();
         render_commands->Begin();
         render_commands->Texture2DBarrier(dst, ImageUsage::Undefined, ImageUsage::TransferWrite);
-        render_commands->TransferTexture(region, src.layout, dst);
+        render_commands->TransferTexture(region, info.layout, dst);
         render_commands->Texture2DBarrier(dst, ImageUsage::TransferWrite, ImageUsage::SampledImage);
         render_commands->End();
 

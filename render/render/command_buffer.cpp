@@ -789,13 +789,14 @@ namespace Rc::Render
         vk_device.CmdCopyBuffer(vk_command_buffer, src.Underlying(), dst.Underlying(), {&region, 1});
     }
 
-    void TransferCommandBuffer::TransferTexture(BufferRegion const& src, Texture2D& dst)
+    void TransferCommandBuffer::TransferTexture(
+        BufferRegion const& src,
+        std::span<TextureLayout const> layout,
+        Texture2D& dst)
     {
-        std::unreachable();
-        /*
-        std26::inplace_vector<VkBufferImageCopy, Texture2D::max_mip_levels> regions;
+        std26::inplace_vector<VkBufferImageCopy, TextureInfo::max_mip_levels> regions;
 
-        for (auto const& layout : dst.Layout())
+        for (auto const& layout : layout)
         {
             regions.push_back({
                 .bufferOffset = src.Offset() + layout.offset,
@@ -821,7 +822,6 @@ namespace Rc::Render
             VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
             {regions.data(), regions.size()}
         );
-        */
     }
 
     void TransferCommandBuffer::MemoryBarrier(

@@ -601,7 +601,7 @@ namespace Rc::Render
             PixelFormat::DepthFloat,
             width,
             height,
-            Mips::None
+            1
         );
     }
 
@@ -609,7 +609,7 @@ namespace Rc::Render
         PixelFormat format,
         uint32_t width,
         uint32_t height,
-        Mips mips) const
+        uint32_t mip_levels) const
     {
         return std::make_unique<Texture2D>(
             *device,
@@ -617,7 +617,7 @@ namespace Rc::Render
             format,
             width,
             height,
-            mips
+            mip_levels
         );
     }
 

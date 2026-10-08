@@ -100,9 +100,9 @@ namespace Rc::Render
             return resource_manager->AllocateIndexBuffer(family, size);
         }
 
-        Texture2DHandle AllocateTexture2D(uint32_t family, PixelFormat format, uint32_t width, uint32_t height, Mips mips)
+        Texture2DHandle AllocateTexture2D(PixelFormat format, uint32_t width, uint32_t height, uint32_t mip_levels)
         {
-            auto texture = device->AllocateTexture2D(format, width, height, mips);
+            auto texture = device->AllocateTexture2D(format, width, height, mip_levels);
 
             return {};
             //textures.RegisterTexture2D(device->AllocateTexture2D(format, width, height, mips), )
@@ -179,7 +179,7 @@ namespace Rc::Render
             BufferUsage usage
         );
 
-        void InitializeTexture2D(TextureInfo const& src, Texture2D& dst);
+        void InitializeTexture2D(std::span<std::byte const> src, TextureInfo const& info, Texture2D& dst);
 
         std::unique_ptr<Instance> instance;
         

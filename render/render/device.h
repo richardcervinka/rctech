@@ -54,6 +54,16 @@ namespace Rc::Render
         std::unique_ptr<RenderCommandQueue> CreateGraphicsQueue() const;
         std::unique_ptr<TransferCommandQueue> CreateTransferQueue() const;
 
+        uint32_t GraphicsQueueFamilyIndex() const
+        {
+            return vk_graphics_queue_family.first;
+        }
+
+        uint32_t TransferQueueFamilyIndex() const
+        {
+            return vk_transfer_queue_family.first;
+        }
+
         std::unique_ptr<Fence> CreateFence() const;
         std::unique_ptr<Semaphore> CreateSemaphore() const;
         std::unique_ptr<TimelineSemaphore> CreateTimelineSemaphore() const;
@@ -78,7 +88,7 @@ namespace Rc::Render
             PixelFormat format,
             uint32_t width,
             uint32_t height,
-            Mips mips
+            uint32_t mip_levels
         ) const;
 
         void WaitIdle() const noexcept;

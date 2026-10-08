@@ -46,8 +46,7 @@ namespace Rc::Render
 
         return std::nullopt;
     }
-
-    // Get number of available chunks.
+    
     uint64_t BufferRingAllocator::ChunkAvailable(uint64_t timeline_complete) const
     {
         uint64_t result = 0;

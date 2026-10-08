@@ -57,25 +57,26 @@ namespace Rc::Render
         std::unreachable();
     }
 
+    uint32_t Texture2D::CalculateMipLevels(uint32_t width, uint32_t height)
+    {
+        return static_cast<uint32_t>(Math::Log2(std::max(width, height))) + 1u;
+    }
+
     Texture2D::Texture2D(
         VulkanDevice const& vk_device,
         VmaAllocator vma_allocator,
         PixelFormat format,
         uint32_t width,
         uint32_t height,
-        Mips mips
+        uint32_t mip_levels
     ) :
         vk_device{vk_device},
         format{format},
         vk_format{ToVkFormat(format)},
         width{width},
-        height{height}
+        height{height},
+        mip_levels{mip_levels}
     {
-        if (mips == Mips::Full)
-        {
-            mip_levels = static_cast<uint32_t>(Math::Log2(std::max(width, height))) + 1u;
-        }
-
         VmaAllocationCreateInfo alloc_info {};
         alloc_info.usage = VMA_MEMORY_USAGE_AUTO;
         alloc_info.flags = 0;

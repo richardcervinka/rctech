@@ -1,5 +1,7 @@
 #include "resource.h"
 #include "development.h"
+#include <fstream>
+#include "core/ktx.h"
 
 namespace Rc::Render
 {
@@ -190,4 +192,106 @@ namespace Rc::Render
         return this->counter >= counter;
     }
 
+
+
+    
+
+
+    // TextureLoader
+
+    TextureLoader::TextureLoader(std::unique_ptr<Buffer> buffer)
+        : allocator{std::move(buffer)}
+    {}
+
+    // void TextureLoader::Start()
+    // {
+    //     thread = std::jthread([this](){ Loop(); });
+    // }
+
+    // ++wait_counter;
+    // std::atomic_notify_one(&wait_counter);
+    // void TextureLoader::Loop()
+    // {
+    //     std::atomic_wait(&wait_counter, 0);
+
+    //     while (!terminate)
+    //     {
+
+    //         // Load();
+
+    //         --wait_counter;
+
+    //         std::atomic_wait(&wait_counter, 0);
+    //     }
+    // }
+
+    std::expected<BufferRegion, TextureLoader::Error> TextureLoader::Load(std::filesystem::path path)
+    {
+        // TODO: Check file ext
+
+        auto const file_size = std::filesystem::file_size(path);
+
+        if (file_size < sizeof(KtxHeader))
+        {
+            throw std::runtime_error("Bad file data");
+        }
+
+        std::ifstream file(path, std::ios::binary);
+
+        if (!file)
+        {
+            throw std::runtime_error("Bad file path");
+        }
+
+        if (allocator.Available() < file_size)
+        {
+            return std::unexpected{TextureLoader::Error::OutOfMemory};
+        }
+
+        auto region = allocator.Allocate(file_size);
+
+        // Destination raw memory.
+        auto raw = allocator.Map<std::byte>(region);
+
+        // Read entire file to the staging buffer
+        if (!file.read(reinterpret_cast<char*>(raw.data()), static_cast<std::streamsize>(file_size)))
+        {
+            throw std::runtime_error("Read file error");
+        }
+
+        return region;
+    }
+
+    TextureInfo TextureLoader::GetTextureInfo(BufferRegion const& region) const
+    {
+        return KtxReader(allocator.Map<std::byte const>(region)).Info();
+    }
+
+    // TextureUploader
+
+    void TextureUploader::Transfer(BufferRegion const& src, std::span<TextureLayout const> layout, Texture2D& dst)
+    {
+        commands->Texture2DBarrier(dst, ImageUsage::Undefined, ImageUsage::TransferWrite);
+        
+        commands->TransferTexture(src, layout, dst);
+
+        commands->BarrierTexture2DRelease(
+            dst,
+            ImageUsage::TransferWrite,
+            ImageUsage::SampledImage,
+            device.TransferQueueFamilyIndex(),
+            device.GraphicsQueueFamilyIndex()
+        );
+    }
+
+    void TextureUploader::Submit()
+    {
+        // transfer_commands->End();
+        // pending = true;
+
+        // transfer_semaphore->Set(transfer_buffer->TimelineValue());
+        // transfer_queue->Submit(*transfer_commands, *transfer_semaphore);
+        // pending = false;
+    }
+    
 } // Rc::Render

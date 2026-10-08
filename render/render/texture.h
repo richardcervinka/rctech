@@ -7,11 +7,11 @@
 
 namespace Rc::Render
 {
-    enum class Mips
-    {
-        None,
-        Full
-    };
+    // enum class Mips
+    // {
+    //     None,
+    //     Full
+    // };
 
     class Texture2D
     {
@@ -22,7 +22,7 @@ namespace Rc::Render
             PixelFormat format,
             uint32_t width,
             uint32_t height,
-            Mips mips
+            uint32_t mip_levels
         );
 
         ~Texture2D();
@@ -73,6 +73,8 @@ namespace Rc::Render
         uint32_t Channels() const;
 
         std::unique_ptr<RenderTargetView> CreateDepthBufferView() const;
+
+        static uint32_t CalculateMipLevels(uint32_t width, uint32_t height);
 
     private:
         friend class TransferCommandBuffer;

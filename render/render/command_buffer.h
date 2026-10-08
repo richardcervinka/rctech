@@ -217,7 +217,12 @@ namespace Rc::Render
         );
 
         void TransferBuffer(BufferRegion const& src, BufferRegion& dst);
-        void TransferTexture(BufferRegion const& src, Texture2D& dst);
+        
+        void TransferTexture(
+            BufferRegion const& src,
+            std::span<TextureLayout const> layout,
+            Texture2D& dst
+        );
 
         VkCommandBuffer Underlying() const
         {

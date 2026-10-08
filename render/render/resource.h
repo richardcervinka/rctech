@@ -4,12 +4,16 @@
 #include <memory>
 #include <atomic>
 #include <mutex>
+#include <string>
 #include <vector>
 #include <numeric>
+#include <filesystem>
 #include "buffer_linear_allocator.h"
 #include "buffer_ring_allocator.h"
 #include "buffer_writer.h"
 #include "render/device.h"
+#include <deque>
+#include <expected>
 
 namespace Rc::Render
 {
@@ -227,33 +231,151 @@ namespace Rc::Render
         std::atomic<bool> pending {false};
     };
 
-    // struct TextureMetadata
+    //
+    // Named reserved texture slots
+    //
+    // enum class TexturSlot : uint32_t
     // {
-    //     std::string name;
+    //     Default = 0
     // };
 
+    using TextureSlot = uint32_t;
+
     //
-    // Map public texture handle to the Texture2D object
+    // Map public texture slot to the Vulkan objects
     //
     class TextureManager
     {
     public:
         static inline const uint32_t slot_count = UINT16_MAX;
 
-        void InsertTexture2D(std::unique_ptr<Texture2D> texture, Texture2DHandle const& handle)
+        void InsertTexture2D(std::unique_ptr<Texture2D> texture, TextureSlot slot, uint32_t index)
         {
-            assert(handle.Slot() < slot_count);
+            assert(slot < slot_count);
 
-            slots[handle.Slot()] = std::move(texture);
+            slots[slot].texture = std::move(texture);
+            slots[slot].index = index;
         }
 
-        Texture2D const& GetTexture2D(Texture2DHandle const& handle) const
+        void ReleaseTexture2D(TextureSlot slot)
         {
-            return *slots[handle.Slot()];
+            assert(slot < slot_count);
+
+            slots[slot] = {};
+        }
+
+        Texture2D const& GetTexture2D(TextureSlot slot) const
+        {
+            return *slots[slot].texture;
+        }
+
+        uint32_t GetIndex(TextureSlot slot) const
+        {
+            return slots[slot].index;
         }
 
     private:
-        std::array<std::unique_ptr<Texture2D>, slot_count> slots;
+        struct Slot
+        {
+            std::unique_ptr<Texture2D> texture;
+
+            // Descriptor heap index
+            uint32_t index {0};
+
+            // Optional
+            // std::string name;
+        };
+
+        std::array<Slot, slot_count> slots;
+    };
+
+
+
+
+
+
+
+    
+
+    class TextureLoader
+    {
+    public:
+        enum class Error
+        {
+            OutOfMemory
+        };
+
+        explicit TextureLoader(std::unique_ptr<Buffer> buffer);
+
+        std::expected<BufferRegion, Error> Load(std::filesystem::path path);
+
+        TextureInfo GetTextureInfo(BufferRegion const& region) const;
+
+        void Reset()
+        {
+            allocator.Reset();
+        }
+
+    private:
+        BufferLinearAllocator allocator;
+    };
+
+
+
+
+
+
+
+    class TextureUploader
+    {
+    public:
+        TextureUploader(
+            Device const& device
+            // std::unique_ptr<TransferCommandQueue> queue,
+            // std::unique_ptr<TransferCommandBuffer> commands
+        );
+
+        // Create a load request.
+        // Returns unuque identifier.
+        void Transfer(BufferRegion const& src, std::span<TextureLayout const> layout, Texture2D& dst);
+
+        void Submit();
+
+        // void Wait();
+
+        //-------------------
+
+        bool Complete() const
+        {
+            return semaphore->QueryCounter() >= submit_counter;
+        }
+
+    private:
+        std::unique_ptr<TextureLoader> loader;
+        //std::unique_ptr<TextureLoader> submitted_loader;
+
+        // void Loop();
+        
+        // std::jthread thread;
+        // std::atomic<uint32_t> wait_counter {0};
+        // std::atomic<bool> terminate {false};
+        
+        Device const& device;
+        
+        BufferRingAllocator buffer;
+
+        std::unique_ptr<TransferCommandQueue> queue; //----------------------- take pro back buffer !!!!!!
+
+        //std::unique_ptr<TransferCommandBuffer> submitted_commands;
+
+        std::unique_ptr<TransferCommandBuffer> commands;
+
+        std::unique_ptr<TimelineSemaphore> semaphore;
+
+        // Snapshot of the buffer ring allocator.
+        uint64_t submit_counter {0};
+
+        uint64_t uid_counter {0};
     };
 
 } // Rc::Render
