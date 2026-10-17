@@ -4,6 +4,7 @@
 #include <cassert>
 #include <algorithm>
 #include <span>
+#include <print>
 #include <iostream>
 #include <stdexcept>
 #include "platform/log.h"
@@ -16,6 +17,7 @@
 #include "constants.h"
 #include "development.h"
 #include "core/ktx.h"
+#include "resource.h"
 
 namespace Rc::Render
 {
@@ -30,6 +32,7 @@ namespace Rc::Render
             device->WaitIdle();
         }
 
+        texture_loader = nullptr;
         textures = nullptr;
         sampler_descriptor_heap = nullptr;
         resource_descriptor_heap = nullptr;
@@ -139,7 +142,8 @@ namespace Rc::Render
             InitializeTexture2D(src.data, src.info, *texture);
 
             resource_descriptor_heap->WriteTexture2DDescriptor(index, *texture);
-            textures->InsertTexture2D(std::move(texture), slot, index);
+            textures->InsertTexture2D(std::move(texture), slot);
+            textures->ActivateTexture2D(slot);
         }
 
         sampler_descriptor_heap->WriteDefaultSampler(0);
@@ -216,6 +220,29 @@ namespace Rc::Render
             });
             test_vertex_pipeline = factory.Create();
         }
+        
+        // ---------------------- TEST --------------------------
+        {
+            texture_loader = std::make_unique<TextureLoader>(*device, 1024*1024*4*4*32);
+            //static TextureLoader loader(*device, 1024*1024*4*4*8);
+
+            {
+                std::filesystem::path const path = "C:\\Users\\richa\\cpp\\rctech\\dev\\default_256.ktx2";
+
+                texture_loader->Add({
+                    TextureSlot{1},
+                    path,
+                    std::filesystem::file_size(path)
+                });
+            }
+
+            texture_loader_worker.Call([this](){
+                texture_loader->Load(*textures);
+            });
+
+            //texture_loader->Load(*textures);
+        }
+        
 
         // Handle window resizing.
         window.OnEventSize(on_window_size);
@@ -295,6 +322,8 @@ namespace Rc::Render
 
     void Renderer::Test()
     {
+        // if (Dev::texture_loader->LoadComplete())...
+
         static Gfx::PerspectiveCamera camera = CreateTestCamera();
         
         auto camera_rotations = camera.transformations.GetRotations();

@@ -3,12 +3,15 @@
 #include "instance.h"
 #include "platform/window.h"
 #include "texture.h"
+#include "texture_manager.h"
+#include "texture_loader.h"
 #include <array>
 #include <functional>
 #include "shader.h"
 #include "descriptor_heap.h"
 #include "frame_renderer.h"
 #include "resource.h"
+#include "base/worker.h"
 #include "development.h"
 
 namespace Rc::Render
@@ -230,6 +233,10 @@ namespace Rc::Render
         // DEV
 
         std::unique_ptr<TextureManager> textures;
+
+        std::unique_ptr<Render::TextureLoader> texture_loader;
+
+        Worker texture_loader_worker;
     };
 
 } // Rc::Render

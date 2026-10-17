@@ -1,7 +1,9 @@
 #pragma once
 
+#include <algorithm>
 #include <array>
 #include <new>
+#include <span>
 
 namespace std26
 {
@@ -167,6 +169,15 @@ namespace std26
         constexpr const_iterator cend() const noexcept
         {
             return m_data.cbegin() + m_size;
+        }
+
+        friend bool operator==(const inplace_vector& lhs, const inplace_vector& rhs)
+        {
+            return std::ranges::equal(
+                std::span{lhs.m_data.data(), lhs.m_size},
+                std::span{rhs.m_data.data(), rhs.m_size}
+            );
+            //return std::span{lhs.m_data.data(), lhs.m_size} == std::span{rhs.m_data.data(), rhs.m_size};
         }
 
     private:

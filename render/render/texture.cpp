@@ -71,8 +71,8 @@ namespace Rc::Render
         uint32_t mip_levels
     ) :
         vk_device{vk_device},
-        format{format},
         vk_format{ToVkFormat(format)},
+        format{format},
         width{width},
         height{height},
         mip_levels{mip_levels}

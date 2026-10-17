@@ -22,6 +22,8 @@
     "image.cpp"
     "file.h"
     "file.cpp"
+    "worker.h"
+    "worker.cpp"
 )
 
 target_compile_features(base

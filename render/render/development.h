@@ -13,10 +13,10 @@ namespace Rc
 
         //static inline std::unique_ptr<Render::Texture2D> test_texture;
 
-        static inline Rc::Render::VertexBufferHandle vb_handle;
-        static inline Rc::Render::IndexBufferHandle ib_handle; 
+        static inline Render::VertexBufferHandle vb_handle;
+        static inline Render::IndexBufferHandle ib_handle; 
 
-        static inline std::vector<Rc::Gfx::Transformations> instances;
+        static inline std::vector<Gfx::Transformations> instances;
 
         static inline uint64_t resource_timeline {0};
     };

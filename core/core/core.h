@@ -42,17 +42,20 @@ namespace Rc
         uint32_t array_level {0};
         uint32_t offset {0};
         uint32_t size {0};
+
+        bool operator==(TextureLayout const&) const = default;
     };
 
     struct TextureInfo
     {
         static constexpr uint32_t max_mip_levels = 16;
 
-        //std::span<std::byte const> data;
         PixelFormat format {PixelFormat::ColorSRGBA};
         uint32_t width {0};
         uint32_t height {0};
         std26::inplace_vector<TextureLayout, max_mip_levels> layout;
+
+        bool operator==(TextureInfo const&) const = default;
     };
     
 } // Rc

@@ -60,7 +60,7 @@ namespace Rc::Str
     }
 
     template<typename T>
-    std::expected<T, std::errc> ToNumeric(std::string_view str)
+    static std::expected<T, std::errc> ToNumeric(std::string_view str)
     {
         T result {};
         auto [ptr, ec] = std::from_chars(str.data(), str.data() + str.size(), result);

@@ -7,12 +7,6 @@
 
 namespace Rc::Render
 {
-    // enum class Mips
-    // {
-    //     None,
-    //     Full
-    // };
-
     class Texture2D
     {
     public:
@@ -24,6 +18,11 @@ namespace Rc::Render
             uint32_t height,
             uint32_t mip_levels
         );
+
+        Texture2D(Texture2D const&) = delete;
+        Texture2D(Texture2D&&) = delete;
+        Texture2D& operator=(Texture2D const&) = delete;
+        Texture2D& operator=(Texture2D&&) = delete;
 
         ~Texture2D();
 
@@ -84,14 +83,14 @@ namespace Rc::Render
         VmaAllocator vma_allocator {VK_NULL_HANDLE};
         VmaAllocation vma_allocation {nullptr};
         VmaAllocationInfo vma_allocation_info {};
-
-        PixelFormat format {};
+        
+        VkImage vk_image {VK_NULL_HANDLE};
         VkFormat vk_format {VK_FORMAT_UNDEFINED};
+        
+        PixelFormat format {};
         uint32_t width {0};
         uint32_t height {0};
         uint32_t mip_levels {1};
-
-        VkImage vk_image {VK_NULL_HANDLE};
     };
 
 } // Rc::Render

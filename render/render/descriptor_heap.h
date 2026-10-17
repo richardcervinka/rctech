@@ -50,12 +50,14 @@ namespace Rc::Render
             return buffer->GetRegion(0, reserved_offset);
         }
 
+        // Index is a descriptor shader index.
         void WriteUniformBufferDescriptor(
             uint64_t index, //------------------------------------- 64 ?
             uint64_t address,
             uint64_t size  // --------------------------------------- 64 ?
         );
         
+        // Index is a descriptor shader index.
         void WriteTexture2DDescriptor(
             uint64_t index,
             Texture2D const& texture
