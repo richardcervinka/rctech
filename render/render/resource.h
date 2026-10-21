@@ -64,7 +64,7 @@ namespace Rc::Render
 
     using VertexBufferHandle = ResourceHandle<ResourceType::VertexBuffer>;
     using IndexBufferHandle = ResourceHandle<ResourceType::IndexBuffer>;
-    using Texture2DHandle = ResourceHandle<ResourceType::Texture>;
+    // using Texture2DHandle = ResourceHandle<ResourceType::Texture>;
 
     //
     // Linear subresource handle allocator.

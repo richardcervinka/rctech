@@ -196,9 +196,11 @@ namespace Rc::Render
             .unnormalizedCoordinates = VK_FALSE
         };
 
+        auto const descriptor_offset = descriptor_size * index;
+
         VkHostAddressRangeEXT const host_address
         {
-            .address = data.data() + (descriptor_size * index),
+            .address = data.data() + descriptor_offset,
             .size = descriptor_size
         };
 

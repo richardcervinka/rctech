@@ -103,14 +103,15 @@ namespace Rc::Render
             return resource_manager->AllocateIndexBuffer(family, size);
         }
 
-        Texture2DHandle AllocateTexture2D(PixelFormat format, uint32_t width, uint32_t height, uint32_t mip_levels)
-        {
-            auto texture = device->AllocateTexture2D(format, width, height, mip_levels);
-
-            return {};
-            //textures.RegisterTexture2D(device->AllocateTexture2D(format, width, height, mips), )
-            //return texture; // resource_manager->AllocateTexture2D(family, width, height, mips, format);
-        }
+        // --------------------- Zrejme nepotrebuju, vse pre manager a sloty
+        // Texture2DHandle AllocateTexture2D(PixelFormat format, uint32_t width, uint32_t height, uint32_t mip_levels)
+        // {
+        //     auto texture = device->AllocateTexture2D(format, width, height, mip_levels);
+        //
+        //     return {};
+        //     //textures.RegisterTexture2D(device->AllocateTexture2D(format, width, height, mips), )
+        //     //return texture; // resource_manager->AllocateTexture2D(family, width, height, mips, format);
+        // }
 
         void BeginUpload()
         {
@@ -139,13 +140,6 @@ namespace Rc::Render
         {
             auto lock = std::lock_guard{*resource_uploader};
             return resource_uploader->Upload(resource_manager->GetBufferRegion(handle), writer_callback);
-        }
-
-        uint64_t Upload(Texture2DHandle handle, std::function<void(uint32_t mip, uint32_t w, uint32_t h, std::span<std::byte> dst)> writer_callback)
-        {
-            auto lock = std::lock_guard{*resource_uploader};
-            //return resource_uploader->Upload(*Rc::Dev::test_texture, *render_queue, writer_callback);
-            return 0;
         }
 
     private:
@@ -232,7 +226,7 @@ namespace Rc::Render
 
         // DEV
 
-        std::unique_ptr<TextureManager> textures;
+        std::unique_ptr<TextureManager> texture_manager;
 
         std::unique_ptr<Render::TextureLoader> texture_loader;
 

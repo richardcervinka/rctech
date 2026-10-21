@@ -153,7 +153,7 @@ namespace Rc::Render
         // Create transfer command.
         transfer.Transfer(region, info.layout, *texture);
 
-        manager.InsertTexture2D(std::move(texture), request.slot);
+        manager.Insert(std::move(texture), request.slot, manager.Placeholder());
     }
 
 } // Rc::Render

@@ -52,10 +52,11 @@ namespace Rc::Render
 
         void EndRenderPass();
 
-        void WriteInstance(Gfx::VertexInstance const& data)
+        void AddInstance(Gfx::VertexInstance const& data)
         {
             instance_writer << data.local_transformations;
             instance_writer << data.world_transformations;
+            instance_writer << data.material;
         }
 
         // void Draw(

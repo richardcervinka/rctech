@@ -879,10 +879,10 @@ namespace Rc::Render
             .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
             .image = texture.Underlying(),
             .subresourceRange.aspectMask = ToVkImageAspectFlags(after_usage),
-            .subresourceRange.baseMipLevel = 0, //----------------------------------------- from texture
-            .subresourceRange.levelCount = 1,  //----------------------------------------- from texture
-            .subresourceRange.baseArrayLayer = 0,  //----------------------------------------- from texture
-            .subresourceRange.layerCount = 1  //----------------------------------------- from texture
+            .subresourceRange.baseMipLevel = 0,
+            .subresourceRange.levelCount = texture.MipLevels(),
+            .subresourceRange.baseArrayLayer = 0,
+            .subresourceRange.layerCount = 1
         };
 
         VkDependencyInfo const dependency_info
@@ -922,10 +922,10 @@ namespace Rc::Render
             .dstQueueFamilyIndex = queue_family_after,
             .image = texture.Underlying(),
             .subresourceRange.aspectMask = ToVkImageAspectFlags(after_usage),
-            .subresourceRange.baseMipLevel = 0, //----------------------------------------- from texture
-            .subresourceRange.levelCount = 1,  //----------------------------------------- from texture
-            .subresourceRange.baseArrayLayer = 0,  //----------------------------------------- from texture
-            .subresourceRange.layerCount = 1  //----------------------------------------- from texture
+            .subresourceRange.baseMipLevel = 0,
+            .subresourceRange.levelCount = texture.MipLevels(),
+            .subresourceRange.baseArrayLayer = 0,
+            .subresourceRange.layerCount = 1
         };
 
         VkDependencyInfo const dependency_info

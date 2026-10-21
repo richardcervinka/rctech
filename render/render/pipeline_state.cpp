@@ -284,6 +284,8 @@ namespace Rc::Render
                 return VK_FORMAT_R32G32B32_SFLOAT;
             case Gfx::VertexAttribute::Color:
                 return VK_FORMAT_R32G32B32_SFLOAT;
+            case Gfx::VertexAttribute::Material:
+                return VK_FORMAT_R32_UINT;
             case Gfx::VertexAttribute::Local0:
             case Gfx::VertexAttribute::Local1:
             case Gfx::VertexAttribute::Local2:
@@ -303,35 +305,7 @@ namespace Rc::Render
 
     static uint32_t GetLocation(Gfx::VertexAttribute attribute)
     {
-        switch (attribute)
-        {
-            case Gfx::VertexAttribute::Position:
-                return 0;
-            case Gfx::VertexAttribute::Normal:
-                return 1;
-            case Gfx::VertexAttribute::Color:
-                return 2;
-            case Gfx::VertexAttribute::Local0:
-                return 3;
-            case Gfx::VertexAttribute::Local1:
-                return 4;
-            case Gfx::VertexAttribute::Local2:
-                return 5;
-            case Gfx::VertexAttribute::Local3:
-                return 6;
-            case Gfx::VertexAttribute::World0:
-                return 7;
-            case Gfx::VertexAttribute::World1:
-                return 8;
-            case Gfx::VertexAttribute::World2:
-                return 9;
-            case Gfx::VertexAttribute::World3:
-                return 10;
-            case Gfx::VertexAttribute::TextureUV:
-                return 11;
-        }
-
-        std::unreachable();
+        return std::to_underlying(attribute);
     }
 
     static uint32_t GetBinding(Gfx::VertexBinding binding)

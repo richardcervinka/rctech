@@ -8,13 +8,6 @@
 
 namespace Rc::Render
 {
-    // class ResourceBinding
-    // {
-    // public:
-
-    // private:
-    // };
-
     class ResourceDescriptorHeap
     {
     public:
@@ -25,21 +18,25 @@ namespace Rc::Render
             std::unique_ptr<Buffer> buffer
         );
 
+        // Descriptor heap size in bytes.
         uint64_t Size() const
         {
             return buffer->Size();
         }
 
+        // Number of bytes reserved for driver internal usage.
         uint64_t ReservedSize() const
         {
             return reserved_size;
         }
 
+        // Offset in bytes of the block reserved for driver internal usage.
         uint64_t ReservedOffset() const
         {
             return reserved_offset;
         }
 
+        // GPU address.
         uint64_t Address() const
         {
             return address;
@@ -63,18 +60,24 @@ namespace Rc::Render
             Texture2D const& texture
         );
 
+        BufferRegion GetTexture2DBufferRegion(uint64_t index) const
+        {
+            return buffer->GetRegion(image_descriptor_size * index, image_descriptor_size);
+        }
+
+        // Host-visible descriptor heap memory.
         std::span<std::byte const> Data() const
         {
             return data;
         }
 
         // Convert logical resource slot to a descriptor index.
-        uint32_t TranslateTextureSlot(uint32_t slot) const
+        uint32_t TranslateTextureSlot(uint32_t slot) const //----------------------------- TextureSlot ?
         {
             return slot + begin_texture_index;
         }
 
-        //void Write(std::span<std::byte> dst) const; // ----------------- Rename to Copy()
+        // void Write(std::span<std::byte> dst) const; // ----------------- Rename to Copy()
 
     private:
         VulkanDevice const& vk_device;
@@ -116,29 +119,30 @@ namespace Rc::Render
         bool border_color;
         bool unnormalized_coordinates;
     };
+
     // VkSamplerCreateInfo samplerInfo{
     //     .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
     //     .magFilter = VK_FILTER_LINEAR,
     //     .minFilter = VK_FILTER_LINEAR,
-
+    //
     //     // Bez mipmap
     //     .mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST,
     //     .minLod = 0.0f,
     //     .maxLod = 0.0f,
     //     .mipLodBias = 0.0f,
-
+    //
     //     // Adresování
     //     .addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT,
     //     .addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT,
     //     .addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT,
-
+    //
     //     // Anizotropie vypnutá (nemá smysl bez mipů)
     //     .anisotropyEnable = VK_FALSE,
     //     .maxAnisotropy = 1.0f,
-
+    //
     //     // Border color jen když používáš CLAMP_TO_BORDER
     //     .borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK,
-
+    //
     //     // Normalized coords (typické)
     //     .unnormalizedCoordinates = VK_FALSE
     // };
@@ -155,32 +159,37 @@ namespace Rc::Render
 
         void WriteDefaultSampler(uint64_t index);
 
+        // Descriptor heap size in bytes.
         uint64_t Size() const
         {
             return buffer->Size();
         }
 
+        // Number of bytes reserved for driver internal usage.
         uint64_t ReservedSize() const
         {
             return reserved_size;
         }
 
+        // Offset in bytes of the block reserved for driver internal usage.
         uint64_t ReservedOffset() const
         {
             return reserved_offset;
         }
 
+        // GPU address.
         uint64_t Address() const
         {
             return address;
         }
 
+        // Host-visible descriptor heap memory.
         std::span<std::byte const> Data() const
         {
             return data;
         }
         
-        BufferRegion GetBufferRegion() const // --------------------- Jen getter
+        BufferRegion GetBufferRegion() const
         {
             return buffer->GetRegion(0, reserved_offset);
         }

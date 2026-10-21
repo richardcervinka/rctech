@@ -30,9 +30,9 @@ namespace Rc::Render
             case PixelFormat::DepthFloat:
                 return VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
             case PixelFormat::ColorSRGBA:
+            case PixelFormat::ColorBC7:
                 return VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
             case PixelFormat::SurfaceBGRA:
-                return 0;
             case PixelFormat::SurfaceRGBA:
                 return 0;
         }

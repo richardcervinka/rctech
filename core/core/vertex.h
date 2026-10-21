@@ -8,33 +8,36 @@
 
 namespace Rc::Gfx
 {
-    enum class VertexAttribute
+    enum class VertexAttribute : uint32_t
     {
         // VK_FORMAT_R32G32B32_SFLOAT
-        Position,
+        Position = 0,
 
         // VK_FORMAT_R32G32B32_SFLOAT
-        Normal,
+        Normal = 1,
 
         // VK_FORMAT_R32G32B32_SFLOAT
-        Color,
+        Color = 2,
 
         // Local transformations
         // VK_FORMAT_R32G32B32A32_SFLOAT
-        Local0,
-        Local1,
-        Local2,
-        Local3,
+        Local0 = 3,
+        Local1 = 4,
+        Local2 = 5,
+        Local3 = 6,
 
         // World transformations
         // VK_FORMAT_R32G32B32A32_SFLOAT
-        World0,
-        World1,
-        World2,
-        World3,
+        World0 = 7,
+        World1 = 8,
+        World2 = 9,
+        World3 = 10,
 
         // Texture Coordinates
-        TextureUV
+        TextureUV = 11,
+
+        // Material (or texture descriptor) index.
+        Material = 12
     };
 
     enum class VertexBinding
@@ -54,6 +57,11 @@ namespace Rc::Gfx
     {
         Float3 position;
         Float2 uv;
+
+        static constexpr uint32_t stride {
+            (sizeof(float) * 3) +
+            (sizeof(float) * 2)
+        };
 
         static std::span<VertexDescription const, 2> Attributes()
         {
@@ -81,10 +89,17 @@ namespace Rc::Gfx
     {
         Matrix4<float> local_transformations;
         Matrix4<float> world_transformations;
+        uint32_t material {0};
 
-        static std::span<VertexDescription const, 8> Attributes()
+        static constexpr uint32_t stride {
+            sizeof(Matrix4<float>) +
+            sizeof(Matrix4<float>) +
+            sizeof(uint32_t)
+        };
+
+        static std::span<VertexDescription const, 9> Attributes()
         {
-            static const std::array<VertexDescription, 8> attributes
+            static const std::array<VertexDescription, 9> attributes
             {
                 VertexDescription
                 {
@@ -133,6 +148,12 @@ namespace Rc::Gfx
                     .attribute = VertexAttribute::World3,
                     .binding = VertexBinding::PerInstance,
                     .offset = offsetof(VertexInstance, world_transformations) + (3 * sizeof(Float4))
+                },
+                VertexDescription
+                {
+                    .attribute = VertexAttribute::Material,
+                    .binding = VertexBinding::PerInstance,
+                    .offset = offsetof(VertexInstance, material)
                 }
             };
 

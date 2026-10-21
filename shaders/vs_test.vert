@@ -29,10 +29,13 @@ layout(location = 9) in vec4 in_world_2;
 layout(location = 10) in vec4 in_world_3;
 // Texture UV
 layout(location = 11) in vec2 in_uv;
+// Matrial index (may be texture descriptor index in simple materials)
+layout(location = 12) in uint in_material;
 
 // Output
 layout(location = 0) out vec3 out_color;
 layout(location = 1) out vec2 out_uv;
+layout(location = 2) flat out uint out_material;
 
 void main()
 {
@@ -48,6 +51,6 @@ void main()
     gl_Position = position;
 
     out_color = vec3(in_uv.r, in_uv.g, 0);
-
     out_uv = in_uv;
+    out_material = in_material;
 }

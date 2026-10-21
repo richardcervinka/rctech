@@ -33,7 +33,7 @@ namespace Rc::Render
         }
 
         texture_loader = nullptr;
-        textures = nullptr;
+        texture_manager = nullptr;
         sampler_descriptor_heap = nullptr;
         resource_descriptor_heap = nullptr;
         resource_uploader = nullptr;
@@ -123,10 +123,13 @@ namespace Rc::Render
         pipeline_layout = device->CreatePipelineLayout();
         resource_descriptor_heap = device->CreateResourceDescriptorHeap(32 * 1024);
         sampler_descriptor_heap = device->CreateSamplerDescriptorHeap(256);
-        textures = std::make_unique<TextureManager>();
+        texture_manager = std::make_unique<TextureManager>();
 
         // Create default texture.
         {
+            auto const placeholder = resource_descriptor_heap->TranslateTextureSlot(TextureSlot{0});
+            texture_manager->SetPlaceholder(placeholder);
+
             uint32_t const slot = 0;
             uint32_t const index = resource_descriptor_heap->TranslateTextureSlot(slot);
 
@@ -142,8 +145,12 @@ namespace Rc::Render
             InitializeTexture2D(src.data, src.info, *texture);
 
             resource_descriptor_heap->WriteTexture2DDescriptor(index, *texture);
-            textures->InsertTexture2D(std::move(texture), slot);
-            textures->ActivateTexture2D(slot);
+
+            texture_manager->Insert(
+                std::move(texture),
+                slot,
+                resource_descriptor_heap->TranslateTextureSlot(slot)
+            );
         }
 
         sampler_descriptor_heap->WriteDefaultSampler(0);
@@ -211,8 +218,8 @@ namespace Rc::Render
             factory.SetPipelineLayout(pipeline_layout);
             factory.SetVertexShader(GetVertexShader(VertexShaderSlot::Test));
             factory.SetPixelShader(GetPixelShader(PixelShaderSlot::Null));
-            factory.SetVertexBinding(Gfx::VertexBinding::PerVertex, sizeof(Gfx::VertexBasic));
-            factory.SetVertexBinding(Gfx::VertexBinding::PerInstance, sizeof(Gfx::VertexInstance));
+            factory.SetVertexBinding(Gfx::VertexBinding::PerVertex, Gfx::VertexBasic::stride);
+            factory.SetVertexBinding(Gfx::VertexBinding::PerInstance, Gfx::VertexInstance::stride);
             factory.SetOutputFormat(swap_chain->Format());
             factory.SetVertexAttributes({
                 Gfx::VertexBasic::Attributes(),
@@ -221,7 +228,7 @@ namespace Rc::Render
             test_vertex_pipeline = factory.Create();
         }
         
-        // ---------------------- TEST --------------------------
+        // ---------------------- LOADER TEST --------------------------
         {
             texture_loader = std::make_unique<TextureLoader>(*device, 1024*1024*4*4*32);
             //static TextureLoader loader(*device, 1024*1024*4*4*8);
@@ -237,10 +244,8 @@ namespace Rc::Render
             }
 
             texture_loader_worker.Call([this](){
-                texture_loader->Load(*textures);
+                texture_loader->Load(*texture_manager);
             });
-
-            //texture_loader->Load(*textures);
         }
         
 
@@ -271,7 +276,6 @@ namespace Rc::Render
 
     void Renderer::BeginFrame()
     {
-        //std::this_thread::sleep_for(std::chrono::milliseconds{1});
         frame = &frames[frame_number % frames.size()];
 
         swap_chain->AcquireNextImage();
@@ -300,6 +304,16 @@ namespace Rc::Render
 
         frame_number += 1;
 
+        // ---------------------------------------------------------------------- TODO: swap texture loaders
+        if (texture_loader->Complete())
+        {
+            texture_loader->Transfer();
+        }
+        else if (texture_loader->Transfered())
+        {
+            texture_loader->Reset();
+        }
+
         // Submit copy commands.
         if (resource_uploader->PendingTransfer())
         {
@@ -309,7 +323,7 @@ namespace Rc::Render
             {
                 resource_uploader->Transfer();
             }
-        }      
+        }
     }
 
     static Gfx::PerspectiveCamera CreateTestCamera()
@@ -415,9 +429,10 @@ namespace Rc::Render
         // Build instance buffer.
         for (auto& instnace : Rc::Dev::instances)
         {
-            frame->WriteInstance({
+            frame->AddInstance({
                 .local_transformations = instnace.Local().To<float>(),
-                .world_transformations = instnace.World().To<float>()
+                .world_transformations = instnace.World().To<float>(),
+                .material = texture_manager->GetIndex(TextureSlot{1})
             });
         }
 
@@ -455,9 +470,7 @@ namespace Rc::Render
         frame->BindVertexBuffer(resource_manager->GetVertexBuffer(0), 0); // ---------------------- Use VertexBinding !!!!!!!!
         frame->BindInstanceBuffer(0);
         frame->BindIndexBuffer(resource_manager->GetIndexBuffer(0), IndexType::Uint16, 0);
-
         frame->Draw(36, 420 * 420, 0, 0, 0);
-
         frame->EndRenderPass();
     }
 

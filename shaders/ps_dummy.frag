@@ -10,6 +10,7 @@ layout(descriptor_heap) uniform sampler samplers[];
 // Input
 layout(location = 0) in vec3 in_color;
 layout(location = 1) in vec2 in_uv;
+layout(location = 2) flat in uint in_material;
 
 // Output
 layout(location = 0) out vec4 out_color;
@@ -18,5 +19,5 @@ void main()
 {
     // ivec2 texCoord = ivec2(in_uv.x * 16, in_uv.y * 16);
     // out_color = texelFetch(textures[4], texCoord, 0);
-    out_color = texture(sampler2D(textures[4], samplers[0]), in_uv);
+    out_color = texture(sampler2D(textures[in_material], samplers[0]), in_uv);
 }

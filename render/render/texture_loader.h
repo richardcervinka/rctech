@@ -122,6 +122,10 @@ namespace Rc::Render
 
         bool Transfered() const
         {
+            if (state != State::Transfer)
+            {
+                return false;
+            }
             return transfer.Complete();
         }
 
@@ -159,6 +163,7 @@ namespace Rc::Render
 
         std::vector<Request> requests;
 
+        // Current number of bytes reserved by requests.
         uint64_t reserved {0};
 
         // Signal to abort running loading.
